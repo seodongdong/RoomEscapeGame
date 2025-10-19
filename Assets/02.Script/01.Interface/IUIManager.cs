@@ -11,4 +11,8 @@ public interface IUIManager
     void UpdateHealthUI(int current, int max);
     void StartTimer(float duration);
     void StopTimer();
+
+    // 대사 시스템 추가
+    void ShowDialogue(string speaker, string dialogue);
+    void HideDialogue();
 }

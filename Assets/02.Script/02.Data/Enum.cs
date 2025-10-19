@@ -9,6 +9,7 @@ public enum GameState
     Paused,
     Puzzle,
     Chase,
+    Dialogue,
     GameOver,
     Ending
 }

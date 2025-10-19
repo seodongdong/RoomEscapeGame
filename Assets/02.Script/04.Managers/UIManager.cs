@@ -15,8 +15,14 @@ public class UIManager : MonoBehaviour, IUIManager
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private GameObject timerPanel;
     [SerializeField] private TextMeshProUGUI timerText;
+    
+    [Header("Dialogue UI")]
+    [SerializeField] private GameObject dialoguePanel;
+    [SerializeField] private TextMeshProUGUI speakerText;
+    [SerializeField] private TextMeshProUGUI dialogueText;
 
     private Coroutine _timerCoroutine;
+    private Coroutine _dialogueCoroutine;
 
     private void Start()
     {
@@ -118,6 +124,55 @@ public class UIManager : MonoBehaviour, IUIManager
         }
     }
 
+    // 대사 시스템 구현
+    public void ShowDialogue(string speaker, string dialogue)
+    {
+        if (dialoguePanel != null)
+        {
+            dialoguePanel.SetActive(true);
+
+            if (speakerText != null)
+            {
+                speakerText.text = speaker;
+            }
+
+            if (dialogueText != null)
+            {
+                if (_dialogueCoroutine != null)
+                {
+                    StopCoroutine(_dialogueCoroutine);
+                }
+                _dialogueCoroutine = StartCoroutine(TypeDialogue(dialogue));
+            }
+        }
+    }
+
+    public void HideDialogue()
+    {
+        if (_dialogueCoroutine != null)
+        {
+            StopCoroutine(_dialogueCoroutine);
+            _dialogueCoroutine = null;
+        }
+
+        dialoguePanel?.SetActive(false);
+    }
+
+    private IEnumerator TypeDialogue(string dialogue)
+    {
+        dialogueText.text = "";
+
+        foreach (char c in dialogue)
+        {
+            dialogueText.text += c;                     // 한 글자씩 추가
+            yield return new WaitForSeconds(0.05f);     // 타이핑 속도 조절
+        }
+
+        // 대사 출력 완료 후 3초 대기 후 자동 숨김
+        yield return new WaitForSeconds(3f);
+        HideDialogue();
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.I))
@@ -131,6 +186,12 @@ public class UIManager : MonoBehaviour, IUIManager
             {
                 ShowInventoryUI();
             }
+        }
+
+        // 스페이스바 누르면 대사창 숨기기
+        if (Input.GetKeyDown(KeyCode.Space) && dialoguePanel != null && dialoguePanel.activeSelf)
+        {
+            HideDialogue();
         }
     }
 }
