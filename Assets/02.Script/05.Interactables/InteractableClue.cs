@@ -8,9 +8,11 @@ public class InteractableClue : MonoBehaviour, IInteractable
     [TextArea(3, 10)]
     [SerializeField] private string description;
     [SerializeField] private Sprite icon;
-
+    
     [Header("Dialogue")]
-    [SerializeField] private string playerDialogue = "이게 뭐지?";
+    [SerializeField] private string speaker = "소년";
+    [TextArea(2, 5)]
+    [SerializeField] private string dialogue = "이게 뭐지?";
 
     public string InteractionPrompt => $"[F] {clueName} 조사하기";
 
@@ -23,16 +25,16 @@ public class InteractableClue : MonoBehaviour, IInteractable
     {
         ClueItem clue = new ClueItem(clueId, clueName, description);
         player.Inventory.AddItem(clue);
-
+        
         GameManager.Instance.ClueTracker.RegisterClue(clueId);
-
-        // 대사 표시
+        
+        // Inspector에서 설정한 대사 표시
         var uiManager = FindAnyObjectByType<UIManager>();
-        if (!string.IsNullOrEmpty(playerDialogue))
+        if (!string.IsNullOrEmpty(dialogue))
         {
-            uiManager?.ShowDialogue("소년", playerDialogue);
+            uiManager?.ShowDialogue(speaker, dialogue);
         }
-
+        
         gameObject.SetActive(false);
     }
 

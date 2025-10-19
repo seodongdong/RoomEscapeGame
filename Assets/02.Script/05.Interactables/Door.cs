@@ -2,12 +2,16 @@ using UnityEngine;
 
 public class Door : MonoBehaviour, IInteractable
 {
+    [Header("Door Settings")]
     [SerializeField] private bool isLocked = true;
     [SerializeField] private string requiredKeyId;
     [SerializeField] private bool requiresGirl;
     
     [Header("Dialogue")]
+    [SerializeField] private string speaker = "소년";
+    [TextArea(2, 5)]
     [SerializeField] private string lockedDialogue = "잠겨있다...";
+    [TextArea(2, 5)]
     [SerializeField] private string openDialogue = "문이 열렸다!";
     
     public string InteractionPrompt
@@ -47,7 +51,7 @@ public class Door : MonoBehaviour, IInteractable
             
             if (!string.IsNullOrEmpty(openDialogue))
             {
-                uiManager?.ShowDialogue("소년", openDialogue);
+                uiManager?.ShowDialogue(speaker, openDialogue);
             }
         }
         else
@@ -56,7 +60,7 @@ public class Door : MonoBehaviour, IInteractable
             
             if (!string.IsNullOrEmpty(lockedDialogue))
             {
-                uiManager?.ShowDialogue("소년", lockedDialogue);
+                uiManager?.ShowDialogue(speaker, lockedDialogue);
             }
         }
     }
