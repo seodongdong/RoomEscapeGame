@@ -1,5 +1,6 @@
 using UnityEngine;
 
+
 public class Door : MonoBehaviour, IInteractable
 {
     [Header("Door Settings")]
@@ -20,8 +21,8 @@ public class Door : MonoBehaviour, IInteractable
         {
             if (isLocked)
             {
-                return requiresGirl 
-                    ? "[F] 문 열기 (소녀가 필요합니다)" 
+                return requiresGirl
+                    ? "[F] 문 열기 (소녀가 필요합니다)"
                     : "[F] 문 열기 (열쇠가 필요합니다)";
             }
             return "[F] 문 열기";

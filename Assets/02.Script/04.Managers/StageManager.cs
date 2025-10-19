@@ -15,6 +15,10 @@ public class StageManager : IStageManager
         _currentStage = stageNumber;                    // 현재 스테이지 업데이트
         OnStateChanged?.Invoke(_currentStage);          // 이벤트 발생
         Debug.Log($"스테이지 로드 : {_currentStage}");
+
+        // 씬 로드 추가
+        string sceneName = $"Stage{stageNumber}";
+
     }
 
     public void CompleteStage()
