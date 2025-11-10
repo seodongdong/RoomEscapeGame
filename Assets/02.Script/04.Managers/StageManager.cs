@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // 스테이지 매니저 인터페이스 구현 클래스
 
@@ -19,7 +20,17 @@ public class StageManager : IStageManager
         // 씬 로드 추가
         string sceneName = $"Stage{stageNumber}";
 
-    }
+		// 씬이 존재하는지 체크 (옵션)
+		if (Application.CanStreamedLevelBeLoaded(sceneName))
+		{
+			SceneManager.LoadScene(sceneName);
+			Debug.Log($"스테이지 {stageNumber} 로드: {sceneName}");
+		}
+		else
+		{
+			Debug.LogWarning($"씬을 찾을 수 없음: {sceneName}");
+		}
+	}
 
     public void CompleteStage()
     {
