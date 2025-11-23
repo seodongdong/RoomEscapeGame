@@ -1,7 +1,5 @@
 using UnityEngine;
 
-// 
-
 public class Door : MonoBehaviour, IInteractable
 {
     [Header("Door Settings")]
@@ -10,11 +8,11 @@ public class Door : MonoBehaviour, IInteractable
     [SerializeField] private bool requiresGirl;
     
     [Header("Dialogue")]
-    [SerializeField] private string speaker = "소년";
+    [SerializeField] private string speaker = "";
     [TextArea(2, 5)]
-    [SerializeField] private string lockedDialogue = "잠겨있다...";
+    [SerializeField] private string lockedDialogue = "";
     [TextArea(2, 5)]
-    [SerializeField] private string openDialogue = "문이 열렸다!";
+    [SerializeField] private string openDialogue = "";
     
     public string InteractionPrompt
     {
@@ -22,8 +20,8 @@ public class Door : MonoBehaviour, IInteractable
         {
             if (isLocked)
             {
-                return requiresGirl
-                    ? "[F] 문 열기 (소녀가 필요합니다)"
+                return requiresGirl 
+                    ? "[F] 문 열기 (소녀가 필요합니다)" 
                     : "[F] 문 열기 (열쇠가 필요합니다)";
             }
             return "[F] 문 열기";

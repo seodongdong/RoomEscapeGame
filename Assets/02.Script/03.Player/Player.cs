@@ -73,7 +73,7 @@ public class Player : MonoBehaviour, IPlayer
         {
             // 현재 게임 상태 확인 
             var state = GameManager.Instance.StateManager.CurrentState;
-            if (state == GameState.Puzzle || state == GameState.Paused || state == GameState.Dialogue)
+            if (state == GameState.Puzzle || state == GameState.Paused)
             {
                 return;
             }

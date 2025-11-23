@@ -12,7 +12,7 @@ public class UIManager : MonoBehaviour, IUIManager
     [SerializeField] private TextMeshProUGUI interactionText;
     [SerializeField] private GameObject inventoryPanel;
     [SerializeField] private Image healthBar;
-    [SerializeField] private TextMeshProUGUI healthText;
+    //[SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private GameObject timerPanel;
     [SerializeField] private TextMeshProUGUI timerText;
     
@@ -67,10 +67,10 @@ public class UIManager : MonoBehaviour, IUIManager
             healthBar.fillAmount = (float)current / max;
         }
 
-        if (healthText != null)             // 체력 텍스트가 할당되어 있는지 확인
-        {
-            healthText.text = $"{current} / {max}";
-        }
+        //if (healthText != null)             // 체력 텍스트가 할당되어 있는지 확인
+        //{
+        //    healthText.text = $"{current} / {max}";
+        //}
     }
 
     public void StartTimer(float duration)
@@ -156,6 +156,12 @@ public class UIManager : MonoBehaviour, IUIManager
         }
 
         dialoguePanel?.SetActive(false);
+
+        // 대사창이 닫히면 게임 상태를 다시 Playing으로 변경
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.StateManager.ChangeState(GameState.Playing);
+        }
     }
 
     private IEnumerator TypeDialogue(string dialogue)
