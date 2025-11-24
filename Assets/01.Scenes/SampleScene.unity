@@ -1100,7 +1100,7 @@ MonoBehaviour:
   m_text: "\uC5EC\uAE30\uAC00 \uC5B4\uB514\uC9C0...?"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c7f3c6fd3a429444e84be6c1ce9bb3d6, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2740270288395057865, guid: c7f3c6fd3a429444e84be6c1ce9bb3d6, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1550,7 +1550,7 @@ MonoBehaviour:
   m_text: "\uC18C\uB144"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c7f3c6fd3a429444e84be6c1ce9bb3d6, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2740270288395057865, guid: c7f3c6fd3a429444e84be6c1ce9bb3d6, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1897,7 +1897,7 @@ MonoBehaviour:
   m_text: '02 : 00'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c7f3c6fd3a429444e84be6c1ce9bb3d6, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2740270288395057865, guid: c7f3c6fd3a429444e84be6c1ce9bb3d6, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2052,7 +2052,7 @@ MonoBehaviour:
   m_text: '[F] Investigate'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c7f3c6fd3a429444e84be6c1ce9bb3d6, type: 2}
-  m_sharedMaterial: {fileID: 0}
+  m_sharedMaterial: {fileID: 2740270288395057865, guid: c7f3c6fd3a429444e84be6c1ce9bb3d6, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2508,7 +2508,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Stage1_DiaryClue
   clueId: dustybook
-  clueName: Dusty Book
+  clueName: Dusty Books
   description: 
   showNameInPrompt: 0
   isCollectable: 0
@@ -2685,7 +2685,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a194e009c551248c1844303dad0c84f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
-  walkSpeed: 5
+  walkSpeed: 4
   runSpeed: 8
   gravity: -9.81
   cameraTransform: {fileID: 330585546}
