@@ -55,4 +55,16 @@ public class PlayerInventory : IInventory
     {
         return _itemCounts.ContainsKey(itemId) ? _itemCounts[itemId] : 0;
     }
+
+    public List<IItem> GetAllItems()
+    {
+        List<IItem> itemList = new List<IItem>();
+        
+        foreach (var item in _items.Values)
+        {
+            itemList.Add(item);
+        }
+        
+        return itemList;
+    }
 }
