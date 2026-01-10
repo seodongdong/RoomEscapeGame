@@ -1,70 +1,69 @@
-using UnityEngine;
 using System.Collections.Generic;
-
-// 플레이어 인벤토리를 관리하는 클래스
+using UnityEngine;
 
 public class PlayerInventory : IInventory
 {
-    // 아이템 저장을 위한 딕셔너리
     private Dictionary<string, IItem> _items = new Dictionary<string, IItem>();
     private Dictionary<string, int> _itemCounts = new Dictionary<string, int>();
 
-    // 아이템 추가
     public bool AddItem(IItem item)
     {
-        if (!_items.ContainsKey(item.ItemId))   // 아이템이 없으면 새로 추가
+        if (!_items.ContainsKey(item.ItemId))
         {
-            _items[item.ItemId] = item;     // 아이템 등록
-            _itemCounts[item.ItemId] = 0;   // 개수 초기화
+            _items[item.ItemId] = item;
+            _itemCounts[item.ItemId] = 0;
         }
         
-        _itemCounts[item.ItemId]++;         // 아이템 개수 증가
+        _itemCounts[item.ItemId]++;
         Debug.Log($"{item.ItemName} 획득! (x{_itemCounts[item.ItemId]})");
         return true;
     }
 
-    // 아이템 제거
     public bool RemoveItem(IItem item)
     {
-        if (!HasItem(item.ItemId)) return false;    // 아이템이 없으면 제거 불가
-
-        _itemCounts[item.ItemId]--;                 // 아이템 개수 감소
-        if (_itemCounts[item.ItemId] <= 0)          // 개수가 0이 되면 아이템 제거
+        if (!HasItem(item.ItemId)) return false;
+        
+        _itemCounts[item.ItemId]--;
+        if (_itemCounts[item.ItemId] <= 0)
         {
-            _items.Remove(item.ItemId);             // 아이템 등록 해제
-            _itemCounts.Remove(item.ItemId);        // 개수 정보 제거
+            _items.Remove(item.ItemId);
+            _itemCounts.Remove(item.ItemId);
         }
-
         return true;
     }
 
-    // 아이템 보유 여부 확인
     public bool HasItem(string itemId)
     {
         return _items.ContainsKey(itemId) && _itemCounts[itemId] > 0;
     }
 
-    // 아이템 정보 가져오기
     public IItem GetItem(string itemId)
     {
         return _items.ContainsKey(itemId) ? _items[itemId] : null;
     }
 
-    // 아이템 개수 가져오기
     public int GetItemCount(string itemId)
     {
         return _itemCounts.ContainsKey(itemId) ? _itemCounts[itemId] : 0;
     }
 
+    // ⭐ 모든 아이템 반환 메서드
     public List<IItem> GetAllItems()
     {
         List<IItem> itemList = new List<IItem>();
         
-        foreach (var item in _items.Values)
+        Debug.Log($"=== GetAllItems 호출 ===");
+        Debug.Log($"Dictionary 크기: {_items.Count}");
+        
+        foreach (var kvp in _items)
         {
-            itemList.Add(item);
+            Debug.Log($"  키: {kvp.Key}, 값: {kvp.Value.ItemName}, IsClue: {kvp.Value.IsClue}");
+            
+            // 모든 아이템 추가 (IsClue 체크는 나중에)
+            itemList.Add(kvp.Value);
         }
         
+        Debug.Log($"반환 아이템 개수: {itemList.Count}");
         return itemList;
     }
 }

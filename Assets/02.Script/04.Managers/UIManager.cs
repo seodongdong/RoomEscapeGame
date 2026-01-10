@@ -1,18 +1,17 @@
+// ==================== UIManager.cs ⭐ 수정됨 (인벤토리 관련 제거) ====================
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
-
-// UI 매니저 클래스
 
 public class UIManager : MonoBehaviour, IUIManager
 {
     [Header("UI References")]
     [SerializeField] private GameObject interactionPrompt;
     [SerializeField] private TextMeshProUGUI interactionText;
-    [SerializeField] private GameObject inventoryPanel;
+    // ⭐ inventoryPanel 제거 - InventoryUIManager가 담당
     [SerializeField] private Image healthBar;
-    //[SerializeField] private TextMeshProUGUI healthText;
+    [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private GameObject timerPanel;
     [SerializeField] private TextMeshProUGUI timerText;
     
@@ -26,19 +25,20 @@ public class UIManager : MonoBehaviour, IUIManager
 
     private void Start()
     {
-        HideInteractionPrompt();            // 시작 시 상호작용 프롬프트 숨기기
-        HideInventoryUI();                    // 시작 시 인벤토리 숨기기
-        timerPanel?.SetActive(false);       // 타이머 패널 숨기기
+        HideInteractionPrompt();
+        // ⭐ HideInventoryUI() 제거
+        HideDialogue();
+        timerPanel?.SetActive(false);
     }
 
     public void ShowInteractionPrompt(string text)
     {
         if (interactionPrompt != null)
         {
-            interactionPrompt.SetActive(true);  // 프롬프트 활성화
-            if (interactionText != null)        // 텍스트 설정
+            interactionPrompt.SetActive(true);
+            if (interactionText != null)
             {
-                interactionText.text = text;    // 상호작용 텍스트 설정
+                interactionText.text = text;
             }
         }
     }
@@ -48,29 +48,20 @@ public class UIManager : MonoBehaviour, IUIManager
         interactionPrompt?.SetActive(false);
     }
 
-    public void ShowInventoryUI()
-    {
-        inventoryPanel?.SetActive(true);
-        Time.timeScale = 0;     // 게임 일시정지
-    }
-
-    public void HideInventoryUI()
-    {
-        inventoryPanel?.SetActive(false);
-        Time.timeScale = 1;     // 게임 재개
-    }
+    // ⭐ ShowInventoryUI() 제거 - InventoryUIManager가 담당
+    // ⭐ HideInventoryUI() 제거 - InventoryUIManager가 담당
 
     public void UpdateHealthUI(int current, int max)
     {
-        if (healthBar != null)              // 체력 바가 할당되어 있는지 확인
+        if (healthBar != null)
         {
             healthBar.fillAmount = (float)current / max;
         }
 
-        //if (healthText != null)             // 체력 텍스트가 할당되어 있는지 확인
-        //{
-        //    healthText.text = $"{current} / {max}";
-        //}
+        if (healthText != null)
+        {
+            healthText.text = $"{current} / {max}";
+        }
     }
 
     public void StartTimer(float duration)
@@ -99,8 +90,6 @@ public class UIManager : MonoBehaviour, IUIManager
         timerPanel?.SetActive(false);
     }
 
-    // 타이머 코루틴 
-    // duration 초 동안 타이머를 작동시키며, 30초 이하일 때 텍스트 색상을 빨간색으로 변경
     private IEnumerator TimerCoroutine(float duration)
     {
         float remaining = duration;
@@ -108,7 +97,7 @@ public class UIManager : MonoBehaviour, IUIManager
         while (remaining > 0)
         {
             remaining -= Time.deltaTime;
-
+            
             if (timerText != null)
             {
                 int minutes = Mathf.FloorToInt(remaining / 60);
@@ -120,22 +109,23 @@ public class UIManager : MonoBehaviour, IUIManager
                     timerText.color = Color.red;
                 }
             }
+
             yield return null;
         }
     }
 
-    // 대사 시스템 구현
+    // ==================== 대사 표시 시스템 ====================
     public void ShowDialogue(string speaker, string dialogue)
     {
         if (dialoguePanel != null)
         {
             dialoguePanel.SetActive(true);
-
+            
             if (speakerText != null)
             {
                 speakerText.text = speaker;
             }
-
+            
             if (dialogueText != null)
             {
                 if (_dialogueCoroutine != null)
@@ -154,50 +144,46 @@ public class UIManager : MonoBehaviour, IUIManager
             StopCoroutine(_dialogueCoroutine);
             _dialogueCoroutine = null;
         }
-
+        
         dialoguePanel?.SetActive(false);
-
-        // 대사창이 닫히면 게임 상태를 다시 Playing으로 변경
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.StateManager.ChangeState(GameState.Playing);
-        }
     }
 
     private IEnumerator TypeDialogue(string dialogue)
     {
         dialogueText.text = "";
-
+        
+        // 타이핑 효과
         foreach (char c in dialogue)
         {
-            dialogueText.text += c;                     // 한 글자씩 추가
-            yield return new WaitForSeconds(0.05f);     // 타이핑 속도 조절
+            dialogueText.text += c;
+            yield return new WaitForSeconds(0.03f);
         }
-
-        // 대사 출력 완료 후 3초 대기 후 자동 숨김
-        yield return new WaitForSeconds(3f);
+        
+        // 대기 시간: 2초
+        yield return new WaitForSeconds(2f);
         HideDialogue();
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            // 인벤토리 토글
-            if (inventoryPanel != null && inventoryPanel.activeSelf)
-            {
-                HideInventoryUI();
-            }
-            else
-            {
-                ShowInventoryUI();
-            }
-        }
-
-        // 스페이스바 누르면 대사창 숨기기
+        // ⭐ I키 인벤토리 관련 코드 제거 - InventoryUIManager가 담당
+        
+        // 대사 중 스페이스바로 스킵
         if (Input.GetKeyDown(KeyCode.Space) && dialoguePanel != null && dialoguePanel.activeSelf)
         {
             HideDialogue();
         }
+    }
+    
+    // ⭐ 인벤토리 관련 메서드는 IUIManager 인터페이스에서도 제거해야 함
+    // 아래는 호환성을 위해 빈 메서드로 남겨둠 (나중에 인터페이스에서 제거)
+    public void ShowInventoryUI()
+    {
+        // InventoryUIManager가 담당
+    }
+    
+    public void HideInventoryUI()
+    {
+        // InventoryUIManager가 담당
     }
 }
