@@ -139,6 +139,20 @@ public class Door : MonoBehaviour, IInteractable
 			Debug.Log("이 문은 다른 방법으로 열어야 합니다.");
 			uiManager?.ShowDialogue(speaker, lockedDialogue);
 		}
+
+		if (CanInteract(player))
+    	{
+        	isLocked = false;
+        
+        	// ⭐ 열쇠 제거 (필요한 경우)
+        	if (!string.IsNullOrEmpty(requiredKeyId))
+        	{
+           	 	var inventory = player.Inventory as PlayerInventory;
+            	inventory?.UseItem(requiredKeyId);
+        	}
+        
+        	uiManager?.ShowDialogue(speaker, openDialogue);
+    	}
 	}
 
 	// ⭐ 문 열기 처리를 별도 메서드로 분리

@@ -32,6 +32,16 @@ public class PlayerInventory : IInventory
         return true;
     }
 
+    public bool UseItem(string itemId)
+    {
+        var item = GetItem(itemId);
+        if (item == null) return false;
+    
+        RemoveItem(item);
+        Debug.Log($"{item.ItemName} 사용 완료!");
+        return true;
+    }
+
     public bool HasItem(string itemId)
     {
         return _items.ContainsKey(itemId) && _itemCounts[itemId] > 0;
@@ -66,4 +76,5 @@ public class PlayerInventory : IInventory
         Debug.Log($"반환 아이템 개수: {itemList.Count}");
         return itemList;
     }
+    
 }

@@ -25,6 +25,12 @@ public abstract class PuzzleBase : MonoBehaviour, IPuzzle
 		GameManager.Instance.StateManager.ChangeState(GameState.Puzzle);
 		puzzleUI?.SetActive(true);
 		Time.timeScale = 0;
+
+		// 커서 표시
+		Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+		Debug.Log($"퍼즐 시작: {puzzleId}");
 	}
 
 	// 퍼즐 해결 확인 메서드
@@ -45,6 +51,11 @@ public abstract class PuzzleBase : MonoBehaviour, IPuzzle
 		_isSolved = true;
 		puzzleUI?.SetActive(false);
 		Time.timeScale = 1;
+
+		// 커서 숨기기
+		Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
 		GameManager.Instance.StateManager.ChangeState(GameState.Playing);
 		OnPuzzleSolved?.Invoke();
 		Debug.Log($"퍼즐 해결: {puzzleId}");
@@ -55,6 +66,11 @@ public abstract class PuzzleBase : MonoBehaviour, IPuzzle
 	{
 		puzzleUI?.SetActive(false);
 		Time.timeScale = 1;
+
+		// 커서 숨기기
+		Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
 		GameManager.Instance.StateManager.ChangeState(GameState.Playing);
 	}
 }
