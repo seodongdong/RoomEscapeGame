@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3385070231930955233}
   - component: {fileID: 2666454763834130916}
   m_Layer: 7
-  m_Name: DollHouse_Bed(Prefab)
+  m_Name: puzzle_bed
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46ebcedd3d927442ca8212ba56384caa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractableClue
-  clueId: Puzzle_bed
+  clueId: puzzle_bed
   clueName: "\uC778\uD615\uCE68\uB300"
   description: "\uC778\uD615\uC774 \uB215\uB294 \uCE68\uB300\uB2E4."
   icon: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}

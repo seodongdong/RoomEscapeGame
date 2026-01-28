@@ -41,15 +41,23 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
         
         // 게임 상태 변경
         GameManager.Instance.StateManager.ChangeState(GameState.Puzzle);
-        
-        // 플레이어 조작 비활성화
-        if (_player != null)
+
+		// ⭐ 상호작용 프롬프트 숨기기 (추가!)
+		var uiManager = FindAnyObjectByType<UIManager>();
+		uiManager?.HideInteractionPrompt();
+
+		// 플레이어 조작 비활성화
+		if (_player != null)
         {
             _player.enabled = false;
         }
-        
-        // 원래 카메라 위치 저장
-        _originalCameraParent = _mainCamera.transform.parent;
+
+		// ⭐ 커서 표시 및 잠금 해제 (추가!)
+		Cursor.lockState = CursorLockMode.None;
+		Cursor.visible = true;
+
+		// 원래 카메라 위치 저장
+		_originalCameraParent = _mainCamera.transform.parent;
         _originalCameraPosition = _mainCamera.transform.position;
         _originalCameraRotation = _mainCamera.transform.rotation;
         
@@ -60,67 +68,62 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
         StartCoroutine(TransitionCamera(true));
     }
 
-    // 카메라 전환 코루틴
-    protected virtual IEnumerator TransitionCamera(bool toPuzzle)
-    {
-        Vector3 startPos = _mainCamera.transform.position;
-        Quaternion startRot = _mainCamera.transform.rotation;
-        
-        Vector3 endPos;
-        Quaternion endRot;
-        
-        if (toPuzzle)
-        {
-            // 퍼즐 카메라 위치로
-            endPos = puzzleCameraPosition.position;
-            endRot = puzzleCameraPosition.rotation;
-        }
-        else
-        {
-            // 원래 위치로
-            endPos = _originalCameraPosition;
-            endRot = _originalCameraRotation;
-        }
-        
-        float elapsed = 0f;
-        
-        while (elapsed < cameraTransitionDuration)
-        {
-            elapsed += Time.unscaledDeltaTime; // Time.timeScale 영향 안받음
-            float t = cameraTransitionCurve.Evaluate(elapsed / cameraTransitionDuration);
-            
-            _mainCamera.transform.position = Vector3.Lerp(startPos, endPos, t);
-            _mainCamera.transform.rotation = Quaternion.Slerp(startRot, endRot, t);
-            
-            yield return null;
-        }
-        
-        _mainCamera.transform.position = endPos;
-        _mainCamera.transform.rotation = endRot;
-        
-        if (toPuzzle)
-        {
-            // 퍼즐 UI 표시
-            if (puzzleUI != null)
-            {
-                puzzleUI.SetActive(true);
-            }
-            
-            OnPuzzleStarted();
-        }
-        else
-        {
-            // 카메라를 다시 플레이어 자식으로
-            _mainCamera.transform.SetParent(_originalCameraParent);
-            _mainCamera.transform.localPosition = Vector3.up * 0.6f;
-            _mainCamera.transform.localRotation = Quaternion.identity;
-            
-            OnPuzzleExited();
-        }
-    }
+	// 카메라 전환 코루틴
+	protected virtual IEnumerator TransitionCamera(bool toPuzzle)
+	{
+		Vector3 startPos = _mainCamera.transform.position;
+		Quaternion startRot = _mainCamera.transform.rotation;
 
-    // 하위 클래스에서 오버라이드 가능
-    protected virtual void OnPuzzleStarted()
+		Vector3 endPos;
+		Quaternion endRot;
+
+		if (toPuzzle)
+		{
+			endPos = puzzleCameraPosition.position;
+			endRot = puzzleCameraPosition.rotation;
+		}
+		else
+		{
+			endPos = _originalCameraPosition;
+			endRot = _originalCameraRotation;
+		}
+
+		float elapsed = 0f;
+
+		while (elapsed < cameraTransitionDuration)
+		{
+			elapsed += Time.unscaledDeltaTime;
+			float t = cameraTransitionCurve.Evaluate(elapsed / cameraTransitionDuration);
+
+			_mainCamera.transform.position = Vector3.Lerp(startPos, endPos, t);
+			_mainCamera.transform.rotation = Quaternion.Slerp(startRot, endRot, t);
+
+			yield return null;
+		}
+
+		// 최종 위치/회전 설정
+		_mainCamera.transform.position = endPos;
+		_mainCamera.transform.rotation = endRot;
+
+		if (toPuzzle)
+		{
+			if (puzzleUI != null)
+			{
+				puzzleUI.SetActive(true);
+			}
+			OnPuzzleStarted();
+		}
+		else
+		{
+			// 카메라를 다시 플레이어 자식으로 복귀
+			_mainCamera.transform.SetParent(_originalCameraParent);
+
+			OnPuzzleExited();
+		}
+	}
+
+	// 하위 클래스에서 오버라이드 가능
+	protected virtual void OnPuzzleStarted()
     {
         Debug.Log($"퍼즐 시작: {puzzleId}");
     }
@@ -171,15 +174,19 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 
     protected virtual IEnumerator ExitPuzzleCoroutine()
     {
-        yield return StartCoroutine(TransitionCamera(false));
-        
-        // 게임 상태 복귀
-        GameManager.Instance.StateManager.ChangeState(GameState.Playing);
-        
-        // 플레이어 조작 활성화
-        if (_player != null)
-        {
-            _player.enabled = true;
-        }
-    }
+		yield return StartCoroutine(TransitionCamera(false));
+
+		// 게임 상태 복귀
+		GameManager.Instance.StateManager.ChangeState(GameState.Playing);
+
+		// 플레이어 조작 활성화
+		if (_player != null)
+		{
+			_player.enabled = true;
+		}
+
+		// ⭐ 커서 다시 숨김 및 잠금 (추가!)
+		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.visible = false;
+	}
 }

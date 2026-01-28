@@ -2184,7 +2184,7 @@ Transform:
   m_GameObject: {fileID: 532769178}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.5, y: 0.5, z: 0.5}
+  m_LocalPosition: {x: -0.5, y: 0.5, z: -0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2785,7 +2785,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -4067,25 +4067,25 @@ MonoBehaviour:
     m_RotationOrder: 4
   puzzleUI: {fileID: 734412749}
   slots:
-  - itemId: Puzzle_chair
+  - itemId: puzzle_chair
     slotTransform: {fileID: 532769179}
     slotUIElement: {fileID: 1284446106}
     itemPrefab: {fileID: 8736870877488187782, guid: a0066d3cfc67c4f42aeca5ac11e1ad7f, type: 3}
     placedItem: {fileID: 0}
     isPlaced: 0
-  - itemId: Puzzle_doll
+  - itemId: puzzle_doll
     slotTransform: {fileID: 1274523812}
     slotUIElement: {fileID: 2072792657}
     itemPrefab: {fileID: 2376332617228654688, guid: 06a08098db7fb410ba9bbd7c69cc5f8a, type: 3}
     placedItem: {fileID: 0}
     isPlaced: 0
-  - itemId: Puzzle_bed
+  - itemId: puzzle_bed
     slotTransform: {fileID: 1364575508}
     slotUIElement: {fileID: 1652995156}
     itemPrefab: {fileID: 8776443754065222541, guid: 009203fe3faf341bca1e49f85a3e4c5b, type: 3}
     placedItem: {fileID: 0}
     isPlaced: 0
-  - itemId: Puzzle_table
+  - itemId: puzzle_table
     slotTransform: {fileID: 1708277237}
     slotUIElement: {fileID: 1636882393}
     itemPrefab: {fileID: 584377689458576870, guid: 02d3a857933944b02aea5bb8b84fe539, type: 3}
@@ -5098,7 +5098,7 @@ Transform:
   m_GameObject: {fileID: 1274523811}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.5, y: 0, z: 0.5}
+  m_LocalPosition: {x: -0.5, y: -0.5, z: -0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5116,6 +5116,7 @@ GameObject:
   - component: {fileID: 1284446110}
   - component: {fileID: 1284446109}
   - component: {fileID: 1284446108}
+  - component: {fileID: 1284446111}
   m_Layer: 5
   m_Name: Slot_Chair_UI
   m_TagString: Untagged
@@ -5196,7 +5197,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: Puzzle_chair
+          m_StringArgument: puzzle_chair
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1284446109
@@ -5237,6 +5238,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1284446106}
   m_CullTransparentMesh: 1
+--- !u!114 &1284446111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1284446106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1be1f043ee26c34d8c119146de7ac08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonDebug
 --- !u!1 &1296344705
 GameObject:
   m_ObjectHideFlags: 0
@@ -5956,7 +5969,7 @@ Transform:
   m_GameObject: {fileID: 1364575507}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalPosition: {x: 0.5, y: 0.5, z: -0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7087,6 +7100,7 @@ GameObject:
   - component: {fileID: 1636882397}
   - component: {fileID: 1636882396}
   - component: {fileID: 1636882395}
+  - component: {fileID: 1636882398}
   m_Layer: 5
   m_Name: Slot_Table_UI
   m_TagString: Untagged
@@ -7167,7 +7181,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: Puzzle_table
+          m_StringArgument: puzzle_table
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1636882396
@@ -7208,6 +7222,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1636882393}
   m_CullTransparentMesh: 1
+--- !u!114 &1636882398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1636882393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1be1f043ee26c34d8c119146de7ac08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonDebug
 --- !u!1 &1652995156
 GameObject:
   m_ObjectHideFlags: 0
@@ -7220,6 +7246,7 @@ GameObject:
   - component: {fileID: 1652995160}
   - component: {fileID: 1652995159}
   - component: {fileID: 1652995158}
+  - component: {fileID: 1652995161}
   m_Layer: 5
   m_Name: Slot_Bed_UI
   m_TagString: Untagged
@@ -7242,11 +7269,11 @@ RectTransform:
   - {fileID: 1296344706}
   m_Father: {fileID: 1320871217}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 200, y: 100}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -200, y: -100}
   m_SizeDelta: {x: 600, y: 600}
-  m_Pivot: {x: 0, y: 0}
+  m_Pivot: {x: 1, y: 1}
 --- !u!114 &1652995158
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7300,7 +7327,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: Puzzle_bed
+          m_StringArgument: puzzle_bed
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1652995159
@@ -7341,6 +7368,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1652995156}
   m_CullTransparentMesh: 1
+--- !u!114 &1652995161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1652995156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1be1f043ee26c34d8c119146de7ac08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonDebug
 --- !u!1 &1708277236
 GameObject:
   m_ObjectHideFlags: 0
@@ -7366,7 +7405,7 @@ Transform:
   m_GameObject: {fileID: 1708277236}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0, z: 0.5}
+  m_LocalPosition: {x: 0.5, y: -0.5, z: -0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7567,7 +7606,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1795738123}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 17.8, y: 1.5, z: 53.97}
   m_LocalScale: {x: 4, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
@@ -7580,7 +7619,7 @@ Transform:
   - {fileID: 1062544011}
   - {fileID: 436391912}
   m_Father: {fileID: 336262949}
-  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1795738125
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8359,8 +8398,8 @@ RectTransform:
   - {fileID: 2053405216}
   - {fileID: 900941484}
   - {fileID: 279368026}
-  - {fileID: 659429903}
   - {fileID: 734412750}
+  - {fileID: 659429903}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -8410,6 +8449,7 @@ MonoBehaviour:
   detailClueName: {fileID: 1226744207}
   detailDescription: {fileID: 1087958775}
   detailIcon: {fileID: 1271415036}
+  puzzleUI: {fileID: 0}
 --- !u!1 &2049190280
 GameObject:
   m_ObjectHideFlags: 0
@@ -8625,6 +8665,7 @@ GameObject:
   - component: {fileID: 2072792661}
   - component: {fileID: 2072792660}
   - component: {fileID: 2072792659}
+  - component: {fileID: 2072792662}
   m_Layer: 5
   m_Name: Slot_Doll_UI
   m_TagString: Untagged
@@ -8647,11 +8688,11 @@ RectTransform:
   - {fileID: 1528011986}
   m_Father: {fileID: 1320871217}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -200, y: -100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 200, y: 100}
   m_SizeDelta: {x: 600, y: 600}
-  m_Pivot: {x: 1, y: 1}
+  m_Pivot: {x: 0, y: 0}
 --- !u!114 &2072792659
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8705,7 +8746,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: Puzzle_doll
+          m_StringArgument: puzzle_doll
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &2072792660
@@ -8746,6 +8787,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2072792657}
   m_CullTransparentMesh: 1
+--- !u!114 &2072792662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2072792657}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1be1f043ee26c34d8c119146de7ac08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonDebug
 --- !u!1 &2092243701
 GameObject:
   m_ObjectHideFlags: 0
@@ -8770,13 +8823,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2092243701}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: 1.35}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -1.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1795738124}
-  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

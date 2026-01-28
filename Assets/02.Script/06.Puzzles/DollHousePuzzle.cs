@@ -1,111 +1,147 @@
-using UnityEngine;
+ï»¿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class DollHousePuzzle : CameraPuzzleBase
 {
-    [System.Serializable]
-    public class DollSlot
-    {
-        public string itemId;              // "doll_head"
-        public Transform slotTransform;    // 3D ½½·Ô À§Ä¡
-        public GameObject slotUIElement;   // UI ½½·Ô (Åõ¸í ¹öÆ°)
-        public GameObject itemPrefab;      // ¹èÄ¡µÉ 3D ¾ÆÀÌÅÛ
-        [HideInInspector] public GameObject placedItem; // ½ÇÁ¦ »ı¼ºµÈ ¾ÆÀÌÅÛ
-        [HideInInspector] public bool isPlaced;
-    }
+	[System.Serializable]
+	public class DollSlot
+	{
+		public string itemId;
+		public Transform slotTransform;
+		public GameObject slotUIElement;
+		public GameObject itemPrefab;
+		[HideInInspector] public GameObject placedItem;
+		[HideInInspector] public bool isPlaced;
+	}
 
-    [Header("Doll House Settings")]
-    [SerializeField] private List<DollSlot> slots;
-    [SerializeField] private Transform itemsContainer; // ¹èÄ¡µÈ ¾ÆÀÌÅÛµéÀÇ ºÎ¸ğ
-    
-    [Header("UI Buttons")]
-    [SerializeField] private UnityEngine.UI.Button exitButton;
+	[Header("Doll House Settings")]
+	[SerializeField] private List<DollSlot> slots;
+	[SerializeField] private Transform itemsContainer;
 
-    protected override void Awake()
-    {
-        base.Awake();
-        
-        // ÃÊ±âÈ­
-        foreach (var slot in slots)
-        {
-            slot.isPlaced = false;
-            slot.placedItem = null;
-        }
-        
-        // ³ª°¡±â ¹öÆ° ¿¬°á
-        if (exitButton != null)
-        {
-            exitButton.onClick.AddListener(ExitPuzzle);
-        }
-    }
+	[Header("UI Buttons")]
+	[SerializeField] private UnityEngine.UI.Button exitButton;
 
-    // UI ½½·Ô ¹öÆ°¿¡¼­ È£Ãâ
-    public void TryPlaceItem(string itemId)
-    {
-        // ÇÃ·¹ÀÌ¾î°¡ ¾ÆÀÌÅÛÀ» °¡Áö°í ÀÖ´ÂÁö È®ÀÎ
-        if (_player == null || !_player.Inventory.HasItem(itemId))
-        {
-            Debug.Log($"¾ÆÀÌÅÛÀÌ ¾ø½À´Ï´Ù: {itemId}");
-            return;
-        }
+	protected override void Awake()
+	{
+		base.Awake();
 
-        PlaceItem(itemId);
-    }
+		foreach (var slot in slots)
+		{
+			slot.isPlaced = false;
+			slot.placedItem = null;
+		}
 
-    private void PlaceItem(string itemId)
-    {
-        var slot = slots.Find(s => s.itemId == itemId);
-        if (slot == null || slot.isPlaced) return;
+		// ë‚˜ê°€ê¸° ë²„íŠ¼ ì—°ê²°
+		if (exitButton != null)
+		{
+			exitButton.onClick.RemoveAllListeners();
+			exitButton.onClick.AddListener(ExitPuzzleButton);
+			Debug.Log(">>> ë‚˜ê°€ê¸° ë²„íŠ¼ ë¦¬ìŠ¤ë„ˆ ë“±ë¡ ì™„ë£Œ");
+		}
+		else
+		{
+			Debug.LogError(">>> ExitButtonì´ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!");
+		}
+	}
 
-        slot.isPlaced = true;
-        
-        // 3D ¾ÆÀÌÅÛÀ» ½½·Ô À§Ä¡¿¡ »ı¼º
-        if (slot.itemPrefab != null && slot.slotTransform != null)
-        {
-            slot.placedItem = Instantiate(
-                slot.itemPrefab, 
-                slot.slotTransform.position, 
-                slot.slotTransform.rotation, 
-                itemsContainer
-            );
-        }
-        
-        // UI ½½·Ô ºñÈ°¼ºÈ­ (ÀÌ¹Ì ¹èÄ¡µÊ)
-        if (slot.slotUIElement != null)
-        {
-            slot.slotUIElement.SetActive(false);
-        }
-        
-        Debug.Log($"¾ÆÀÌÅÛ ¹èÄ¡ ¿Ï·á: {itemId}");
-        
-        // ÆÛÁñ ¿Ï¼º Ã¼Å©
-        CheckSolution();
-    }
+	// ë‚˜ê°€ê¸° ë²„íŠ¼ í´ë¦­ ì‹œ
+	public void ExitPuzzleButton()
+	{
+		Debug.Log(">>> ë‚˜ê°€ê¸° ë²„íŠ¼ í´ë¦­ë¨!");
+		ExitPuzzle();
+	}
 
-    protected override bool IsSolutionCorrect()
-    {
-        foreach (var slot in slots)
-        {
-            if (!slot.isPlaced) return false;
-        }
-        return true;
-    }
+	public void TryPlaceItem(string itemId)
+	{
+		Debug.Log($"=== TryPlaceItem í˜¸ì¶œë¨: [{itemId}] ===");
 
-    protected override void SolvePuzzle()
-    {
-        base.SolvePuzzle();
-        
-        // ¼º°ø ´ë»ç
-        var uiManager = FindAnyObjectByType<UIManager>();
-        uiManager?.ShowDialogue("¼Ò³â", "ÀÎÇüÀ» ¸ğµÎ Ã£¾Ò´Ù!");
-    }
+		if (_player == null)
+		{
+			Debug.LogError("Playerê°€ nullì…ë‹ˆë‹¤!");
+			return;
+		}
 
-    protected override void OnPuzzleStarted()
-    {
-        base.OnPuzzleStarted();
-        
-        // ¾È³» ´ë»ç (¼±ÅÃ)
-        var uiManager = FindAnyObjectByType<UIManager>();
-        uiManager?.ShowDialogue("", "ÀÎÇü ºÎÇ°À» ¹èÄ¡ÇÏ¼¼¿ä");
-    }
+		Debug.Log($"Player í™•ì¸ ì™„ë£Œ");
+
+		var inventory = _player.Inventory as PlayerInventory;
+		if (inventory != null)
+		{
+			var allItems = inventory.GetAllItems();
+			Debug.Log($">>> ì¸ë²¤í† ë¦¬ ì´ ê°œìˆ˜: {allItems.Count}");
+			foreach (var item in allItems)
+			{
+				Debug.Log($">>> [{item.ItemId}] = {item.ItemName}");
+			}
+		}
+
+		bool hasItem = _player.Inventory.HasItem(itemId);
+		Debug.Log($">>> HasItem({itemId}) = {hasItem}");
+
+		if (!hasItem)
+		{
+			Debug.Log($"âŒ ì•„ì´í…œì´ ì—†ìŠµë‹ˆë‹¤: [{itemId}]");
+			return;
+		}
+
+		Debug.Log($"âœ… ì•„ì´í…œ ìˆìŒ: [{itemId}]");
+		PlaceItem(itemId);
+	}
+
+	private void PlaceItem(string itemId)
+	{
+		var slot = slots.Find(s => s.itemId == itemId);
+		if (slot == null || slot.isPlaced) return;
+
+		slot.isPlaced = true;
+
+		if (slot.itemPrefab != null && slot.slotTransform != null)
+		{
+			slot.placedItem = Instantiate(
+				slot.itemPrefab,
+				slot.slotTransform.position,
+				slot.slotTransform.rotation,
+				itemsContainer
+			);
+		}
+
+		if (slot.slotUIElement != null)
+		{
+			slot.slotUIElement.SetActive(false);
+		}
+
+		Debug.Log($"ì•„ì´í…œ ë°°ì¹˜ ì™„ë£Œ: {itemId}");
+
+		CheckSolution();
+	}
+
+	protected override bool IsSolutionCorrect()
+	{
+		foreach (var slot in slots)
+		{
+			if (!slot.isPlaced) return false;
+		}
+		return true;
+	}
+
+	protected override void SolvePuzzle()
+	{
+		// â­ isSolvedë§Œ trueë¡œ ì„¤ì •
+		isSolved = true;
+
+		Debug.Log(">>> í¼ì¦ ì™„ë£Œ!");
+
+		// ì„±ê³µ ëŒ€ì‚¬ë§Œ í‘œì‹œ
+		var uiManager = FindAnyObjectByType<UIManager>();
+		uiManager?.ShowDialogue("ì†Œë…„", "ì¸í˜•ì„ ëª¨ë‘ ì°¾ì•˜ë‹¤!");
+
+	}
+
+	protected override void OnPuzzleStarted()
+	{
+		base.OnPuzzleStarted();
+
+		var uiManager = FindAnyObjectByType<UIManager>();
+		uiManager?.ShowDialogue("", "ì¸í˜• ë¶€í’ˆì„ ë°°ì¹˜í•˜ì„¸ìš”");
+	}
 }

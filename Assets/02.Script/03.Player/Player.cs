@@ -69,17 +69,23 @@ public class Player : MonoBehaviour, IPlayer
 
  private void Update()
 {
-    if (GameManager.Instance != null)
-    {
-        var state = GameManager.Instance.StateManager.CurrentState;
-        if (state == GameState.Puzzle || state == GameState.Paused)
-        {
-            return;
-        }
-    }
-    
-    // ⭐ 인벤토리가 열려있으면 조작 불가 추가
-    var inventoryUI = FindAnyObjectByType<InventoryUIManager>();
+		if (GameManager.Instance != null)
+		{
+			var state = GameManager.Instance.StateManager.CurrentState;
+			if (state == GameState.Puzzle || state == GameState.Paused)
+			{
+				// ⭐ 프롬프트 숨기기
+				if (_currentInteractable != null)
+				{
+					_currentInteractable = null;
+					_uiManager?.HideInteractionPrompt();
+				}
+				return;
+			}
+		}
+
+		// ⭐ 인벤토리가 열려있으면 조작 불가 추가
+		var inventoryUI = FindAnyObjectByType<InventoryUIManager>();
     if (inventoryUI != null && inventoryUI.IsOpen)
     {
         return;

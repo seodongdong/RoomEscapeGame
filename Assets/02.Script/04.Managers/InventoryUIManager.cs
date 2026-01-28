@@ -20,8 +20,11 @@ public class InventoryUIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI detailClueName;
     [SerializeField] private TextMeshProUGUI detailDescription;
     [SerializeField] private Image detailIcon;
-    
-    private Player _player;
+
+	[Header("Puzzle UI")]
+	[SerializeField] private GameObject puzzleUI;
+
+	private Player _player;
     private List<GameObject> _clueCards = new List<GameObject>();
     private bool _isOpen = false;
 
@@ -78,7 +81,11 @@ public class InventoryUIManager : MonoBehaviour
         
         // 단서 목록 갱신
         RefreshClueList();
-    }
+
+		SetPuzzleUIInteractable(false);
+
+
+	}
     
     public void CloseInventory()
     {
@@ -91,15 +98,34 @@ public class InventoryUIManager : MonoBehaviour
         // 커서 숨김
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        
-        // 상세보기 팝업 닫기
-        if (detailPopup != null)
+
+		SetPuzzleUIInteractable(true);
+
+		// 상세보기 팝업 닫기
+		if (detailPopup != null)
         {
             detailPopup.SetActive(false);
         }
     }
-    
-private void RefreshClueList()
+
+	// ⭐ 퍼즐 UI 상호작용 제어
+	private void SetPuzzleUIInteractable(bool interactable)
+	{
+		if (puzzleUI != null)
+		{
+			var canvasGroup = puzzleUI.GetComponent<CanvasGroup>();
+			if (canvasGroup != null)
+			{
+				canvasGroup.interactable = interactable;
+				canvasGroup.blocksRaycasts = interactable;
+
+				// ⭐ 비활성화 시 어둡게
+				canvasGroup.alpha = interactable ? 1f : 0.5f;
+			}
+		}
+	}
+
+	private void RefreshClueList()
 {
     Debug.Log("=== RefreshClueList 시작 ===");
     
@@ -282,4 +308,5 @@ private void CreateClueCard(IItem item)
             detailPopup.SetActive(false);
         }
     }
+
 }
