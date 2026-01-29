@@ -165,40 +165,48 @@ public class Player : MonoBehaviour, IPlayer
         }
     }
 
-    // 상호작용 처리
-    private void HandleInteraction()
-    {
-        RaycastHit hit;
-        float interactionDistance = 5f;
-        
-        if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, interactionDistance))
-        {
-            var interactable = hit.collider.GetComponent<IInteractable>();
-            
-            if (interactable != null && interactable != _currentInteractable)
-            {
-                SetCurrentInteractable(interactable);
-            }
-        }
-        else
-        {
-            if (_currentInteractable != null)
-            {
-                SetCurrentInteractable(null);
-            }
-        }
-        
-        if (Input.GetKeyDown(KeyCode.F) && _currentInteractable != null)      
-        {
-            if (_currentInteractable.CanInteract(this)) // 상호작용 가능 여부 확인
-            {
-                _currentInteractable.Interact(this);    // 상호작용 수행
-            }
-        }
-    }
+	// 상호작용 처리
+	private void HandleInteraction()
+	{
+		RaycastHit hit;
+		float interactionDistance = 3f;
 
-    // 현재 상호작용 가능한 오브젝트 설정
-    public void SetCurrentInteractable(IInteractable interactable)
+		if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, interactionDistance))
+		{
+			var interactable = hit.collider.GetComponent<IInteractable>();
+
+			if (interactable != null && interactable != _currentInteractable)
+			{
+				// ⭐ CanInteract 체크 추가!
+				if (interactable.CanInteract(this))
+				{
+					SetCurrentInteractable(interactable);
+				}
+				else
+				{
+					SetCurrentInteractable(null); // ⭐ 상호작용 불가하면 프롬프트 숨김
+				}
+			}
+		}
+		else
+		{
+			if (_currentInteractable != null)
+			{
+				SetCurrentInteractable(null);
+			}
+		}
+
+		if (Input.GetKeyDown(KeyCode.F) && _currentInteractable != null)
+		{
+			if (_currentInteractable.CanInteract(this))
+			{
+				_currentInteractable.Interact(this);
+			}
+		}
+	}
+
+	// 현재 상호작용 가능한 오브젝트 설정
+	public void SetCurrentInteractable(IInteractable interactable)
     {
         _currentInteractable = interactable;
         

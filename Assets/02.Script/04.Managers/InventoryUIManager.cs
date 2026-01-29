@@ -47,59 +47,106 @@ public class InventoryUIManager : MonoBehaviour
     
     private void Update()
     {
-        // I 키로 인벤토리 토글
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            if (_isOpen)
-            {
-                CloseInventory();
-            }
-            else
-            {
-                OpenInventory();
-            }
-        }
-        
-        // ESC로 닫기
-        if (Input.GetKeyDown(KeyCode.Escape) && _isOpen)
+		if (Input.GetKeyDown(KeyCode.I))
+		{
+			if (inventoryPanel != null && inventoryPanel.activeSelf)
+			{
+				Debug.Log(">>> I키: 인벤토리 닫기"); // ⭐ 추가
+				CloseInventory();
+			}
+			else
+			{
+				Debug.Log(">>> I키: 인벤토리 열기"); // ⭐ 추가
+				OpenInventory();
+			}
+		}
+
+		// ESC로 닫기
+		if (Input.GetKeyDown(KeyCode.Escape) && _isOpen)
         {
             CloseInventory();
         }
-    }
+
+	}
     
     public void OpenInventory()
     {
-        _isOpen = true;
+		Debug.Log(">>> OpenInventory 호출됨");
+
+		_isOpen = true;
         inventoryPanel.SetActive(true);
-        
-        // 게임 일시정지
-        Time.timeScale = 0;
-        
-        // 커서 표시
-        Cursor.lockState = CursorLockMode.None;
+
+		if (inventoryPanel != null)
+		{
+			inventoryPanel.SetActive(true);
+			RefreshClueList();
+
+			// ⭐ 퍼즐 UI 비활성화 (한 번만!)
+			DisablePuzzleUI(true);
+		}
+
+		// 게임 일시정지
+		if (GameManager.Instance != null)
+		{
+			var state = GameManager.Instance.StateManager.CurrentState;
+			if (state != GameState.Puzzle)
+			{
+				Time.timeScale = 0;
+			}
+		}
+
+		// 커서 표시
+		Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         
         // 단서 목록 갱신
         RefreshClueList();
-
-		SetPuzzleUIInteractable(false);
 
 
 	}
     
     public void CloseInventory()
     {
-        _isOpen = false;
-        inventoryPanel.SetActive(false);
-        
-        // 게임 재개
-        Time.timeScale = 1;
-        
-        // 커서 숨김
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+		Debug.Log(">>> CloseInventory 호출됨!"); // ⭐ 추가
 
-		SetPuzzleUIInteractable(true);
+		_isOpen = false;
+        inventoryPanel.SetActive(false);
+
+		if (inventoryPanel != null)
+		{
+			inventoryPanel.SetActive(false);
+
+			// 퍼즐 UI 다시 활성화
+			DisablePuzzleUI(false);
+		}
+
+		// 게임 재개
+		if (GameManager.Instance != null)
+		{
+			var state = GameManager.Instance.StateManager.CurrentState;
+			if (state != GameState.Puzzle)
+			{
+				Time.timeScale = 1;
+			}
+		}
+
+		// 커서 숨김
+		if (GameManager.Instance != null)
+		{
+			var state = GameManager.Instance.StateManager.CurrentState;
+			if (state == GameState.Puzzle)
+			{
+				// 퍼즐 중에는 커서 표시 유지
+				Cursor.lockState = CursorLockMode.None;
+				Cursor.visible = true;
+			}
+			else
+			{
+				// 일반 게임 중에는 커서 숨김
+				Cursor.lockState = CursorLockMode.Locked;
+				Cursor.visible = false;
+			}
+		}
 
 		// 상세보기 팝업 닫기
 		if (detailPopup != null)
@@ -108,23 +155,49 @@ public class InventoryUIManager : MonoBehaviour
         }
     }
 
-	// ⭐ 퍼즐 UI 상호작용 제어
-	private void SetPuzzleUIInteractable(bool interactable)
+	private void DisablePuzzleUI(bool disable)
 	{
-		if (puzzleUI != null)
+		// ⭐ GameState가 Puzzle일 때만 작동
+		if (GameManager.Instance != null)
 		{
-			var canvasGroup = puzzleUI.GetComponent<CanvasGroup>();
-			if (canvasGroup != null)
+			var state = GameManager.Instance.StateManager.CurrentState;
+			if (state != GameState.Puzzle)
 			{
-				canvasGroup.interactable = interactable;
-				canvasGroup.blocksRaycasts = interactable;
-
-				// ⭐ 비활성화 시 어둡게
-				canvasGroup.alpha = interactable ? 1f : 0.5f;
+				Debug.Log(">>> 현재 Puzzle 상태 아님, 스킵");
+				return; // Puzzle 상태 아니면 무시
 			}
 		}
+
+		if (puzzleUI == null)
+		{
+			Debug.LogWarning(">>> puzzleUI가 null입니다!");
+			return;
+		}
+
+		Debug.Log($">>> DisablePuzzleUI 실행: {disable}");
+
+		// CanvasGroup으로 차단
+		var canvasGroup = puzzleUI.GetComponent<CanvasGroup>();
+		if (canvasGroup == null)
+		{
+			canvasGroup = puzzleUI.AddComponent<CanvasGroup>();
+		}
+
+		canvasGroup.interactable = !disable;
+		canvasGroup.blocksRaycasts = !disable;
+		canvasGroup.alpha = disable ? 0.5f : 1f;
+
+		// 모든 버튼 비활성화
+		var buttons = puzzleUI.GetComponentsInChildren<Button>(true);
+		foreach (var button in buttons)
+		{
+			button.interactable = !disable;
+		}
+
+		Debug.Log($">>> 퍼즐 UI 차단 {disable}: 버튼 {buttons.Length}개, interactable={!disable}");
 	}
 
+	
 	private void RefreshClueList()
 {
     Debug.Log("=== RefreshClueList 시작 ===");

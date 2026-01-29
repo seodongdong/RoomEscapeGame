@@ -428,7 +428,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1062544012}
         m_TargetAssemblyTypeName: DollHousePuzzle, Assembly-CSharp
-        m_MethodName: ExitPuzzle
+        m_MethodName: ExitPuzzleButton
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -8449,7 +8449,7 @@ MonoBehaviour:
   detailClueName: {fileID: 1226744207}
   detailDescription: {fileID: 1087958775}
   detailIcon: {fileID: 1271415036}
-  puzzleUI: {fileID: 0}
+  puzzleUI: {fileID: 734412749}
 --- !u!1 &2049190280
 GameObject:
   m_ObjectHideFlags: 0
