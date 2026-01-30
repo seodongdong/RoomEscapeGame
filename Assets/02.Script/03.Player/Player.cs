@@ -169,7 +169,7 @@ public class Player : MonoBehaviour, IPlayer
 	private void HandleInteraction()
 	{
 		RaycastHit hit;
-		float interactionDistance = 3f;
+		float interactionDistance = 7f;
 
 		if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, interactionDistance))
 		{

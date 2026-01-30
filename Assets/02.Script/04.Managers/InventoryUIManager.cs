@@ -98,9 +98,6 @@ public class InventoryUIManager : MonoBehaviour
 		// 커서 표시
 		Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-        
-        // 단서 목록 갱신
-        RefreshClueList();
 
 
 	}
