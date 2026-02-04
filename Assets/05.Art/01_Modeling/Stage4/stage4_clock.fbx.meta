@@ -1,14 +1,29 @@
 fileFormatVersion: 2
-guid: f94259c7ab4c6b4469befaa440674e3c
+guid: e86ca57fdf40bcf478eab9db248879b4
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tile_Plastic_01_black
+    second: {fileID: 2100000, guid: 3f831ea2e87b54b4cbbe2e9d7256ad68, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tile_Plastic_01_red
+    second: {fileID: 2100000, guid: fae5d1230a4c44b45874986c9b8a1d06, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stage4_metal_table_clock_dish
+    second: {fileID: 2100000, guid: bdd75b15f1651954d97576ba51d00321, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
     materialSearch: 1
-    materialLocation: 0
+    materialLocation: 1
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
