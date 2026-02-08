@@ -1,27 +1,31 @@
 using UnityEngine;
 
+/// <summary>
+/// 2스테이지: 그림자 크리처
+/// 기획서: "작은 방 앞에 있던 인영크리쳐가 맵 뒤쪽 중앙으로 이동"
+/// "가만히 서서 플레이어를 빤히 응시하기만 함"
+/// </summary>
 public class Stage2_ShadowCreature : CreatureBase
 {
 	[Header("Shadow Settings")]
-	[SerializeField] private float patrolRadius = 5f;
-	[SerializeField] private Transform[] patrolPoints;
+	[SerializeField] private Transform initialPosition;
+	[SerializeField] private Transform finalPosition;
 
-	private int _currentPatrolIndex;
+	private bool _hasMoved = false;
 
 	protected override void UpdateBehavior()
 	{
-		if (patrolPoints == null || patrolPoints.Length == 0) return;
+		// 플레이어 응시
+		transform.LookAt(_player.transform);
+	}
 
-		// 순찰 지점 배회
-		Transform targetPoint = patrolPoints[_currentPatrolIndex];
+	public void MoveToFinalPosition()
+	{
+		if (_hasMoved) return;
 
-		Vector3 direction = (targetPoint.position - transform.position).normalized;
-		transform.position += direction * moveSpeed * Time.deltaTime;
+		_hasMoved = true;
+		transform.position = finalPosition.position;
 
-		// 도착 시 다음 지점으로
-		if (Vector3.Distance(transform.position, targetPoint.position) < 1f)
-		{
-			_currentPatrolIndex = (_currentPatrolIndex + 1) % patrolPoints.Length;
-		}
+		Debug.Log("[ShadowCreature] 최종 위치로 이동");
 	}
 }

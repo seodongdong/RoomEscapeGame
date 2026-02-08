@@ -1,19 +1,26 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class AltarCandyPuzzle : PuzzleBase
+/// <summary>
+/// 2스테이지: 제단 사탕 퍼즐
+/// 기획서: "맵을 참고해서 사탕을 방석 위 인형과 같은 위치로"
+/// </summary>
+public class Stage2_AltarCandyPuzzle : PuzzleBase
 {
 	[System.Serializable]
 	public class CandySlot
 	{
-		public int position;
-		public Color requiredColor;
+		public int position;            // 0~15 (방석 위치)
+		public Color requiredColor;     // 필요한 사탕 색
 		public Transform slotTransform;
 		public GameObject candyVisual;
 	}
 
-	[SerializeField] private List<CandySlot> candySlots;
-	[SerializeField] private Transform resetIncense;
+	[Header("Candy Slots")]
+	[SerializeField] private List<CandySlot> candySlots; // 5개
+
+	[Header("Reset")]
+	[SerializeField] private Transform resetIncense; // 리셋 향로
 
 	private Dictionary<int, Color> _currentPlacements = new Dictionary<int, Color>();
 
@@ -25,6 +32,7 @@ public class AltarCandyPuzzle : PuzzleBase
 		if (slot != null && slot.candyVisual != null)
 		{
 			slot.candyVisual.GetComponent<Renderer>().material.color = color;
+			slot.candyVisual.SetActive(true);
 		}
 
 		CheckSolution();
@@ -41,6 +49,8 @@ public class AltarCandyPuzzle : PuzzleBase
 				slot.candyVisual.SetActive(false);
 			}
 		}
+
+		Debug.Log("[AltarPuzzle] 퍼즐 리셋");
 	}
 
 	protected override bool IsSolutionCorrect()
@@ -58,5 +68,8 @@ public class AltarCandyPuzzle : PuzzleBase
 	protected override void SolvePuzzle()
 	{
 		base.SolvePuzzle();
+
+		// 작은 방 진입 가능
+		Debug.Log("[AltarPuzzle] 작은 방 진입 가능!");
 	}
 }

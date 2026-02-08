@@ -1,10 +1,14 @@
 using UnityEngine;
 
+/// <summary>
+/// Database 기반 단서 아이템
+/// ID만 입력하면 Database에서 자동 로드
+/// </summary>
 public class ClueItem_Enhanced : MonoBehaviour, IInteractable
 {
 	[Header("Database")]
 	[SerializeField] private ClueDatabase database;
-	[SerializeField] private string clueId; // ID만 입력하면 됨!
+	[SerializeField] private string clueId;
 
 	private ClueDatabase.ClueData _clueData;
 
@@ -25,7 +29,7 @@ public class ClueItem_Enhanced : MonoBehaviour, IInteractable
 
 			if (_clueData == null)
 			{
-				Debug.LogError($"ClueDatabase에 '{clueId}' 단서가 없습니다!");
+				Debug.LogError($"[ClueItem] Database에 '{clueId}' 단서가 없습니다!");
 			}
 		}
 	}
@@ -39,7 +43,6 @@ public class ClueItem_Enhanced : MonoBehaviour, IInteractable
 	{
 		if (_clueData == null) return;
 
-		// 단서 아이템 생성
 		ClueItem clue = new ClueItem(
 			_clueData.clueId,
 			_clueData.clueName,
@@ -49,7 +52,6 @@ public class ClueItem_Enhanced : MonoBehaviour, IInteractable
 		player.Inventory.AddItem(clue);
 		GameManager.Instance.ClueTracker.RegisterClue(_clueData.clueId);
 
-		// 대사 표시
 		var uiManager = FindAnyObjectByType<UIManager>();
 		if (!string.IsNullOrEmpty(_clueData.dialogue))
 		{
@@ -57,21 +59,5 @@ public class ClueItem_Enhanced : MonoBehaviour, IInteractable
 		}
 
 		gameObject.SetActive(false);
-	}
-
-	private void OnTriggerEnter(Collider other)
-	{
-		if (other.TryGetComponent<Player>(out var player))
-		{
-			player.SetCurrentInteractable(this);
-		}
-	}
-
-	private void OnTriggerExit(Collider other)
-	{
-		if (other.TryGetComponent<Player>(out var player))
-		{
-			player.SetCurrentInteractable(null);
-		}
 	}
 }
