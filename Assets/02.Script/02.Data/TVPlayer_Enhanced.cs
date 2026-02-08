@@ -1,17 +1,20 @@
 using UnityEngine;
 using TMPro;
-using System.Collections;
 using UnityEngine.UI;
+using System.Collections;
 
+/// <summary>
+/// Database 기반 TV 플레이어
+/// </summary>
 public class TVPlayer_Enhanced : MonoBehaviour, IInteractable
 {
 	[Header("Required Tape")]
 	[SerializeField] private string requiredTapeId;
 
-	[Header("UI References")]
+	[Header("UI")]
 	[SerializeField] private GameObject videoScreen;
 	[SerializeField] private TextMeshProUGUI narrationText;
-	[SerializeField] private Image thumbnailImage; // 선택사항
+	[SerializeField] private Image thumbnailImage;
 
 	[Header("Database")]
 	[SerializeField] private VideoTapeDatabase database;
@@ -28,7 +31,6 @@ public class TVPlayer_Enhanced : MonoBehaviour, IInteractable
 		var tape = player.Inventory.GetItem(requiredTapeId);
 		if (tape != null)
 		{
-			// Database에서 비디오 데이터 가져오기
 			var videoData = database?.GetVideo(requiredTapeId);
 
 			if (videoData != null)
@@ -37,7 +39,6 @@ public class TVPlayer_Enhanced : MonoBehaviour, IInteractable
 			}
 			else
 			{
-				// Database 없으면 아이템 Description 사용
 				StartCoroutine(PlayVideoCoroutine(tape.Description, null));
 			}
 		}
@@ -47,13 +48,11 @@ public class TVPlayer_Enhanced : MonoBehaviour, IInteractable
 	{
 		videoScreen?.SetActive(true);
 
-		// 썸네일 이미지 표시
 		if (thumbnailImage != null && videoData.thumbnailImage != null)
 		{
 			thumbnailImage.sprite = videoData.thumbnailImage;
 		}
 
-		// 나레이션 타이핑
 		if (narrationText != null)
 		{
 			narrationText.text = "";

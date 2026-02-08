@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// Database 기반 비디오테이프
+/// </summary>
 public class VideoTape_Enhanced : MonoBehaviour, IInteractable
 {
 	[Header("Database")]

@@ -1,6 +1,10 @@
 using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 소녀 캐릭터 (누나)
+/// 기획서: 첫 만남 대사, 추격전 시 플레이어 따라다니기
+/// </summary>
 public class Girl : MonoBehaviour
 {
 	[Header("Dialogue")]
@@ -10,16 +14,10 @@ public class Girl : MonoBehaviour
 	[TextArea(2, 5)]
 	[SerializeField] private string pleaDialogue = "나를 구해줘...";
 
-	[Header("Stage Hints")]
-	[SerializeField] private Transform[] hintTargets; // 스테이지별 힌트 위치
-
 	[Header("Follow Settings")]
 	[SerializeField] private bool shouldFollow;
 	[SerializeField] private float followDistance = 2f;
 	[SerializeField] private float followSpeed = 3f;
-
-	[Header("Appearance")]
-	[SerializeField] private float appearDuration = 2f;
 
 	private Player _player;
 	private IUIManager _uiManager;
@@ -42,7 +40,12 @@ public class Girl : MonoBehaviour
 		}
 	}
 
-	// 첫 만남 (인트로에서 호출)
+	#region First Meeting
+
+	/// <summary>
+	/// 첫 만남 (인트로에서 호출)
+	/// 기획서: "그 문은 안 열려." → "나를 구해줘..."
+	/// </summary>
 	public void FirstMeeting()
 	{
 		if (_hasMetPlayer) return;
@@ -53,14 +56,13 @@ public class Girl : MonoBehaviour
 
 	private IEnumerator FirstMeetingSequence()
 	{
-		// 소녀 등장
 		gameObject.SetActive(true);
 
-		// 첫 대사: "그 문은 안 열려."
+		// 첫 대사
 		_uiManager?.ShowDialogue(speaker, firstMeetingDialogue);
 		yield return new WaitForSeconds(3f);
 
-		// 두 번째 대사: "나를 구해줘..."
+		// 두 번째 대사
 		_uiManager?.ShowDialogue(speaker, pleaDialogue);
 		yield return new WaitForSeconds(3f);
 
@@ -68,28 +70,13 @@ public class Girl : MonoBehaviour
 		gameObject.SetActive(false);
 	}
 
-	// 스테이지별 힌트 제공
-	public void ShowHint(int stageIndex)
-	{
-		if (hintTargets == null || stageIndex >= hintTargets.Length) return;
+	#endregion
 
-		Transform target = hintTargets[stageIndex];
-		if (target != null)
-		{
-			gameObject.SetActive(true);
-			transform.LookAt(target);
+	#region Follow Player
 
-			StartCoroutine(HintSequence());
-		}
-	}
-
-	private IEnumerator HintSequence()
-	{
-		yield return new WaitForSeconds(appearDuration);
-		gameObject.SetActive(false);
-	}
-
-	// 추격전 시 플레이어 따라다니기
+	/// <summary>
+	/// 플레이어 따라다니기 (5스테이지 추격전)
+	/// </summary>
 	private void FollowPlayer()
 	{
 		float distance = Vector3.Distance(transform.position, _player.transform.position);
@@ -102,16 +89,26 @@ public class Girl : MonoBehaviour
 		}
 	}
 
-	// 추격전 시작 시 호출
+	/// <summary>
+	/// 추격전 시작 시 호출
+	/// 기획서: "누나...! 같이 가자!"
+	/// </summary>
 	public void StartFollowing()
 	{
 		shouldFollow = true;
 		gameObject.SetActive(true);
+
+		var uiManager = FindAnyObjectByType<UIManager>();
+		uiManager?.ShowDialogue("소년", "누나...! 같이 가자!");
 	}
 
-	// 추격전 종료 시 호출
+	/// <summary>
+	/// 추격전 종료 시 호출
+	/// </summary>
 	public void StopFollowing()
 	{
 		shouldFollow = false;
 	}
+
+	#endregion
 }

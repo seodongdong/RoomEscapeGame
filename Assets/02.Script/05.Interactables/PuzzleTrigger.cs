@@ -1,47 +1,44 @@
 using UnityEngine;
 
+/// <summary>
+/// 퍼즐 시작 트리거
+/// </summary>
 public class PuzzleTrigger : MonoBehaviour, IInteractable
 {
-    [SerializeField] private MonoBehaviour puzzleComponent; // ← 변경!
-    [SerializeField] private string promptText = "퍼즐";
-    
-    private IPuzzle _puzzle;
-    
-    private void Awake()
-    {
-        _puzzle = puzzleComponent as IPuzzle;
-        
-        if (_puzzle == null)
-        {
-            Debug.LogError($"{gameObject.name}: Puzzle component가 IPuzzle을 구현하지 않습니다!");
-        }
-    }
-    
-    public string InteractionPrompt => $"[F] {promptText} 조사하기";
+	[Header("Puzzle Reference")]
+	[SerializeField] private PuzzleBase puzzle;
 
-    public bool CanInteract(IPlayer player)
-    {
-        return _puzzle != null && !_puzzle.IsSolved;
-    }
+	[Header("Settings")]
+	[SerializeField] private string promptText = "[F] 퍼즐 시작하기";
 
-    public void Interact(IPlayer player)
-    {
-        _puzzle?.StartPuzzle();
-    }
+	public string InteractionPrompt => promptText;
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.TryGetComponent<Player>(out var player))
-        {
-            player.SetCurrentInteractable(this);
-        }
-    }
+	public bool CanInteract(IPlayer player)
+	{
+		return puzzle != null && !puzzle.IsSolved;
+	}
 
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.TryGetComponent<Player>(out var player))
-        {
-            player.SetCurrentInteractable(null);
-        }
-    }
+	public void Interact(IPlayer player)
+	{
+		if (puzzle != null)
+		{
+			puzzle.StartPuzzle();
+		}
+	}
+
+	private void OnTriggerEnter(Collider other)
+	{
+		if (other.TryGetComponent<Player>(out var player))
+		{
+			player.SetCurrentInteractable(this);
+		}
+	}
+
+	private void OnTriggerExit(Collider other)
+	{
+		if (other.TryGetComponent<Player>(out var player))
+		{
+			player.SetCurrentInteractable(null);
+		}
+	}
 }

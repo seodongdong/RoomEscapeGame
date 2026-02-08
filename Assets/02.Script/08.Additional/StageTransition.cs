@@ -1,5 +1,10 @@
 using UnityEngine;
+using System.Collections;
 
+/// <summary>
+/// 스테이지 전환 문
+/// 퍼즐 해결 시 다음 스테이지로 이동
+/// </summary>
 public class StageTransition : MonoBehaviour, IInteractable
 {
 	[Header("Transition Settings")]
@@ -14,7 +19,8 @@ public class StageTransition : MonoBehaviour, IInteractable
 	[TextArea(2, 5)]
 	[SerializeField] private string openDialogue = "다음 방으로 가보자.";
 
-	private bool _isUnlocked;
+	[Header("Effects")]
+	[SerializeField] private float transitionDelay = 2f;
 
 	public string InteractionPrompt => "[F] 문 열기";
 
@@ -27,13 +33,12 @@ public class StageTransition : MonoBehaviour, IInteractable
 	{
 		var uiManager = FindAnyObjectByType<UIManager>();
 
-		// 퍼즐 해결 필요한 경우
 		if (requiresPuzzleSolved && !string.IsNullOrEmpty(requiredPuzzleId))
 		{
-			var puzzle = FindObjectsOfType<PuzzleBase>();
+			var puzzles = FindObjectsOfType<PuzzleBase>();
 			bool puzzleSolved = false;
 
-			foreach (var p in puzzle)
+			foreach (var p in puzzles)
 			{
 				if (p.PuzzleId == requiredPuzzleId && p.IsSolved)
 				{
@@ -49,16 +54,13 @@ public class StageTransition : MonoBehaviour, IInteractable
 			}
 		}
 
-		// 전환 가능
 		uiManager?.ShowDialogue(speaker, openDialogue);
-
-		// 다음 스테이지로 이동
 		StartCoroutine(TransitionToNextStage());
 	}
 
-	private System.Collections.IEnumerator TransitionToNextStage()
+	private IEnumerator TransitionToNextStage()
 	{
-		yield return new WaitForSeconds(2f);
+		yield return new WaitForSeconds(transitionDelay);
 
 		GameManager.Instance.StageManager.LoadStage(nextStageNumber);
 	}
