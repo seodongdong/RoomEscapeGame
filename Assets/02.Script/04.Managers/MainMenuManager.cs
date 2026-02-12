@@ -64,7 +64,16 @@ public class MainMenuManager : MonoBehaviour
 	public void StartNewGame()
 	{
 		GameManager.Instance.StateManager.ChangeState(GameState.Playing);
-		GameManager.Instance.StageManager.LoadStage(1);
+
+		// firstSceneName 직접 사용
+		if (!string.IsNullOrEmpty(firstSceneName))
+		{
+			UnityEngine.SceneManagement.SceneManager.LoadScene(firstSceneName);
+		}
+		else
+		{
+			GameManager.Instance.StageManager.LoadStage(1);
+		}
 	}
 
 	public void LoadGame()

@@ -55,7 +55,29 @@ public class Player : MonoBehaviour, IPlayer
 
 	private void Update()
 	{
-		if (!CanMove()) return;
+		if (GameManager.Instance != null)
+		{
+			var state = GameManager.Instance.StateManager.CurrentState;
+
+			// 조작 차단 상태
+			if (state == GameState.Puzzle ||
+				state == GameState.Paused ||
+				state == GameState.Viewer)   // 🆕 Viewer 추가
+			{
+				if (_currentInteractable != null)
+				{
+					_currentInteractable = null;
+					_uiManager?.HideInteractionPrompt();
+				}
+
+				// Paused 상태에서만 ESC 처리
+				if (state == GameState.Paused)
+				{
+					HandleCursorToggle();
+				}
+				return;
+			}
+		}
 
 		HandleMouseLook();
 		HandleMovement();

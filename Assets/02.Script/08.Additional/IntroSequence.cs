@@ -25,8 +25,7 @@ public class IntroSequence : MonoBehaviour
 	[SerializeField] private string speaker = "소년";
 	[TextArea(2, 5)]
 	[SerializeField] private string wakeUpDialogue = "...여기가 어디지?";
-	[TextArea(2, 5)]
-	[SerializeField] private string doorLockedDialogue = "문이... 안 열려!";
+
 
 	private IUIManager _uiManager;
 

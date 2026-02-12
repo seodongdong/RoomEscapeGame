@@ -35,7 +35,7 @@ public class StageTransition : MonoBehaviour, IInteractable
 
 		if (requiresPuzzleSolved && !string.IsNullOrEmpty(requiredPuzzleId))
 		{
-			var puzzles = FindObjectsOfType<PuzzleBase>();
+			var puzzles = FindObjectsByType<PuzzleBase>(FindObjectsSortMode.None);
 			bool puzzleSolved = false;
 
 			foreach (var p in puzzles)
