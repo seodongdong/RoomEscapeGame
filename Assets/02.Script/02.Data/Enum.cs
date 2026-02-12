@@ -9,19 +9,24 @@ public enum GameState
 	Playing,
 	Paused,
 	Puzzle,
-	Chase,      // 5스테이지 추격전
+	Chase,
 	Dialogue,
+	Viewer,     // 🆕 문서 뷰어 열람 중
 	GameOver,
 	Ending
 }
 
-/// <summary>
-/// 엔딩 타입
-/// 기획서: 게임오버 / 노말(캠코더X) / 진엔딩(캠코더O)
-/// </summary>
 public enum EndingType
 {
-	GameOver,   // 범인에게 잡힘 OR 시간 초과
-	Normal,     // 소녀 구출 성공 BUT 캠코더 미수집
-	True        // 소녀 구출 성공 + 캠코더 수집
+	GameOver,
+	Normal,
+	True
+}
+
+// 🆕 단서 타입 구분
+public enum ClueType
+{
+	Document,   // 문서류 (일기, 편지, 신문) → 맵에 남음
+	Physical,   // 물리 아이템 (열쇠, 도구) → 인벤토리
+	Environment // 환경 단서 (숫자, 날짜) → 맵에 남음
 }

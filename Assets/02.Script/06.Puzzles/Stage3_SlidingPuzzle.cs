@@ -75,7 +75,7 @@ public class Stage3_SlidingPuzzle : PuzzleBase
 
 		if (IsPuzzleSolved())
 		{
-			OnPuzzleSolved();
+			HandlePuzzleSolved();
 		}
 	}
 
@@ -88,7 +88,7 @@ public class Stage3_SlidingPuzzle : PuzzleBase
 		return true;
 	}
 
-	private void OnPuzzleSolved()
+	private void HandlePuzzleSolved()
 	{
 		var currentPuzzle = puzzleSequence[_currentPuzzleIndex];
 		_collectedBodyParts.Add(currentPuzzle.bodyPartReward);

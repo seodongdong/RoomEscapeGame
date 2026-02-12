@@ -32,15 +32,23 @@ public class UIManager : MonoBehaviour, IUIManager
 	private void Start()
 	{
 		HideInteractionPrompt();
-		HideInventoryUI();
+		if (inventoryPanel != null) HideInventoryUI();
 		HideDialogue();
 		timerPanel?.SetActive(false);
 	}
 
 	private void Update()
 	{
-		HandleInventoryToggle();
-		HandleDialogueSkip();
+		// I키로 인벤토리 토글 → InventoryUI로 이전
+		// UIManager에서 제거 (InventoryUI.cs가 처리)
+
+		// 대사 중 스페이스바로 스킵
+		if (Input.GetKeyDown(KeyCode.Space) &&
+			dialoguePanel != null &&
+			dialoguePanel.activeSelf)
+		{
+			HideDialogue();
+		}
 	}
 
 	#region Interaction Prompt
@@ -68,12 +76,14 @@ public class UIManager : MonoBehaviour, IUIManager
 
 	public void ShowInventoryUI()
 	{
+		if (inventoryPanel == null) return;
 		inventoryPanel?.SetActive(true);
 		Time.timeScale = 0;
 	}
 
 	public void HideInventoryUI()
 	{
+		if (inventoryPanel == null) return;
 		inventoryPanel?.SetActive(false);
 		Time.timeScale = 1;
 	}
