@@ -1,39 +1,43 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// 3½ºÅ×ÀÌÁö: ³ìÀ½ ÀÎÇü
-/// ±âÈ¹¼­: "¾Ë¶óºä!" 3È¸ Àç»ı ½Ã½ºÅÛ
+/// ë…¹ìŒ ì¸í˜•
+/// - ê³„ì† ìƒí˜¸ì‘ìš© ì‹œ 1â†’2â†’3â†’1â†’2â†’3 ë°˜ë³µ
+/// - ìƒí˜¸ì‘ìš© í”„ë¡¬í”„íŠ¸: Raycastë¡œ ì½œë¼ì´ë”ì— ë‹¿ì„ ë•Œë§Œ í‘œì‹œ
 /// </summary>
 public class RecordingDoll : MonoBehaviour, IInteractable
 {
 	[Header("Doll Settings")]
 	[SerializeField] private string clueId = "recording_doll";
-	[SerializeField] private string deadGirlName = "¡Û¡Û¡Û";
+	[SerializeField] private string deadGirlName = "â—‹â—‹â—‹";
 	[SerializeField] private AudioClip[] recordings;
 
 	[Header("Dialogues")]
-	[SerializeField] private string dollSpeaker = "ÀÎÇü";
-	[SerializeField] private string playerSpeaker = "¼Ò³â";
+	[SerializeField] private string dollSpeaker = "ì¸í˜•";
+	[SerializeField] private string playerSpeaker = "ì†Œë…„";
 
 	[TextArea(2, 5)]
-	[SerializeField] private string dialogue1 = "¾Ë¶óºä!";
+	[SerializeField] private string dialogue1 = "ì•Œë¼ë·°!";
 
 	[TextArea(2, 5)]
-	[SerializeField] private string dialogue2 = "{0}ÀÌ°¡ ´©±¸¿¹¿ä?";
+	[SerializeField] private string dialogue2 = "{0}ì´ê°€ ëˆ„êµ¬ì˜ˆìš”?";
 
 	[TextArea(2, 5)]
-	[SerializeField] private string dialogue2_player = "...? ÀÌ»óÇÑ ¼Ò¸®°¡ µé¸°´Ù.";
+	[SerializeField] private string dialogue2_player = "...? ì´ìƒí•œ ì†Œë¦¬ê°€ ë“¤ë¦°ë‹¤.";
 
 	[TextArea(2, 5)]
-	[SerializeField] private string dialogue3 = "Àú {0}ÀÌ ¾Æ´Ï¿¹¿ä...";
+	[SerializeField] private string dialogue3 = "ì € {0}ì´ ì•„ë‹ˆì˜ˆìš”...";
 
 	[TextArea(3, 10)]
-	[SerializeField] private string clueDescription = "ÀÌ»óÇÑ ¼Ò¸®°¡ ³ìÀ½µÇ¾î ÀÖ´Â ÀÎÇü. ´©±º°¡°¡ ÀÚ½ÅÀÌ ¾Æ´Ï¶ó°í ºÎÁ¤ÇÏ´Â ¸ñ¼Ò¸®°¡ µé¸°´Ù.";
+	[SerializeField] private string clueDescription = "ì´ìƒí•œ ì†Œë¦¬ê°€ ë…¹ìŒë˜ì–´ ìˆëŠ” ì¸í˜•. ëˆ„êµ°ê°€ê°€ ìì‹ ì´ ì•„ë‹ˆë¼ê³  ë¶€ì •í•˜ëŠ” ëª©ì†Œë¦¬ê°€ ë“¤ë¦°ë‹¤.";
 
+	// â­ 1~3 ë°˜ë³µ ì¹´ìš´íŠ¸ (1-based, ëª¨ë“ˆëŸ¬ë¡œ ìˆœí™˜)
 	private int _playCount = 0;
 
-	public string InteractionPrompt => "[F] ÀÎÇü Á¶»çÇÏ±â";
+	// â­ í”„ë¡¬í”„íŠ¸ëŠ” Player Raycastê°€ ì²˜ë¦¬í•˜ë¯€ë¡œ
+	// OnTriggerEnter/Exit ì œê±° â†’ Raycast ë°©ì‹ ì‚¬ìš©
+	public string InteractionPrompt => "[F] ì¸í˜• ì¡°ì‚¬í•˜ê¸°";
 
 	public bool CanInteract(IPlayer player)
 	{
@@ -47,7 +51,10 @@ public class RecordingDoll : MonoBehaviour, IInteractable
 
 		_playCount++;
 
-		switch (_playCount)
+		// â­ 1â†’2â†’3â†’1â†’2â†’3 ìˆœí™˜ (1-based ëª¨ë“ˆëŸ¬)
+		int step = ((_playCount - 1) % 3) + 1;
+
+		switch (step)
 		{
 			case 1:
 				audioManager?.PlaySFX("doll_voice_1");
@@ -58,7 +65,6 @@ public class RecordingDoll : MonoBehaviour, IInteractable
 				audioManager?.PlaySFX("doll_voice_2");
 				string d2 = string.Format(dialogue2, deadGirlName);
 				uiManager?.ShowDialogue(dollSpeaker, d2);
-
 				StartCoroutine(ShowDelayedDialogue(uiManager, playerSpeaker, dialogue2_player, 2f));
 				break;
 
@@ -67,17 +73,14 @@ public class RecordingDoll : MonoBehaviour, IInteractable
 				string d3 = string.Format(dialogue3, deadGirlName);
 				uiManager?.ShowDialogue(dollSpeaker, d3);
 
+				// ì²˜ìŒ 3íšŒ ë„ë‹¬ ì‹œ ë‹¨ì„œ ë“±ë¡ (ì´í›„ì—” ì´ë¯¸ ë“±ë¡ë¨)
 				if (!player.Inventory.HasItem(clueId))
 				{
-					ClueItem clue = new ClueItem(clueId, "³ìÀ½ ÀÎÇü", clueDescription);
+					ClueItem clue = new ClueItem(clueId, "ë…¹ìŒ ì¸í˜•", clueDescription);
 					player.Inventory.AddItem(clue);
 					GameManager.Instance.ClueTracker.RegisterClue(clueId);
+					Debug.Log("[RecordingDoll] ë‹¨ì„œ ë“±ë¡: recording_doll");
 				}
-				break;
-
-			default:
-				int randomSound = Random.Range(0, 3);
-				audioManager?.PlaySFX($"doll_creepy_{randomSound}");
 				break;
 		}
 	}
