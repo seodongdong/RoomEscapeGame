@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 
 public class Player : MonoBehaviour, IPlayer
 {
@@ -12,14 +11,13 @@ public class Player : MonoBehaviour, IPlayer
 	[SerializeField] private Transform cameraTransform;
 	[SerializeField] private float mouseSensitivity = 2f;
 
+	[Header("Interaction Settings")]
+	[SerializeField] private float interactionDistance = 3f;
+
 	[Header("Ground Check")]
 	[SerializeField] private Transform groundCheck;
 	[SerializeField] private float groundDistance = 0.4f;
 	[SerializeField] private LayerMask groundMask;
-
-	// ❌ [Header("Health")] 제거
-	// ❌ maxHealth 제거
-	// ❌ IHealth 제거
 
 	private CharacterController _controller;
 	private IInventory _inventory;
@@ -33,20 +31,13 @@ public class Player : MonoBehaviour, IPlayer
 	public IInventory Inventory => _inventory;
 	public Transform Transform => transform;
 
-	// ❌ public IHealth Health 제거
-
 	private void Awake()
 	{
 		_controller = GetComponent<CharacterController>();
 		_inventory = new PlayerInventory();
 
-		// ❌ PlayerHealth 생성 제거
-		// ❌ OnDeath, OnHealthChanged 이벤트 제거
-
 		if (cameraTransform == null)
-		{
 			cameraTransform = GetComponentInChildren<Camera>().transform;
-		}
 
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
@@ -55,8 +46,6 @@ public class Player : MonoBehaviour, IPlayer
 	private void Start()
 	{
 		_uiManager = FindAnyObjectByType<UIManager>();
-
-		// ❌ UpdateHealthUI 호출 제거
 	}
 
 	private void Update()
@@ -77,9 +66,7 @@ public class Player : MonoBehaviour, IPlayer
 
 		var inventoryUI = FindAnyObjectByType<InventoryUIManager>();
 		if (inventoryUI != null && inventoryUI.IsOpen)
-		{
 			return;
-		}
 
 		HandleMouseLook();
 		HandleMovement();
@@ -103,9 +90,7 @@ public class Player : MonoBehaviour, IPlayer
 		_isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 
 		if (_isGrounded && _velocity.y < 0)
-		{
 			_velocity.y = -2f;
-		}
 
 		float horizontal = Input.GetAxis("Horizontal");
 		float vertical = Input.GetAxis("Vertical");
@@ -121,9 +106,7 @@ public class Player : MonoBehaviour, IPlayer
 		_controller.Move(_velocity * Time.deltaTime);
 
 		if (moveDirection.magnitude > 0.1f && _isGrounded)
-		{
 			PlayFootstepSound();
-		}
 	}
 
 	private float _footstepTimer = 0f;
@@ -146,21 +129,23 @@ public class Player : MonoBehaviour, IPlayer
 	private void HandleInteraction()
 	{
 		RaycastHit hit;
-		float interactionDistance = 7f;
 
-		if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, interactionDistance))
+		if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, interactionDistance, ~0, QueryTriggerInteraction.Collide))
 		{
 			var interactable = hit.collider.GetComponent<IInteractable>();
 
-			if (interactable != null && interactable != _currentInteractable)
+			if (interactable != null)
 			{
-				if (interactable.CanInteract(this))
+				// ⭐ 매 프레임 프롬프트 갱신 (같은 오브젝트여도)
+				_currentInteractable = interactable;
+				_uiManager?.ShowInteractionPrompt(interactable.InteractionPrompt);
+			}
+			else
+			{
+				if (_currentInteractable != null)
 				{
-					SetCurrentInteractable(interactable);
-				}
-				else
-				{
-					SetCurrentInteractable(null);
+					_currentInteractable = null;
+					_uiManager?.HideInteractionPrompt();
 				}
 			}
 		}
@@ -168,16 +153,15 @@ public class Player : MonoBehaviour, IPlayer
 		{
 			if (_currentInteractable != null)
 			{
-				SetCurrentInteractable(null);
+				_currentInteractable = null;
+				_uiManager?.HideInteractionPrompt();
 			}
 		}
 
 		if (Input.GetKeyDown(KeyCode.F) && _currentInteractable != null)
 		{
 			if (_currentInteractable.CanInteract(this))
-			{
 				_currentInteractable.Interact(this);
-			}
 		}
 	}
 
@@ -213,7 +197,6 @@ public class Player : MonoBehaviour, IPlayer
 		}
 	}
 
-	// ⭐ 잡히면 즉시 게임오버
 	public void TakeDamage(int damage)
 	{
 		Die();
@@ -227,9 +210,6 @@ public class Player : MonoBehaviour, IPlayer
 		enabled = false;
 	}
 
-	// ❌ DamageEffect 코루틴 제거
-	// ❌ UpdateHealthUI 제거
-
 	private void OnDrawGizmosSelected()
 	{
 		if (groundCheck != null)
@@ -241,7 +221,7 @@ public class Player : MonoBehaviour, IPlayer
 		if (cameraTransform != null)
 		{
 			Gizmos.color = Color.red;
-			Gizmos.DrawRay(cameraTransform.position, cameraTransform.forward * 3f);
+			Gizmos.DrawRay(cameraTransform.position, cameraTransform.forward * interactionDistance);
 		}
 	}
 }

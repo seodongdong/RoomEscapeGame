@@ -1,15 +1,18 @@
 using UnityEngine;
+using System.Collections;
 
 /// <summary>
-/// 문 (수동 아이템 선택 방식)
-/// 플레이어가 인벤토리에서 열쇠를 직접 선택해야 함
+/// 문 스크립트
+/// - requiredKeyId 없음: 그냥 잠긴 문 (lockedDialogue 출력)
+/// - requiredKeyId 있음: 열쇠 보유 시 자동으로 열림
 /// </summary>
 public class Door : MonoBehaviour, IInteractable
 {
 	[Header("Door Settings")]
 	[SerializeField] private bool isLocked = true;
-	[SerializeField] private string requiredKeyId;
+	[SerializeField] private string requiredKeyId;         // 비워두면 열쇠 없는 잠긴 문
 	[SerializeField] private string requiredKeyName = "열쇠";
+	[SerializeField] private bool consumeKey = true;       // 열쇠 사용 후 인벤토리에서 제거
 
 	[Header("Dialogue")]
 	[SerializeField] private string speaker = "소년";
@@ -18,22 +21,29 @@ public class Door : MonoBehaviour, IInteractable
 	[TextArea(2, 5)]
 	[SerializeField] private string noKeyDialogue = "열쇠가 없다.";
 	[TextArea(2, 5)]
-	[SerializeField] private string wrongKeyDialogue = "이 열쇠가 아닌 것 같다.";
-	[TextArea(2, 5)]
 	[SerializeField] private string openDialogue = "문이 열렸다!";
 
-	[Header("Animation")]
+	[Header("Open Settings")]
 	[SerializeField] private Animator doorAnimator;
+	[SerializeField] private Vector3 openOffset = new Vector3(0, 3, 0); // 애니메이터 없을 때 이동
+	[SerializeField] private float openDuration = 1f;
 
-	private InventoryUI _inventoryUI;
+	private bool _isOpen = false;
+	private bool _isMoving = false; // 이동 중 중복 클릭 방지
+	private Vector3 _closedPosition;
+
+	private void Awake()
+	{
+		_closedPosition = transform.position;
+	}
 
 	public string InteractionPrompt
 	{
 		get
 		{
-			if (!isLocked) return "[F] 문 열기";
+			if (!isLocked) return _isOpen ? "[F] 문 닫기" : "[F] 문 열기";
 			return string.IsNullOrEmpty(requiredKeyId)
-				? "[F] 문 열기 (잠김)"
+				? "[F] 문 (잠김)"
 				: $"[F] 문 열기 ({requiredKeyName} 필요)";
 		}
 	}
@@ -47,71 +57,104 @@ public class Door : MonoBehaviour, IInteractable
 	{
 		var uiManager = FindAnyObjectByType<UIManager>();
 
+		// 이동 중이면 무시
+		if (_isMoving) return;
+
+		// 잠금 해제된 문 → 열고 닫기 토글
 		if (!isLocked)
 		{
-			OpenDoor();
-			uiManager?.ShowDialogue(speaker, openDialogue);
+			if (_isOpen)
+				CloseDoor();
+			else
+				OpenDoor();
 			return;
 		}
 
-		// 열쇠가 필요 없는 잠긴 문
+		// 열쇠 없는 그냥 잠긴 문
 		if (string.IsNullOrEmpty(requiredKeyId))
 		{
 			uiManager?.ShowDialogue(speaker, lockedDialogue);
 			return;
 		}
 
-		// 인벤토리에 열쇠 있는지 확인
+		// 열쇠 필요한 문 → 인벤토리 확인
 		if (!player.Inventory.HasItem(requiredKeyId))
 		{
 			uiManager?.ShowDialogue(speaker, noKeyDialogue);
 			return;
 		}
 
-		// 🆕 인벤토리 열고 플레이어가 직접 선택
-		_inventoryUI = FindAnyObjectByType<InventoryUI>();
-		if (_inventoryUI != null)
-		{
-			// 인벤토리 열고 선택 모드 시작
-			_inventoryUI.OpenForItemSelect(requiredKeyId, (selectedId) =>
-			{
-				if (selectedId == requiredKeyId)
-				{
-					// 올바른 열쇠 선택
-					isLocked = false;
-					player.Inventory.RemoveItem(player.Inventory.GetItem(requiredKeyId));
-					OpenDoor();
-					uiManager?.ShowDialogue(speaker, openDialogue);
+		// 열쇠 보유 → 바로 열기
+		isLocked = false;
 
-					var audioManager = FindAnyObjectByType<AudioManager>();
-					audioManager?.PlaySFX("door_unlock");
-				}
-				else
-				{
-					// 잘못된 아이템 선택
-					uiManager?.ShowDialogue(speaker, wrongKeyDialogue);
-				}
-			});
-		}
-		else
+		if (consumeKey)
 		{
-			// 인벤토리 UI 없으면 자동 매칭 (fallback)
-			isLocked = false;
-			player.Inventory.RemoveItem(player.Inventory.GetItem(requiredKeyId));
-			OpenDoor();
-			uiManager?.ShowDialogue(speaker, openDialogue);
+			var key = player.Inventory.GetItem(requiredKeyId);
+			if (key != null) player.Inventory.RemoveItem(key);
 		}
+
+		OpenDoor();
+		uiManager?.ShowDialogue(speaker, openDialogue);
+
+		var audioManager = FindAnyObjectByType<AudioManager>();
+		audioManager?.PlaySFX("door_unlock");
 	}
 
 	private void OpenDoor()
 	{
+		_isOpen = true;
+		_isMoving = true;
+
+		// 콜라이더를 Trigger로 변경 (Raycast는 되지만 통과 가능)
+		var col = GetComponent<Collider>();
+		if (col != null) col.isTrigger = true;
+
 		if (doorAnimator != null)
-		{
 			doorAnimator.SetTrigger("Open");
-		}
 		else
+			StartCoroutine(SlideDoor(true));
+	}
+
+	private void CloseDoor()
+	{
+		_isOpen = false;
+		_isMoving = true;
+
+		if (doorAnimator != null)
+			doorAnimator.SetTrigger("Close");
+		else
+			StartCoroutine(SlideDoor(false));
+	}
+
+	private IEnumerator SlideDoor(bool opening)
+	{
+		Vector3 startPos = opening ? _closedPosition : _closedPosition + openOffset;
+		Vector3 endPos = opening ? _closedPosition + openOffset : _closedPosition;
+
+		float elapsed = 0f;
+		while (elapsed < openDuration)
 		{
-			gameObject.SetActive(false);
+			elapsed += Time.deltaTime;
+			float t = elapsed / openDuration;
+			transform.position = Vector3.Lerp(startPos, endPos, t);
+			yield return null;
 		}
+
+		transform.position = endPos;
+		_isMoving = false;
+
+		// 닫힐 때 콜라이더 물리 충돌 복구
+		if (!opening)
+		{
+			var col = GetComponent<Collider>();
+			if (col != null) col.isTrigger = false;
+		}
+	}
+
+	private void OnDrawGizmos()
+	{
+		Gizmos.color = Color.green;
+		Gizmos.DrawWireCube(transform.position + openOffset, transform.localScale);
+		Gizmos.DrawLine(transform.position, transform.position + openOffset);
 	}
 }
