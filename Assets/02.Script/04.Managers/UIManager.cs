@@ -3,17 +3,13 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 
-/// <summary>
-/// UI 통합 관리
-/// </summary>
 public class UIManager : MonoBehaviour, IUIManager
 {
 	[Header("UI References")]
 	[SerializeField] private GameObject interactionPrompt;
 	[SerializeField] private TextMeshProUGUI interactionText;
 	[SerializeField] private GameObject inventoryPanel;
-	[SerializeField] private Image healthBar;
-	[SerializeField] private TextMeshProUGUI healthText;
+	// ❌ healthBar, healthText 제거
 	[SerializeField] private GameObject timerPanel;
 	[SerializeField] private TextMeshProUGUI timerText;
 
@@ -39,10 +35,6 @@ public class UIManager : MonoBehaviour, IUIManager
 
 	private void Update()
 	{
-		// I키로 인벤토리 토글 → InventoryUI로 이전
-		// UIManager에서 제거 (InventoryUI.cs가 처리)
-
-		// 대사 중 스페이스바로 스킵
 		if (Input.GetKeyDown(KeyCode.Space) &&
 			dialoguePanel != null &&
 			dialoguePanel.activeSelf)
@@ -59,9 +51,7 @@ public class UIManager : MonoBehaviour, IUIManager
 		{
 			interactionPrompt.SetActive(true);
 			if (interactionText != null)
-			{
 				interactionText.text = text;
-			}
 		}
 	}
 
@@ -77,64 +67,29 @@ public class UIManager : MonoBehaviour, IUIManager
 	public void ShowInventoryUI()
 	{
 		if (inventoryPanel == null) return;
-		inventoryPanel?.SetActive(true);
+		inventoryPanel.SetActive(true);
 		Time.timeScale = 0;
 	}
 
 	public void HideInventoryUI()
 	{
 		if (inventoryPanel == null) return;
-		inventoryPanel?.SetActive(false);
+		inventoryPanel.SetActive(false);
 		Time.timeScale = 1;
 	}
 
-	private void HandleInventoryToggle()
-	{
-		if (Input.GetKeyDown(KeyCode.I))
-		{
-			if (inventoryPanel != null && inventoryPanel.activeSelf)
-			{
-				HideInventoryUI();
-			}
-			else
-			{
-				ShowInventoryUI();
-			}
-		}
-	}
-
 	#endregion
 
-	#region Health
-
-	public void UpdateHealthUI(int current, int max)
-	{
-		if (healthBar != null)
-		{
-			healthBar.fillAmount = (float)current / max;
-		}
-
-		if (healthText != null)
-		{
-			healthText.text = $"{current} / {max}";
-		}
-	}
-
-	#endregion
+	// ❌ #region Health 전체 제거
 
 	#region Timer
 
 	public void StartTimer(float duration)
 	{
-		if (timerPanel != null)
-		{
-			timerPanel.SetActive(true);
-		}
+		timerPanel?.SetActive(true);
 
 		if (_timerCoroutine != null)
-		{
 			StopCoroutine(_timerCoroutine);
-		}
 
 		_timerCoroutine = StartCoroutine(TimerCoroutine(duration));
 	}
@@ -146,7 +101,6 @@ public class UIManager : MonoBehaviour, IUIManager
 			StopCoroutine(_timerCoroutine);
 			_timerCoroutine = null;
 		}
-
 		timerPanel?.SetActive(false);
 	}
 
@@ -165,9 +119,7 @@ public class UIManager : MonoBehaviour, IUIManager
 				timerText.text = $"{minutes:00}:{seconds:00}";
 
 				if (remaining <= 30f)
-				{
 					timerText.color = Color.red;
-				}
 			}
 
 			yield return null;
@@ -185,16 +137,12 @@ public class UIManager : MonoBehaviour, IUIManager
 			dialoguePanel.SetActive(true);
 
 			if (speakerText != null)
-			{
 				speakerText.text = speaker;
-			}
 
 			if (dialogueText != null)
 			{
 				if (_dialogueCoroutine != null)
-				{
 					StopCoroutine(_dialogueCoroutine);
-				}
 				_dialogueCoroutine = StartCoroutine(TypeDialogue(dialogue));
 			}
 		}
@@ -207,7 +155,6 @@ public class UIManager : MonoBehaviour, IUIManager
 			StopCoroutine(_dialogueCoroutine);
 			_dialogueCoroutine = null;
 		}
-
 		dialoguePanel?.SetActive(false);
 	}
 
@@ -223,14 +170,6 @@ public class UIManager : MonoBehaviour, IUIManager
 
 		yield return new WaitForSeconds(autoHideDelay);
 		HideDialogue();
-	}
-
-	private void HandleDialogueSkip()
-	{
-		if (Input.GetKeyDown(KeyCode.Space) && dialoguePanel != null && dialoguePanel.activeSelf)
-		{
-			HideDialogue();
-		}
 	}
 
 	#endregion
