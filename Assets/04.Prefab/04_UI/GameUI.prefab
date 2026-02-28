@@ -1155,7 +1155,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC18C\uB144"
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c7f3c6fd3a429444e84be6c1ce9bb3d6, type: 2}
   m_sharedMaterial: {fileID: 2740270288395057865, guid: c7f3c6fd3a429444e84be6c1ce9bb3d6, type: 2}

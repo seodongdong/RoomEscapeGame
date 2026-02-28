@@ -26,7 +26,7 @@ public class Stage1_DoorWithPriorityCheck : MonoBehaviour, IInteractable
 
 	public void Interact(IPlayer player)
 	{
-		var tv = tvObject?.GetComponent<Stage1_TVPlayer>();
+		var tv = tvObject?.GetComponent<TVPlayer>();
 
 		// TV를 4번 보지 않았으면 우선순위 대사
 		if (tv != null && !tv.CanInteract(player))
