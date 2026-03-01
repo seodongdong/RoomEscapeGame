@@ -131,6 +131,6 @@ MonoBehaviour:
   zoomDuration: 0.5
   rotateSpeed: 3
   viewScale: {x: 1, y: 1, z: 1}
-  speaker: "\uC18C\uB144"
+  speaker: 
   dialogue: "\uC774\uAC8C \uBB50\uC9C0...? "
   viewerHintUI: {fileID: 0}

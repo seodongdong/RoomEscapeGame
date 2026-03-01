@@ -64,9 +64,14 @@ public class Player : MonoBehaviour, IPlayer
 			}
 		}
 
-		var inventoryUI = FindAnyObjectByType<InventoryUIManager>();
-		if (inventoryUI != null && inventoryUI.IsOpen)
-			return;
+		var inventoryUI = FindAnyObjectByType<InventoryUI_Complete>();
+		if (inventoryUI != null)
+		{
+			// 인벤토리가 열려있으면 조작 불가
+			GameObject inventoryPanel = inventoryUI.GetComponent<InventoryUI_Complete>().transform.Find("InventoryPanel")?.gameObject;
+			if (inventoryPanel != null && inventoryPanel.activeSelf)
+				return;
+		}
 
 		HandleMouseLook();
 		HandleMovement();

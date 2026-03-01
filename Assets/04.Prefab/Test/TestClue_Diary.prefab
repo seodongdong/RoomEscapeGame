@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 257867824713704693}
   - component: {fileID: 4760966933795954912}
   - component: {fileID: 4500245546284984780}
-  - component: {fileID: 8415728754186718255}
+  - component: {fileID: 2312612437863074420}
   m_Layer: 7
   m_Name: TestClue_Diary
   m_TagString: Untagged
@@ -112,7 +112,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &8415728754186718255
+--- !u!114 &2312612437863074420
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -121,18 +121,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 2284525944155910645}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46ebcedd3d927442ca8212ba56384caa, type: 3}
+  m_Script: {fileID: 11500000, guid: a4071048cae9c164eaa3a5c32e8aeb3f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InteractableClue
+  m_EditorClassIdentifier: Assembly-CSharp::DiaryClue_Final
   clueId: diary_page_1
   clueName: "\uCC22\uC5B4\uC9C4 \uC77C\uAE30\uC7A5"
-  description: 
-  icon: {fileID: 0}
-  clueType: 0
-  documentPages: []
-  canReread: 1
-  environmentImage: {fileID: 0}
-  environmentHint: 
-  speaker: "\uC18C\uB144"
-  dialogue: "\uCC22\uC5B4\uC9C4 \uC77C\uAE30\uC7A5\uC774\uB2E4... \uB204\uAC00 \uC4F4
-    \uAC70\uC9C0?"
+  pages:
+  - "2023\uB144 7\uC6D4 15\uC77C\n\n\uC624\uB298\uC740 \uCE5C\uAD6C\uAC00 \uC6B0\uB9AC\uC9D1\uC5D0
+    \uB180\uB7EC\uC654\uB2E4.\n\uB9DB\uC788\uB294 \uC74C\uC2DD\uB3C4 \uAC19\uC774
+    \uBA39\uACE0,\n\uC778\uD615\uB180\uC774\uB3C4 \uD588\uB2E4.\n\n\uC815\uB9D0 \uC7AC\uBBF8\uC788\uC5C8\uB2E4!"
+  - "2023\uB144 7\uC6D4 20\uC77C\n\n\uC624\uB298\uB3C4 \uCE5C\uAD6C\uB791 \uB180\uC558\uB2E4.\n\uC5C4\uB9C8\uAC00
+    \uB9CC\uB4E4\uC5B4\uC900 \uACFC\uC790\uAC00\n\uC815\uB9D0 \uB9DB\uC788\uC5C8\uC5B4.\n\n\uB0B4\uC77C\uB3C4
+    \uAC19\uC774 \uB180\uAE30\uB85C \uD588\uB2E4."
+  - "2023\uB144 7\uC6D4 25\uC77C\n\n...\n\n(\uD398\uC774\uC9C0\uAC00 \uCC22\uC5B4\uC838\uC788\uB2E4)"
+  itemDate: 2023.07.15
+  summary: "\uC5B4\uB9B0 \uC5EC\uC790\uC544\uC774\uAC00 \uC4F4 \uC77C\uAE30\uC7A5.
+    \uCE5C\uAD6C\uC640 \uD568\uAED8 \uB180\uC558\uB2E4\uB294 \uB0B4\uC6A9\uC774 \uC801\uD600\uC788\uB2E4."
+  speaker: 
+  firstDialogue: "\uCC22\uC5B4\uC9C4 \uC77C\uAE30\uC7A5\uC774\uB2E4... \uB204\uAC00
+    \uADF8\uB9B0 \uAC78\uAE4C?"
+  collectOnRead: 1
