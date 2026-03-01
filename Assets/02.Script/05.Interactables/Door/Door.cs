@@ -2,11 +2,13 @@ using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// 문 스크립트
-/// - requiredKeyId 없음: 그냥 잠긴 문 (lockedDialogue 출력)
-/// - requiredKeyId 있음: 열쇠 보유 시 자동으로 열림
+/// 완전한 문 스크립트
+/// - 일반 잠긴 문 (requiredKeyId 비움)
+/// - 열쇠 필요 문 (requiredKeyId 설정) - 인벤토리에서 "사용하기"만 가능
+/// - 열고 닫기 토글
+/// - 애니메이터 또는 슬라이드 이동 지원
 /// </summary>
-public class Door : MonoBehaviour, IInteractable
+public class Door : MonoBehaviour, IInteractable, IItemUsable
 {
 	[Header("Door Settings")]
 	[SerializeField] private bool isLocked = true;
@@ -19,9 +21,11 @@ public class Door : MonoBehaviour, IInteractable
 	[TextArea(2, 5)]
 	[SerializeField] private string lockedDialogue = "잠겨있다...";
 	[TextArea(2, 5)]
-	[SerializeField] private string noKeyDialogue = "열쇠가 없다.";
+	[SerializeField] private string needKeyDialogue = "열쇠가 필요할 것 같다.";
 	[TextArea(2, 5)]
 	[SerializeField] private string openDialogue = "문이 열렸다!";
+	[TextArea(2, 5)]
+	[SerializeField] private string wrongItemDialogue = "이 아이템은 여기에 사용할 수 없다.";
 
 	[Header("Open Settings")]
 	[SerializeField] private Animator doorAnimator;
@@ -37,14 +41,18 @@ public class Door : MonoBehaviour, IInteractable
 		_closedPosition = transform.position;
 	}
 
+	// ========== IInteractable ==========
 	public string InteractionPrompt
 	{
 		get
 		{
 			if (!isLocked) return _isOpen ? "[F] 문 닫기" : "[F] 문 열기";
-			return string.IsNullOrEmpty(requiredKeyId)
-				? "[F] 문 (잠김)"
-				: $"[F] 문 열기 ({requiredKeyName} 필요)";
+
+			// 열쇠 필요 여부 표시
+			if (string.IsNullOrEmpty(requiredKeyId))
+				return "[F] 문 (잠김)";
+			else
+				return $"[F] 잠긴 문 ({requiredKeyName} 필요)";
 		}
 	}
 
@@ -70,36 +78,81 @@ public class Door : MonoBehaviour, IInteractable
 			return;
 		}
 
-		// 열쇠 없는 그냥 잠긴 문
+		// 잠긴 문 → 대사만 출력
 		if (string.IsNullOrEmpty(requiredKeyId))
 		{
+			// 열쇠 없는 일반 잠긴 문
 			uiManager?.ShowDialogue(speaker, lockedDialogue);
-			return;
 		}
-
-		// 열쇠 필요한 문 → 인벤토리 확인
-		if (!player.Inventory.HasItem(requiredKeyId))
+		else
 		{
-			uiManager?.ShowDialogue(speaker, noKeyDialogue);
-			return;
+			// 열쇠 필요한 문 → 인벤토리 사용 안내
+			uiManager?.ShowDialogue(speaker, needKeyDialogue);
 		}
+	}
 
-		// 열쇠 보유 → 바로 열기
+	// ========== IItemUsable (인벤토리에서 아이템 사용) ==========
+	public bool CanUseItem(string itemId)
+	{
+		return itemId == requiredKeyId && isLocked;
+	}
+
+	public void UseItem(string itemId)
+	{
+		var uiManager = FindAnyObjectByType<UIManager>();
+
+		if (CanUseItem(itemId))
+		{
+			// 올바른 아이템 → 문 열림
+			var player = FindAnyObjectByType<Player>();
+			if (player != null)
+			{
+				UnlockAndOpen(player);
+			}
+			else
+			{
+				// Player 없으면 그냥 잠금 해제만
+				isLocked = false;
+				OpenDoor();
+				uiManager?.ShowDialogue(speaker, openDialogue);
+			}
+
+			Debug.Log($"[Door] {itemId} 사용 → 문 열림!");
+		}
+		else
+		{
+			// 잘못된 아이템
+			uiManager?.ShowDialogue(speaker, wrongItemDialogue);
+			Debug.Log($"[Door] {itemId}는 사용할 수 없음");
+		}
+	}
+
+	// ========== 문 열기 통합 메서드 ==========
+	private void UnlockAndOpen(IPlayer player)
+	{
 		isLocked = false;
 
-		if (consumeKey)
+		// 열쇠 소비
+		if (consumeKey && !string.IsNullOrEmpty(requiredKeyId))
 		{
 			var key = player.Inventory.GetItem(requiredKeyId);
-			if (key != null) player.Inventory.RemoveItem(key);
+			if (key != null)
+			{
+				player.Inventory.RemoveItem(key);
+				Debug.Log($"[Door] {requiredKeyName} 소비됨");
+			}
 		}
 
 		OpenDoor();
+
+		var uiManager = FindAnyObjectByType<UIManager>();
 		uiManager?.ShowDialogue(speaker, openDialogue);
 
 		var audioManager = FindAnyObjectByType<AudioManager>();
 		audioManager?.PlaySFX("door_unlock");
 	}
 
+	// ========== 문 열기/닫기 ==========
 	private void OpenDoor()
 	{
 		_isOpen = true;
@@ -110,9 +163,17 @@ public class Door : MonoBehaviour, IInteractable
 		if (col != null) col.isTrigger = true;
 
 		if (doorAnimator != null)
+		{
 			doorAnimator.SetTrigger("Open");
+			// 애니메이터 사용 시 이동 완료 시점을 알 수 없으므로 즉시 해제
+			_isMoving = false;
+		}
 		else
+		{
 			StartCoroutine(SlideDoor(true));
+		}
+
+		Debug.Log("[Door] 문이 열렸습니다.");
 	}
 
 	private void CloseDoor()
@@ -121,9 +182,16 @@ public class Door : MonoBehaviour, IInteractable
 		_isMoving = true;
 
 		if (doorAnimator != null)
+		{
 			doorAnimator.SetTrigger("Close");
+			_isMoving = false;
+		}
 		else
+		{
 			StartCoroutine(SlideDoor(false));
+		}
+
+		Debug.Log("[Door] 문이 닫혔습니다.");
 	}
 
 	private IEnumerator SlideDoor(bool opening)
@@ -151,6 +219,7 @@ public class Door : MonoBehaviour, IInteractable
 		}
 	}
 
+	// ========== Gizmos ==========
 	private void OnDrawGizmos()
 	{
 		Gizmos.color = Color.green;
