@@ -68,8 +68,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "19XX.XX.XX - \uCC22\uC5B4\uC9C4 \uC77C\uAE30\uC7A5"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: c7f3c6fd3a429444e84be6c1ce9bb3d6, type: 2}
-  m_sharedMaterial: {fileID: 2740270288395057865, guid: c7f3c6fd3a429444e84be6c1ce9bb3d6, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 1f11f3dc12dd6984790f5d13c17c1c6e, type: 2}
+  m_sharedMaterial: {fileID: -6193129889059925248, guid: 1f11f3dc12dd6984790f5d13c17c1c6e, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

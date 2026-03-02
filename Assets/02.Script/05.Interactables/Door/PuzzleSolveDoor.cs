@@ -120,6 +120,21 @@ public class PuzzleSolvedDoor : MonoBehaviour, IInteractable
 		}
 	}
 
+	private void CloseDoor()
+	{ 	if (!_isOpen) return;
+		_isOpen = false;
+		var col = GetComponent<Collider>();
+		if (col != null) col.enabled = true;
+		if (doorAnimator != null)
+		{
+			doorAnimator.SetTrigger("Close");
+		}
+		else
+		{
+			StartCoroutine(SlideClose());
+		}
+	}
+
 	private IEnumerator SlideOpen()
 	{
 		Vector3 targetPosition = _closedPosition + openOffset;
@@ -134,6 +149,20 @@ public class PuzzleSolvedDoor : MonoBehaviour, IInteractable
 		}
 
 		transform.position = targetPosition;
+	}
+
+	private IEnumerator SlideClose()
+	{
+		Vector3 startPosition = transform.position;
+		float elapsed = 0f;
+		while (elapsed < openDuration)
+		{
+			elapsed += Time.deltaTime;
+			float t = elapsed / openDuration;
+			transform.position = Vector3.Lerp(startPosition, _closedPosition, t);
+			yield return null;
+		}
+		transform.position = _closedPosition;
 	}
 
 	private void OnDrawGizmos()

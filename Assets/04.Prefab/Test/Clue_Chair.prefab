@@ -121,17 +121,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 4660297292374826879}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46ebcedd3d927442ca8212ba56384caa, type: 3}
+  m_Script: {fileID: 11500000, guid: b5299025c476bbf409d81263b90dd228, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractableClue
-  clueId: doll_chair
-  clueName: "\uC778\uD615 \uC758\uC790"
-  description: 
-  icon: {fileID: 0}
-  clueType: 1
-  documentPages: []
-  canReread: 1
-  environmentImage: {fileID: 0}
-  environmentHint: 
-  speaker: "\uC18C\uB144"
-  dialogue: "\uC778\uD615\uC774 \uC549\uC744 \uB9CC\uD07C \uC791\uB2E4."
+  itemId: doll_chair
+  itemName: "\uC778\uD615 \uC758\uC790"
+  itemDate: 
+  description: "\uC778\uD615\uC774 \uC549\uB294 \uC791\uC740 \uC758\uC790"
+  itemPrefab: {fileID: 4660297292374826879, guid: 3b11061acae7d7f429c9c44241f171fc, type: 3}
+  speaker: 
+  firstDialogue: "\uC5B4\uB518\uAC00\uC5D0 \uC4F0\uC77C \uAC83 \uAC19\uB2E4."
