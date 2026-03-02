@@ -7,9 +7,14 @@ using System.Linq;
 /// <summary>
 /// 완전한 인벤토리 시스템
 /// - 탭: Documents / Items
-/// - 문서: 읽기 버튼 → DiaryUI
-/// - 아이템: 사용하기 / 보기(3D 뷰어)
-/// - Painscreek 스타일 2단 레이아웃
+/// - 문서: 읽기 버튼 → DiaryUI (닫으면 인벤토리로 복귀)
+/// - 아이템: 보기(3D 뷰어) → ItemViewer3D 사용
+/// - 열릴 때 상호작용 프롬프트 숨김 / 닫힐 때 복원
+///
+/// [버그 수정]
+/// 1. 읽기 버튼 → 다이어리 닫으면 인벤토리로 돌아오도록 수정
+/// 2. 3D 보기 → ObjectViewer3D 방식 참고한 ItemViewer3D 사용
+/// 3. 인벤토리 열릴 때 InteractionPrompt 숨김 / 닫힐 때 복원
 /// </summary>
 public class InventoryUI_Complete : MonoBehaviour
 {
@@ -19,7 +24,7 @@ public class InventoryUI_Complete : MonoBehaviour
 	[Header("Tabs")]
 	[SerializeField] private Button documentsTab;
 	[SerializeField] private Button itemsTab;
-	[SerializeField] private GameObject documentsTabHighlight;  // 선택된 탭 표시
+	[SerializeField] private GameObject documentsTabHighlight;
 	[SerializeField] private GameObject itemsTabHighlight;
 
 	[Header("Left Panel - Item List")]
@@ -33,27 +38,21 @@ public class InventoryUI_Complete : MonoBehaviour
 	[SerializeField] private TextMeshProUGUI detailContent;
 
 	[Header("Action Buttons")]
-	[SerializeField] private Button readButton;      // 문서: 읽기
-	[SerializeField] private Button useButton;       // 아이템: 사용하기
-	[SerializeField] private Button viewButton;      // 아이템: 3D 보기
-	[SerializeField] private Button closeButton;     // 인벤토리 닫기
+	[SerializeField] private Button readButton;     // 문서: 읽기
+	[SerializeField] private Button viewButton;     // 아이템: 3D 보기
+	[SerializeField] private Button closeButton;    // 인벤토리 닫기
+	[SerializeField] private Button useButton;     // 아이템 사용
 
 	[Header("3D Item Viewer")]
-	[SerializeField] private GameObject itemViewerPanel;
-	[SerializeField] private Transform itemViewerPoint;     // 아이템 표시 위치
-	[SerializeField] private Camera itemViewerCamera;
-	[SerializeField] private Button exitViewerButton;       // 뷰어 나가기
-	[SerializeField] private float rotationSpeed = 100f;
+	[SerializeField] private ItemViewer3D itemViewer3D; // 별도 컴포넌트로 분리
 
 	private Player _player;
 	private DiaryUI _diaryUI;
+	private UIManager _uiManager;
+
 	private List<InventoryItemData> _allItems = new List<InventoryItemData>();
 	private InventoryItemData _selectedItem;
-	private string _currentTab = "Documents";  // Documents or Items
-
-	private GameObject _currentViewerObject;
-	private bool _isDragging = false;
-	private Vector3 _lastMousePosition;
+	private string _currentTab = "Documents";
 
 	private void Awake()
 	{
@@ -63,29 +62,42 @@ public class InventoryUI_Complete : MonoBehaviour
 		if (detailPanel != null)
 			detailPanel.SetActive(false);
 
-		if (itemViewerPanel != null)
-			itemViewerPanel.SetActive(false);
-
-		// 버튼 이벤트
 		documentsTab?.onClick.AddListener(() => SwitchTab("Documents"));
 		itemsTab?.onClick.AddListener(() => SwitchTab("Items"));
 
 		closeButton?.onClick.AddListener(CloseInventory);
 		readButton?.onClick.AddListener(ReadDocument);
-		useButton?.onClick.AddListener(UseItem);
 		viewButton?.onClick.AddListener(View3DItem);
-		exitViewerButton?.onClick.AddListener(ExitViewer);
+		useButton?.onClick.AddListener(() =>
+		{
+			if (_selectedItem != null)
+			{
+				var usableObjects = FindObjectsOfType<MonoBehaviour>().OfType<IItemUsable>();
+				foreach (var obj in usableObjects)
+				{
+					if (obj.CanUseItem(_selectedItem.itemId))
+					{
+						obj.UseItem(_selectedItem.itemId);
+						CloseInventory();
+						return;
+					}
+				}
+				Debug.LogWarning($"[InventoryUI] {_selectedItem.title}을(를) 사용할 수 있는 대상이 없습니다.");
+			}
+		});
 	}
 
 	private void Start()
 	{
 		_player = FindAnyObjectByType<Player>();
 		_diaryUI = FindAnyObjectByType<DiaryUI>();
+		_uiManager = FindAnyObjectByType<UIManager>();
 	}
 
-	/// <summary>
-	/// 인벤토리 열기
-	/// </summary>
+	// ─────────────────────────────────────────────
+	// 열기 / 닫기
+	// ─────────────────────────────────────────────
+
 	public void OpenInventory()
 	{
 		inventoryPanel?.SetActive(true);
@@ -98,14 +110,14 @@ public class InventoryUI_Complete : MonoBehaviour
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
 
+		// 상호작용 프롬프트 숨기기
+		_uiManager?.HideInteractionPrompt();
+
 		RefreshInventory();
 
 		Debug.Log("[InventoryUI] 인벤토리 열림");
 	}
 
-	/// <summary>
-	/// 인벤토리 닫기
-	/// </summary>
 	public void CloseInventory()
 	{
 		inventoryPanel?.SetActive(false);
@@ -121,17 +133,20 @@ public class InventoryUI_Complete : MonoBehaviour
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
 
+		// 상호작용 프롬프트 복원은 Player의 Raycast가 자연스럽게 처리함
+		// (플레이어가 활성화되면 매 프레임 Raycast → 필요시 ShowInteractionPrompt)
+
 		Debug.Log("[InventoryUI] 인벤토리 닫힘");
 	}
 
-	/// <summary>
-	/// 탭 전환
-	/// </summary>
+	// ─────────────────────────────────────────────
+	// 탭 / 아이템 관리
+	// ─────────────────────────────────────────────
+
 	private void SwitchTab(string tab)
 	{
 		_currentTab = tab;
 
-		// 탭 하이라이트 업데이트
 		if (documentsTabHighlight != null)
 			documentsTabHighlight.SetActive(tab == "Documents");
 
@@ -140,53 +155,35 @@ public class InventoryUI_Complete : MonoBehaviour
 
 		RefreshInventory();
 
-		// 상세 패널 닫기
 		if (detailPanel != null)
 			detailPanel.SetActive(false);
-
-		Debug.Log($"[InventoryUI] 탭 전환: {tab}");
 	}
 
-	/// <summary>
-	/// 아이템 추가
-	/// </summary>
 	public void AddItem(InventoryItemData item)
 	{
 		_allItems.Add(item);
-
-		// 날짜순 정렬
 		_allItems = _allItems.OrderBy(i => i.date).ToList();
 
 		Debug.Log($"[InventoryUI] 아이템 추가: {item.title} ({item.itemType})");
 	}
 
-	/// <summary>
-	/// 인벤토리 목록 새로고침
-	/// </summary>
 	private void RefreshInventory()
 	{
-		// 기존 버튼 제거
 		foreach (Transform child in itemListContent)
-		{
 			Destroy(child.gameObject);
-		}
 
-		// 현재 탭에 맞는 아이템만 표시
 		var filteredItems = _allItems.Where(i =>
 			(_currentTab == "Documents" && i.itemType == ItemType.Document) ||
 			(_currentTab == "Items" && i.itemType == ItemType.UsableItem)
 		).ToList();
 
-		// 아이템 버튼 생성
 		foreach (var item in filteredItems)
 		{
 			GameObject btn = Instantiate(itemButtonPrefab, itemListContent);
 
 			var tmpText = btn.GetComponentInChildren<TextMeshProUGUI>();
 			if (tmpText != null)
-			{
 				tmpText.text = $"{item.date} - {item.title}";
-			}
 
 			var button = btn.GetComponent<Button>();
 			if (button != null)
@@ -197,9 +194,6 @@ public class InventoryUI_Complete : MonoBehaviour
 		}
 	}
 
-	/// <summary>
-	/// 아이템 선택
-	/// </summary>
 	private void SelectItem(InventoryItemData item)
 	{
 		_selectedItem = item;
@@ -213,223 +207,135 @@ public class InventoryUI_Complete : MonoBehaviour
 		if (detailDate != null)
 			detailDate.text = item.date;
 
-		// 내용 표시
 		if (detailContent != null)
 		{
 			if (item.pages != null && item.pages.Count > 0)
-			{
 				detailContent.text = string.Join("\n\n───────────\n\n", item.pages);
-			}
 			else
-			{
 				detailContent.text = item.description;
-			}
 		}
 
-		// 버튼 표시/숨김
 		UpdateActionButtons(item.itemType);
-
-		Debug.Log($"[InventoryUI] 아이템 선택: {item.title}");
 	}
 
-	/// <summary>
-	/// 액션 버튼 업데이트
-	/// </summary>
 	private void UpdateActionButtons(ItemType itemType)
 	{
 		if (itemType == ItemType.Document)
 		{
-			// 문서: 읽기만 표시
 			readButton?.gameObject.SetActive(true);
-			useButton?.gameObject.SetActive(false);
 			viewButton?.gameObject.SetActive(false);
 		}
 		else if (itemType == ItemType.UsableItem)
 		{
-			// 아이템: 사용하기 + 보기
 			readButton?.gameObject.SetActive(false);
-			useButton?.gameObject.SetActive(true);
-			viewButton?.gameObject.SetActive(true);
+			// itemPrefab이 있을 때만 보기 버튼 활성화
+			bool hasModel = _selectedItem?.itemPrefab != null;
+			viewButton?.gameObject.SetActive(hasModel);
+			// 사용 버튼은 항상 활성화 (실제 사용 가능 여부는 IItemUsable 인터페이스에서 처리)
+			useButton?.gameObject.SetActive(itemType == ItemType.UsableItem);
 		}
+
+		
 	}
 
+	// ─────────────────────────────────────────────
+	// 액션: 읽기 / 3D 보기
+	// ─────────────────────────────────────────────
+
 	/// <summary>
-	/// 문서 읽기 (일기장 열기)
+	/// 문서 읽기
+	/// [버그 수정] CloseInventory 후 OpenDiary(returnToInventory: true)
+	/// → 다이어리 닫기 버튼 누르면 인벤토리가 다시 열림
 	/// </summary>
 	private void ReadDocument()
 	{
-		if (_selectedItem == null || _selectedItem.pages == null) return;
+		if (_selectedItem == null || _selectedItem.pages == null || _selectedItem.pages.Count == 0)
+		{
+			Debug.LogWarning("[InventoryUI] 읽을 페이지가 없습니다.");
+			return;
+		}
 
-		CloseInventory();
+		// 인벤토리 패널 숨기기 (CloseInventory와 달리 상태/커서는 DiaryUI가 이어받음)
+		inventoryPanel?.SetActive(false);
+		if (detailPanel != null)
+			detailPanel.SetActive(false);
 
 		if (_diaryUI != null)
 		{
-			_diaryUI.OpenDiary(_selectedItem.pages);
+			// returnToInventory = true → 다이어리 닫으면 인벤토리 다시 열림
+			_diaryUI.OpenDiary(_selectedItem.pages, returnToInventory: true);
 		}
-	}
-
-	/// <summary>
-	/// 아이템 사용하기
-	/// </summary>
-	private void UseItem()
-	{
-		if (_selectedItem == null) return;
-
-		Debug.Log($"[InventoryUI] 아이템 사용: {_selectedItem.title}");
-
-		// 인벤토리 닫기
-		CloseInventory();
-
-		// 플레이어가 바라보는 오브젝트에 아이템 사용
-		if (_player != null)
+		else
 		{
-			// Raycast로 상호작용 가능한 오브젝트 찾기
-			RaycastHit hit;
-			if (Physics.Raycast(_player.Transform.position, _player.Transform.forward, out hit, 3f))
-			{
-				var usable = hit.collider.GetComponent<IItemUsable>();
-				if (usable != null)
-				{
-					usable.UseItem(_selectedItem.itemId);
-				}
-				else
-				{
-					Debug.Log("[InventoryUI] 여기엔 사용할 수 없습니다.");
-				}
-			}
+			Debug.LogError("[InventoryUI] DiaryUI를 찾을 수 없습니다!");
 		}
 	}
+
+
 
 	/// <summary>
 	/// 아이템 3D 보기
+	/// [수정] ItemViewer3D 컴포넌트를 통해 처리
 	/// </summary>
 	private void View3DItem()
 	{
-		if (_selectedItem == null || _selectedItem.itemPrefab == null) return;
-
-		itemViewerPanel?.SetActive(true);
-
-		// 기존 오브젝트 제거
-		if (_currentViewerObject != null)
+		if (_selectedItem == null || _selectedItem.itemPrefab == null)
 		{
-			Destroy(_currentViewerObject);
+			Debug.LogWarning("[InventoryUI] 3D 모델이 없습니다.");
+			return;
 		}
 
-		// 새 오브젝트 생성
-		_currentViewerObject = Instantiate(_selectedItem.itemPrefab, itemViewerPoint.position, Quaternion.identity);
-		_currentViewerObject.transform.SetParent(itemViewerPoint);
-		_currentViewerObject.transform.localPosition = Vector3.zero;
-
-		// 레이어 설정 (카메라에만 보이도록)
-		SetLayerRecursively(_currentViewerObject, LayerMask.NameToLayer("UI"));
-
-		Debug.Log($"[InventoryUI] 3D 뷰어 열림: {_selectedItem.title}");
-	}
-
-	/// <summary>
-	/// 3D 뷰어 나가기
-	/// </summary>
-	private void ExitViewer()
-	{
-		itemViewerPanel?.SetActive(false);
-
-		if (_currentViewerObject != null)
+		if (itemViewer3D == null)
 		{
-			Destroy(_currentViewerObject);
-			_currentViewerObject = null;
+			Debug.LogError("[InventoryUI] ItemViewer3D가 연결되지 않았습니다!");
+			return;
 		}
 
-		Debug.Log("[InventoryUI] 3D 뷰어 닫힘");
+		// 인벤토리 패널 숨기기 (뷰어가 닫히면 인벤토리로 복귀)
+		inventoryPanel?.SetActive(false);
+		if (detailPanel != null)
+			detailPanel.SetActive(false);
+
+		itemViewer3D.OpenViewer(_selectedItem.itemPrefab, _selectedItem.title, this);
 	}
 
-	/// <summary>
-	/// 레이어 재귀 설정
-	/// </summary>
-	private void SetLayerRecursively(GameObject obj, int layer)
-	{
-		obj.layer = layer;
-		foreach (Transform child in obj.transform)
-		{
-			SetLayerRecursively(child.gameObject, layer);
-		}
-	}
+	// ─────────────────────────────────────────────
+	// I키 토글
+	// ─────────────────────────────────────────────
 
 	private void Update()
 	{
-		// I키로 인벤토리 토글
 		if (Input.GetKeyDown(KeyCode.I))
 		{
 			if (inventoryPanel != null && inventoryPanel.activeSelf)
-			{
 				CloseInventory();
-			}
 			else
-			{
 				OpenInventory();
-			}
-		}
-
-		// 3D 뷰어 회전
-		if (itemViewerPanel != null && itemViewerPanel.activeSelf && _currentViewerObject != null)
-		{
-			HandleItemRotation();
-		}
-	}
-
-	/// <summary>
-	/// 마우스 드래그로 아이템 회전
-	/// </summary>
-	private void HandleItemRotation()
-	{
-		if (Input.GetMouseButtonDown(0))
-		{
-			_isDragging = true;
-			_lastMousePosition = Input.mousePosition;
-		}
-		else if (Input.GetMouseButtonUp(0))
-		{
-			_isDragging = false;
-		}
-
-		if (_isDragging)
-		{
-			Vector3 delta = Input.mousePosition - _lastMousePosition;
-
-			_currentViewerObject.transform.Rotate(Vector3.up, -delta.x * rotationSpeed * Time.deltaTime, Space.World);
-			_currentViewerObject.transform.Rotate(Vector3.right, delta.y * rotationSpeed * Time.deltaTime, Space.World);
-
-			_lastMousePosition = Input.mousePosition;
 		}
 	}
 }
 
-/// <summary>
-/// 아이템 타입
-/// </summary>
+/// <summary>아이템 타입</summary>
 public enum ItemType
 {
-	Document,    // 문서 (일기장, 편지 등)
-	UsableItem   // 사용 가능한 아이템 (열쇠, 도구 등)
+	Document,   // 문서 (일기장, 편지 등)
+	UsableItem  // 사용 가능한 아이템 (열쇠, 도구 등)
 }
 
-/// <summary>
-/// 인벤토리 아이템 데이터
-/// </summary>
+/// <summary>인벤토리 아이템 데이터</summary>
 [System.Serializable]
 public class InventoryItemData
 {
-	public string itemId;               // "key_bedroom" (사용 시 확인용)
-	public string title;                // "침실 열쇠"
-	public string date;                 // "2023.07.15"
-	public ItemType itemType;           // Document or UsableItem
-	public string description;          // 설명
-	public List<string> pages;          // 문서 페이지 (Document만)
-	public GameObject itemPrefab;       // 3D 모델 (UsableItem만)
+	public string itemId;
+	public string title;
+	public string date;
+	public ItemType itemType;
+	public string description;
+	public List<string> pages;       // 문서 페이지 (Document만)
+	public GameObject itemPrefab;    // 3D 모델 (UsableItem만)
 }
 
-/// <summary>
-/// 아이템 사용 가능한 오브젝트 인터페이스
-/// </summary>
+/// <summary>아이템 사용 가능한 오브젝트 인터페이스</summary>
 public interface IItemUsable
 {
 	void UseItem(string itemId);

@@ -121,17 +121,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 8481879743502507518}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46ebcedd3d927442ca8212ba56384caa, type: 3}
+  m_Script: {fileID: 11500000, guid: b5299025c476bbf409d81263b90dd228, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractableClue
-  clueId: doll_bed
-  clueName: "\uC778\uD615 \uCE68\uB300"
-  description: 
-  icon: {fileID: 0}
-  clueType: 1
-  documentPages: []
-  canReread: 1
-  environmentImage: {fileID: 0}
-  environmentHint: 
-  speaker: "\uC18C\uB144"
-  dialogue: "\uC791\uC9C0\uB9CC \uD3EC\uADFC\uD574\uBCF4\uC778\uB2E4."
+  itemId: doll_bed
+  itemName: "\uC778\uD615 \uCE68\uB300"
+  itemDate: 
+  description: "\uC778\uD615\uC774 \uB204\uC6B8 \uC218 \uC788\uB294 \uC544\uC8FC
+    \uC791\uC740 \uCE68\uB300\uC774\uB2E4."
+  itemPrefab: {fileID: 8481879743502507518, guid: 6fb4c9aa2b4d2cb40a5797014dc5f301, type: 3}
+  speaker: 
+  firstDialogue: "\uC5B4\uB518\uAC00\uC5D0 \uC4F0\uC77C \uAC83 \uAC19\uB2E4."

@@ -1,41 +1,48 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 /// <summary>
-/// »ç¿ë °¡´ÉÇÑ ¾ÆÀÌÅÛ (¿­¼è, µµ±¸ µî)
-/// - FÅ° È¹µæ ¡æ ÀÎº¥Åä¸® µî·Ï
-/// - ÀÎº¥Åä¸®¿¡¼­ "»ç¿ëÇÏ±â" / "º¸±â(3D)"
+/// ì‚¬ìš© ê°€ëŠ¥í•œ ì•„ì´í…œ (ì—´ì‡ , ë„êµ¬ ë“±)
+/// - Fí‚¤ íšë“ â†’ InventoryUI_Complete(UI) + Player.Inventory(PlayerInventory) ë™ì‹œ ë“±ë¡
+/// - ì¸ë²¤í† ë¦¬ì—ì„œ "ì‚¬ìš©í•˜ê¸°" / "ë³´ê¸°(3D)"
+/// 
+/// [ë²„ê·¸ ìˆ˜ì •] ê¸°ì¡´ ì½”ë“œëŠ” InventoryUI_Complete._allItemsì—ë§Œ ì¶”ê°€í•˜ê³ 
+///            Player.Inventory(PlayerInventory)ì— ì¶”ê°€í•˜ì§€ ì•Šì•„ì„œ
+///            Stage1_DollHousePuzzle.TryPlaceItemToSlot()ì˜ HasItem() ì²´í¬ê°€ í•­ìƒ falseì˜€ìŒ
 /// </summary>
 public class UsableItemClue : MonoBehaviour, IInteractable
 {
 	[Header("Item Info")]
 	[SerializeField] private string itemId = "key_bedroom";
-	[SerializeField] private string itemName = "Ä§½Ç ¿­¼è";
+	[SerializeField] private string itemName = "ì¹¨ì‹¤ ì—´ì‡ ";
 
 	[Header("Inventory Data")]
 	[SerializeField] private string itemDate = "2023.07.16";
 	[TextArea(3, 5)]
-	[SerializeField] private string description = "³°Àº Ä§½Ç ¿­¼è. ³ì½½¾î ÀÖÁö¸¸ ¾ÆÁ÷ »ç¿ëÇÒ ¼ö ÀÖÀ» °Í °°´Ù.";
-	[SerializeField] private GameObject itemPrefab;  // 3D ºä¾î¿ë ÇÁ¸®ÆÕ
+	[SerializeField] private string description = "ë‚¡ì€ ì¹¨ì‹¤ ì—´ì‡ . ë…¹ìŠ¬ì–´ ìˆì§€ë§Œ ì•„ì§ ì‚¬ìš©í•  ìˆ˜ ìˆì„ ê²ƒ ê°™ë‹¤.";
+	[SerializeField] private GameObject itemPrefab;  // 3D ë·°ì–´ìš© í”„ë¦¬íŒ¹
 
 	[Header("First Interaction Dialogue")]
-	[SerializeField] private string speaker = "¼Ò³â";
+	[SerializeField] private string speaker = "ì†Œë…„";
 	[TextArea(2, 5)]
-	[SerializeField] private string firstDialogue = "¿­¼è¸¦ ¹ß°ßÇß´Ù. ¾îµğ¿¡ ¾²´Â ¿­¼èÀÏ±î?";
+	[SerializeField] private string firstDialogue = "ì—´ì‡ ë¥¼ ë°œê²¬í–ˆë‹¤. ì–´ë””ì— ì“°ëŠ” ì—´ì‡ ì¼ê¹Œ?";
 
 	private bool _hasCollected = false;
 	private InventoryUI_Complete _inventoryUI;
+	private Player _playerRef;
 
 	private void Start()
 	{
 		_inventoryUI = FindAnyObjectByType<InventoryUI_Complete>();
+		_playerRef = FindAnyObjectByType<Player>();
 
 		if (_inventoryUI == null)
-		{
-			Debug.LogError("[UsableItemClue] InventoryUI_Complete¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù!");
-		}
+			Debug.LogError("[UsableItemClue] InventoryUI_Completeë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤!");
+
+		if (_playerRef == null)
+			Debug.LogError("[UsableItemClue] Playerë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤!");
 	}
 
-	public string InteractionPrompt => $"[F] {itemName} È¹µæ";
+	public string InteractionPrompt => $"[F] {itemName} íšë“";
 
 	public bool CanInteract(IPlayer player)
 	{
@@ -46,14 +53,14 @@ public class UsableItemClue : MonoBehaviour, IInteractable
 	{
 		if (_hasCollected) return;
 
-		// ´ë»ç Ãâ·Â
+		// ëŒ€ì‚¬ ì¶œë ¥
 		var uiManager = FindAnyObjectByType<UIManager>();
 		if (!string.IsNullOrEmpty(firstDialogue))
 		{
 			uiManager?.ShowDialogue(speaker, firstDialogue);
 		}
 
-		// ÀÎº¥Åä¸®¿¡ Ãß°¡
+		// âœ… [ìˆ˜ì •] 1) InventoryUI_Complete (UI í‘œì‹œìš©) ì— ì¶”ê°€
 		if (_inventoryUI != null)
 		{
 			InventoryItemData itemData = new InventoryItemData
@@ -70,14 +77,22 @@ public class UsableItemClue : MonoBehaviour, IInteractable
 			_inventoryUI.AddItem(itemData);
 		}
 
+		// âœ… [ìˆ˜ì •] 2) Player.Inventory (PlayerInventory - í¼ì¦ HasItem ì²´í¬ìš©) ì—ë„ ì¶”ê°€
+		//    ê¸°ì¡´ ì½”ë“œì—ì„œ ì´ ë¶€ë¶„ì´ ë¹ ì ¸ìˆì–´ì„œ DollHousePuzzleì˜ HasItem()ì´ false ë°˜í™˜í–ˆìŒ
+		if (player != null)
+		{
+			ClueItem clue = new ClueItem(itemId, itemName, description);
+			player.Inventory.AddItem(clue);
+			Debug.Log($"[UsableItemClue] PlayerInventoryì— ì¶”ê°€ë¨: {itemName} (id={itemId})");
+		}
+
+		// ë‹¨ì„œ ì¶”ì  ë“±ë¡
 		GameManager.Instance?.ClueTracker.RegisterClue(itemId);
 
 		_hasCollected = true;
-
-		// ¿ÀºêÁ§Æ® ºñÈ°¼ºÈ­
 		gameObject.SetActive(false);
 
-		Debug.Log($"[UsableItemClue] {itemName} È¹µæ!");
+		Debug.Log($"[UsableItemClue] {itemName} íšë“! (InventoryUI + PlayerInventory ëª¨ë‘ ë“±ë¡)");
 	}
 
 	private void OnTriggerEnter(Collider other)
