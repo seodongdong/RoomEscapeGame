@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Rendering;
 
 /// <summary>
 /// 2스테이지: 제단 사탕 퍼즐
@@ -21,6 +22,9 @@ public class Stage2_AltarCandyPuzzle : PuzzleBase
 
 	[Header("Reset")]
 	[SerializeField] private Transform resetIncense; // 리셋 향로
+
+	[Header("Creature")]
+	[SerializeField] private Stage2_ShadowCreature shadowCreature; // 작은 방 진입 담당
 
 	private Dictionary<int, Color> _currentPlacements = new Dictionary<int, Color>();
 
@@ -71,5 +75,15 @@ public class Stage2_AltarCandyPuzzle : PuzzleBase
 
 		// 작은 방 진입 가능
 		Debug.Log("[AltarPuzzle] 작은 방 진입 가능!");
+
+		if(shadowCreature != null)
+		{
+			shadowCreature.MoveToFinalPosition();
+		}
+	}
+
+	public override void ExitPuzzle()
+	{
+		base.ExitPuzzle();
 	}
 }

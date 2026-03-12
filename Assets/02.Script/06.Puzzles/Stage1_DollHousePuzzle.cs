@@ -37,7 +37,10 @@ public class Stage1_DollHousePuzzle : CameraPuzzleBase
     [Header("Tolerance")]
     [SerializeField] private float positionTolerance = 0.5f;
 
-    private Dictionary<string, bool> _placedItems = new Dictionary<string, bool>();
+    [Header("Creature")]
+    [SerializeField] private GameObject creature;
+
+	private Dictionary<string, bool> _placedItems = new Dictionary<string, bool>();
 
     protected override void Awake()
     {
@@ -153,7 +156,13 @@ public class Stage1_DollHousePuzzle : CameraPuzzleBase
         var audioManager = FindAnyObjectByType<AudioManager>();
         audioManager?.PlaySFX("door_unlock");
         ExitPuzzle();
-    }
+
+        base.SolvePuzzle();
+        if (creature != null)
+        {
+            creature.SetActive(false);
+		}
+	}
 
     private void OnDrawGizmos()
     {
