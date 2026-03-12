@@ -17,6 +17,8 @@ public class Stage3_SlidingPuzzle : PuzzleBase
 		public string bodyPartReward;   // "head", "body", "arm_left" 등
 	}
 
+	[SerializeField] private GameObject dollCreature; 
+
 	[Header("Puzzle Sequence")]
 	[SerializeField] private List<PuzzleData> puzzleSequence; // 4개
 
@@ -111,6 +113,10 @@ public class Stage3_SlidingPuzzle : PuzzleBase
 	private void CompletePuzzle()
 	{
 		Debug.Log("[SlidingPuzzle] 모든 조각 획득! 제작대로 이동 가능");
+		if (dollCreature != null)
+		{
+			dollCreature.SetActive(false);
+		}
 		SolvePuzzle();
 	}
 
