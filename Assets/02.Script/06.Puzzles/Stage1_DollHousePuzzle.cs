@@ -105,36 +105,40 @@ public class Stage1_DollHousePuzzle : CameraPuzzleBase
         PlaceItemToSlot(itemId, item);
     }
 
-    private void PlaceItemToSlot(string itemId, DollItem item)
-    {
-        _placedItems[itemId] = true;
+	private void PlaceItemToSlot(string itemId, DollItem item)
+	{
+		_placedItems[itemId] = true;
 
-        // 3D 프리팹 생성
-        if (item.prefab != null && item.targetSlot != null)
-        {
-            GameObject spawned = Instantiate(
-                item.prefab,
-                item.targetSlot.position,
-                item.targetSlot.rotation
-            );
-            spawned.SetActive(true);
-            foreach (Transform child in spawned.GetComponentsInChildren<Transform>(true))
-                child.gameObject.SetActive(true);
-            spawned.transform.localScale = item.spawnScale;
-        }
+		// 3D 프리팹 생성
+		if (item.prefab != null && item.targetSlot != null)
+		{
+			GameObject spawned = Instantiate(
+				item.prefab,
+				item.targetSlot.position,
+				item.targetSlot.rotation
+			);
+			spawned.SetActive(true);
+			foreach (Transform child in spawned.GetComponentsInChildren<Transform>(true))
+				child.gameObject.SetActive(true);
+			spawned.transform.localScale = item.spawnScale;
+		}
 
-        // PlayerInventory에서 제거
-        var inventoryItem = _player.Inventory.GetItem(itemId);
-        if (inventoryItem != null)
-            _player.Inventory.RemoveItem(inventoryItem);
+		// ✅ PlayerInventory에서 제거 (한 번만)
+		var inventoryItem = _player.Inventory.GetItem(itemId);
+		if (inventoryItem != null)
+			_player.Inventory.RemoveItem(inventoryItem);
 
-        ShowFeedback(correctPositionDialogue);
-        Debug.Log($"[DollHousePuzzle] {itemId} 배치 완료!");
+		// ✅ InventoryUI에서도 제거 (화면 갱신)
+		var inventoryUI = FindAnyObjectByType<InventoryUI_Complete>();
+		inventoryUI?.RemoveItem(itemId);
 
-        CheckSolution();
-    }
+		ShowFeedback(correctPositionDialogue);
+		Debug.Log($"[DollHousePuzzle] {itemId} 배치 완료!");
 
-    private void ShowFeedback(string message)
+		CheckSolution();
+	}
+
+	private void ShowFeedback(string message)
     {
         var uiManager = FindAnyObjectByType<UIManager>();
         uiManager?.ShowDialogue(speaker, message);

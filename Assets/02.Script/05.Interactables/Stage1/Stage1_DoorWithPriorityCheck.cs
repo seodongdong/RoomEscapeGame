@@ -26,15 +26,8 @@ public class Stage1_DoorWithPriorityCheck : MonoBehaviour, IInteractable
 
 	public void Interact(IPlayer player)
 	{
-		var tv = tvObject?.GetComponent<TVPlayer>();
-
-		// TV를 4번 보지 않았으면 우선순위 대사
-		if (tv != null && !tv.CanInteract(player))
-		{
-			var uiManager = FindAnyObjectByType<UIManager>();
-			uiManager?.ShowDialogue(speaker, tvPriorityDialogue);
-			return;
-		}
+		// 기존 tv.CanInteract() 방식 대신 아래로 교체
+		if (Stage1TVPriorityManager.CheckPriorityBlocked(player)) return;
 
 		if (isLocked)
 		{
@@ -43,7 +36,6 @@ public class Stage1_DoorWithPriorityCheck : MonoBehaviour, IInteractable
 		}
 		else
 		{
-			// 문 열기
 			gameObject.SetActive(false);
 		}
 	}

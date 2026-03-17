@@ -112,11 +112,17 @@ public class Stage3_SlidingPuzzle : PuzzleBase
 
 	private void CompletePuzzle()
 	{
-		Debug.Log("[SlidingPuzzle] 모든 조각 획득! 제작대로 이동 가능");
-		if (dollCreature != null)
-		{
-			dollCreature.SetActive(false);
-		}
+		var player = FindAnyObjectByType<Player>();
+		var uiManager = FindAnyObjectByType<UIManager>();
+
+		// 목각인형 지급
+		var doll = new ClueItem("wooden_doll_3", "나무인형", "미로에서 조립한 나무인형");
+		player?.Inventory.AddItem(doll);
+		GameManager.Instance.ClueTracker.RegisterClue("wooden_doll_3");
+
+		// 대사 연출
+		uiManager?.ShowDialogue("소년", "나무인형을 획득했다!");
+
 		SolvePuzzle();
 	}
 

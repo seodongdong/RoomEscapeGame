@@ -46,6 +46,8 @@ public class RecordingDoll : MonoBehaviour, IInteractable
 
 	public void Interact(IPlayer player)
 	{
+		if (Stage1TVPriorityManager.CheckPriorityBlocked(player)) return;
+
 		var audioManager = FindAnyObjectByType<AudioManager>();
 		var uiManager = FindAnyObjectByType<UIManager>();
 

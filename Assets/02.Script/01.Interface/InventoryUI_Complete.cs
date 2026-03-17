@@ -167,7 +167,7 @@ public class InventoryUI_Complete : MonoBehaviour
 		Debug.Log($"[InventoryUI] 아이템 추가: {item.title} ({item.itemType})");
 	}
 
-	private void RefreshInventory()
+	public void RefreshInventory()
 	{
 		foreach (Transform child in itemListContent)
 			Destroy(child.gameObject);
@@ -224,18 +224,18 @@ public class InventoryUI_Complete : MonoBehaviour
 		{
 			readButton?.gameObject.SetActive(true);
 			viewButton?.gameObject.SetActive(false);
+			useButton?.gameObject.SetActive(false);
 		}
 		else if (itemType == ItemType.UsableItem)
 		{
 			readButton?.gameObject.SetActive(false);
-			// itemPrefab이 있을 때만 보기 버튼 활성화
-			bool hasModel = _selectedItem?.itemPrefab != null;
-			viewButton?.gameObject.SetActive(hasModel);
-			// 사용 버튼은 항상 활성화 (실제 사용 가능 여부는 IItemUsable 인터페이스에서 처리)
-			useButton?.gameObject.SetActive(itemType == ItemType.UsableItem);
-		}
 
-		
+			// ✅ 기존: itemPrefab 있을 때만 보기 버튼 활성화
+			// ✅ 변경: UsableItem이면 무조건 보기 버튼 활성화
+			//         (itemPrefab null이면 View3DItem 안에서 경고만 뜸)
+			viewButton?.gameObject.SetActive(true);
+			useButton?.gameObject.SetActive(true);
+		}
 	}
 
 	// ─────────────────────────────────────────────
@@ -298,6 +298,33 @@ public class InventoryUI_Complete : MonoBehaviour
 
 		itemViewer3D.OpenViewer(_selectedItem.itemPrefab, _selectedItem.title, this);
 	}
+
+	/// <summary>
+	/// 아이템 제거 후 UI 갱신
+	/// 퍼즐 배치 등 아이템 소비 시 호출
+	/// </summary>
+	public void RemoveItem(string itemId)
+	{
+		int removed = _allItems.RemoveAll(i => i.itemId == itemId);
+
+		if (removed == 0)
+		{
+			Debug.LogWarning($"[InventoryUI] 제거할 아이템 없음: {itemId}");
+			return;
+		}
+
+		// 선택된 아이템이 제거된 경우 상세 패널 닫기
+		if (_selectedItem != null && _selectedItem.itemId == itemId)
+		{
+			_selectedItem = null;
+			if (detailPanel != null)
+				detailPanel.SetActive(false);
+		}
+
+		RefreshInventory();
+		Debug.Log($"[InventoryUI] 아이템 제거 완료: {itemId}");
+	}
+
 
 	// ─────────────────────────────────────────────
 	// I키 토글

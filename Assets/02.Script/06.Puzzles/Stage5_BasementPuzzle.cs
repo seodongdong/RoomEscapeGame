@@ -36,8 +36,13 @@ public class Stage5_BasementPuzzle : PuzzleBase
 			targetSlot.isPlaced = true;
 			_placedDollsCount++;
 
-			Debug.Log($"[BasementPuzzle] 목각인형 배치: {_placedDollsCount}/4");
+			// 인벤토리에서 제거 ← 추가
+			var player = FindAnyObjectByType<Player>();
+			var item = player?.Inventory.GetItem(dollId);
+			if (item != null)
+				player.Inventory.RemoveItem(item);
 
+			Debug.Log($"[BasementPuzzle] 인형 배치: {_placedDollsCount}/4");
 			CheckSolution();
 		}
 	}

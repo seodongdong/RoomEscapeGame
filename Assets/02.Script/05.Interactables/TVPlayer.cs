@@ -102,6 +102,8 @@ public class TVPlayer : MonoBehaviour, IInteractable
 
 	public void Interact(IPlayer player)
 	{
+
+
 		if (tvType == TVType.CloseUp)
 			StartCoroutine(PlayCloseUp());
 		else
@@ -227,6 +229,8 @@ public class TVPlayer : MonoBehaviour, IInteractable
 		if (creature != null)
 		{
 			creature.SetActive(true);
+
+			Stage1TVPriorityManager.SetTVWatched();
 
 			var audioManager = FindAnyObjectByType<AudioManager>();
 			audioManager?.PlaySFX("creature_appear");

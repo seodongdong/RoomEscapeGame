@@ -33,6 +33,8 @@ public class PuzzleTrigger : MonoBehaviour, IInteractable
 
 	public void Interact(IPlayer player)
 	{
+		if (Stage1TVPriorityManager.CheckPriorityBlocked(player)) return;
+
 		_puzzle?.StartPuzzle();
 	}
 

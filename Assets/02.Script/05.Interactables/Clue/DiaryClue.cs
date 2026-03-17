@@ -73,6 +73,8 @@ public class DiaryClue : MonoBehaviour, IInteractable
 
 	public void Interact(IPlayer player)
 	{
+		if (Stage1TVPriorityManager.CheckPriorityBlocked(player)) return;
+
 		// 첫 상호작용: 대사 + 인벤토리 추가
 		if (!_hasRead)
 		{

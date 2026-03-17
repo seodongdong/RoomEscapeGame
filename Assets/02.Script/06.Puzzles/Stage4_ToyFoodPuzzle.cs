@@ -62,16 +62,15 @@ public class Stage4_ToyFoodPuzzle : PuzzleBase
 
 		if (expectedStep.ingredientId == ingredientId && expectedStep.actionId == actionId)
 		{
+			// 인벤토리에서 재료 제거 ← 추가
+			var player = FindAnyObjectByType<Player>();
+			var item = player?.Inventory.GetItem(ingredientId);
+			if (item != null)
+				player.Inventory.RemoveItem(item);
+
 			_currentRecipe.Add($"{ingredientId}_{actionId}");
 			_currentStep++;
-
-			Debug.Log($"[ToyFood] 단계 {_currentStep}/{recipeSteps.Count} 완료");
-
 			CheckSolution();
-		}
-		else
-		{
-			Debug.Log("[ToyFood] 잘못된 순서!");
 		}
 	}
 
@@ -106,13 +105,15 @@ public class Stage4_ToyFoodPuzzle : PuzzleBase
 		// 화면 흔들림
 		yield return new WaitForSeconds(2f);
 
-		// 페이드 아웃
-		// TODO: 페이드 효과
+		// 페이드 아웃 (TODO: 페이드 효과)
 
 		// 목각인형 획득
 		var player = FindAnyObjectByType<Player>();
-		var woodenDoll = new ClueItem("wooden_doll_4", "목각인형", "주방에서 획득한 목각인형");
-		player.Inventory.AddItem(woodenDoll);
+		var woodenDoll = new ClueItem("wooden_doll_4", "나무인형", "주방에서 획득한 나무인형");
+		player?.Inventory.AddItem(woodenDoll);
+		GameManager.Instance.ClueTracker.RegisterClue("wooden_doll_4");
+
+		FindAnyObjectByType<UIManager>()?.ShowDialogue("소년", "나무인형을 획득했다!");
 
 		// 복도로 이동
 		GameManager.Instance.StageManager.CompleteStage();

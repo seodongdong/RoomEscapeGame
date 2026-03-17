@@ -4,10 +4,7 @@
 /// 사용 가능한 아이템 (열쇠, 도구 등)
 /// - F키 획득 → InventoryUI_Complete(UI) + Player.Inventory(PlayerInventory) 동시 등록
 /// - 인벤토리에서 "사용하기" / "보기(3D)"
-/// 
-/// [버그 수정] 기존 코드는 InventoryUI_Complete._allItems에만 추가하고
-///            Player.Inventory(PlayerInventory)에 추가하지 않아서
-///            Stage1_DollHousePuzzle.TryPlaceItemToSlot()의 HasItem() 체크가 항상 false였음
+/// - ⭐ OnTriggerEnter/Exit 제거 → Player.cs Raycast 방식으로 통일
 /// </summary>
 public class UsableItemClue : MonoBehaviour, IInteractable
 {
@@ -19,7 +16,7 @@ public class UsableItemClue : MonoBehaviour, IInteractable
 	[SerializeField] private string itemDate = "2023.07.16";
 	[TextArea(3, 5)]
 	[SerializeField] private string description = "낡은 침실 열쇠. 녹슬어 있지만 아직 사용할 수 있을 것 같다.";
-	[SerializeField] private GameObject itemPrefab;  // 3D 뷰어용 프리팹
+	[SerializeField] private GameObject itemPrefab;
 
 	[Header("First Interaction Dialogue")]
 	[SerializeField] private string speaker = "소년";
@@ -37,12 +34,12 @@ public class UsableItemClue : MonoBehaviour, IInteractable
 
 		if (_inventoryUI == null)
 			Debug.LogError("[UsableItemClue] InventoryUI_Complete를 찾을 수 없습니다!");
-
 		if (_playerRef == null)
 			Debug.LogError("[UsableItemClue] Player를 찾을 수 없습니다!");
 	}
 
-	public string InteractionPrompt => $"[F] {itemName} 획득";
+	// ── IInteractable ──────────────────────────────
+	public string InteractionPrompt => _hasCollected ? "" : $"[F] {itemName} 획득";
 
 	public bool CanInteract(IPlayer player)
 	{
@@ -51,63 +48,39 @@ public class UsableItemClue : MonoBehaviour, IInteractable
 
 	public void Interact(IPlayer player)
 	{
+		// 1스테이지 TV 우선순위 체크
+		if (Stage1TVPriorityManager.CheckPriorityBlocked(player)) return;
+
 		if (_hasCollected) return;
+
+		_hasCollected = true;
 
 		// 대사 출력
 		var uiManager = FindAnyObjectByType<UIManager>();
 		if (!string.IsNullOrEmpty(firstDialogue))
-		{
 			uiManager?.ShowDialogue(speaker, firstDialogue);
-		}
 
-		// ✅ [수정] 1) InventoryUI_Complete (UI 표시용) 에 추가
-		if (_inventoryUI != null)
+		// InventoryUI_Complete (UI 표시용) 등록
+		_inventoryUI?.AddItem(new InventoryItemData
 		{
-			InventoryItemData itemData = new InventoryItemData
-			{
-				itemId = itemId,
-				title = itemName,
-				date = itemDate,
-				itemType = ItemType.UsableItem,
-				description = description,
-				pages = null,
-				itemPrefab = itemPrefab
-			};
+			itemId = itemId,
+			title = itemName,
+			date = itemDate,
+			itemType = ItemType.UsableItem,
+			description = description,
+			pages = null,
+			itemPrefab = itemPrefab
+		});
 
-			_inventoryUI.AddItem(itemData);
-		}
-
-		// ✅ [수정] 2) Player.Inventory (PlayerInventory - 퍼즐 HasItem 체크용) 에도 추가
-		//    기존 코드에서 이 부분이 빠져있어서 DollHousePuzzle의 HasItem()이 false 반환했음
-		if (player != null)
-		{
-			ClueItem clue = new ClueItem(itemId, itemName, description);
-			player.Inventory.AddItem(clue);
-			Debug.Log($"[UsableItemClue] PlayerInventory에 추가됨: {itemName} (id={itemId})");
-		}
+		// PlayerInventory (퍼즐 HasItem 체크용) 등록
+		player?.Inventory.AddItem(new ClueItem(itemId, itemName, description));
 
 		// 단서 추적 등록
 		GameManager.Instance?.ClueTracker.RegisterClue(itemId);
 
-		_hasCollected = true;
+		// 오브젝트 비활성화
 		gameObject.SetActive(false);
 
-		Debug.Log($"[UsableItemClue] {itemName} 획득! (InventoryUI + PlayerInventory 모두 등록)");
-	}
-
-	private void OnTriggerEnter(Collider other)
-	{
-		if (other.TryGetComponent<Player>(out var player))
-		{
-			player.SetCurrentInteractable(this);
-		}
-	}
-
-	private void OnTriggerExit(Collider other)
-	{
-		if (other.TryGetComponent<Player>(out var player))
-		{
-			player.SetCurrentInteractable(null);
-		}
+		Debug.Log($"[UsableItemClue] {itemName} 획득 완료");
 	}
 }

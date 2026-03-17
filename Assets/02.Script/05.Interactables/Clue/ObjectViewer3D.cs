@@ -74,6 +74,8 @@ public class ObjectViewer3D : MonoBehaviour, IInteractable
 
 	public void Interact(IPlayer player)
 	{
+		if (Stage1TVPriorityManager.CheckPriorityBlocked(player)) return;
+
 		if (_isViewing) return;
 
 		// 처음 볼 때 단서 등록 + 대사

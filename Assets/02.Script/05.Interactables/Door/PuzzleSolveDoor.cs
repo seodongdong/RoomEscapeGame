@@ -1,48 +1,45 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections;
 
-/// <summary>
-/// ÆÛÁñ ÇØ°á ½Ã ¿­¸®´Â Ãâ±¸ ¹®
-/// ÆÛÁñ Ç®±â Àü: Àá±è / ÆÛÁñ Ç®¸é: ÀÚµ¿À¸·Î ¿­¸²
-/// ¾À ÀüÈ¯ ¾øÀ½ - º¹µµ·Î ±×³É ³ª°¡´Â ¹®
-/// </summary>
-public class PuzzleSolvedDoor : MonoBehaviour, IInteractable
+public class PuzzleSolveDoor : MonoBehaviour, IInteractable
 {
-	[Header("¿¬°á ÆÛÁñ")]
-	[SerializeField] private MonoBehaviour puzzleObject; // IPuzzle ±¸ÇöÇÑ ÆÛÁñ
+	[Header("í¼ì¦ ì—°ê²°")]
+	[SerializeField] private MonoBehaviour puzzleObject;
 
-	[Header("¹® ¼³Á¤")]
-	[SerializeField] private Animator doorAnimator;       // ¾Ö´Ï¸ŞÀÌÅÍ ÀÖÀ¸¸é ¿¬°á
-	[SerializeField] private Vector3 openOffset = new Vector3(0, 3, 0); // ¾Ö´Ï¸ŞÀÌÅÍ ¾øÀ» ¶§ ÀÌµ¿ ¹æÇâ
-	[SerializeField] private float openDuration = 1f;    // ¹® ¿­¸®´Â ½Ã°£
+	[Header("ë¬¸ ì„¤ì •")]
+	[SerializeField] private Animator doorAnimator;
+	[SerializeField] private Vector3 openOffset = new Vector3(0, 3, 0);
+	[SerializeField] private float openDuration = 1f;
 
-	[Header("´ë»ç")]
-	[SerializeField] private string speaker = "¼Ò³â";
+	[Header("ëŒ€ì‚¬")]
+	[SerializeField] private string speaker = "ì†Œë…„";
 	[TextArea(2, 5)]
-	[SerializeField] private string lockedDialogue = "ÆÛÁñÀ» Ç®¾î¾ß ¿­¸± °Í °°´Ù...";
+	[SerializeField] private string lockedDialogue = "í¼ì¦ì„ í’€ì–´ì•¼ ì—´ ìˆ˜ ìˆë‹¤...";
 	[TextArea(2, 5)]
-	[SerializeField] private string openDialogue = "¹®ÀÌ ¿­·È´Ù!";
+	[SerializeField] private string openDialogue = "ë¬¸ì´ ì—´ë ¸ë‹¤!";
+
+	[Header("ë‚˜ë¬´ì¸í˜• ë³´ìƒ")]
+	[SerializeField] private string woodenDollId = "";       // ë¹„ìš°ë©´ ì§€ê¸‰ ì•ˆ í•¨
+	[SerializeField] private string woodenDollName = "ë‚˜ë¬´ì¸í˜•";
+	[TextArea(1, 2)]
+	[SerializeField] private string woodenDollDialogue = "ë‚˜ë¬´ì¸í˜•ì„ íšë“í–ˆë‹¤!";
+	[SerializeField] private GameObject woodenDollPrefab;
 
 	private IPuzzle _puzzle;
 	private bool _isOpen = false;
+	private bool _dollGiven = false;
 	private Vector3 _closedPosition;
 
 	private void Awake()
 	{
 		_puzzle = puzzleObject as IPuzzle;
 		_closedPosition = transform.position;
-
-		if (_puzzle == null && puzzleObject != null)
-			Debug.LogError($"[PuzzleSolvedDoor] {puzzleObject.name}Àº IPuzzleÀ» ±¸ÇöÇÏÁö ¾Ê½À´Ï´Ù!");
 	}
 
 	private void Start()
 	{
-		// ÆÛÁñ ÇØ°á ÀÌº¥Æ® ±¸µ¶
 		if (_puzzle != null)
-		{
 			_puzzle.OnPuzzleSolved += OnPuzzleSolved;
-		}
 	}
 
 	private void OnDestroy()
@@ -51,125 +48,87 @@ public class PuzzleSolvedDoor : MonoBehaviour, IInteractable
 			_puzzle.OnPuzzleSolved -= OnPuzzleSolved;
 	}
 
-	// ÆÛÁñ ÇØ°á ½Ã ÀÚµ¿ È£Ãâ
-	private void OnPuzzleSolved()
-	{
-		OpenDoor();
-		var uiManager = FindAnyObjectByType<UIManager>();
-		uiManager?.ShowDialogue(speaker, openDialogue);
+	// â”€â”€ IInteractable â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	public string InteractionPrompt => _isOpen ? "[F] ë¬¸ ì—´ê¸°" : "í¼ì¦ì„ ë¨¼ì € í’€ì–´ì•¼ í•œë‹¤...";
 
-		var audioManager = FindAnyObjectByType<AudioManager>();
-		audioManager?.PlaySFX("door_unlock");
-
-		Debug.Log("[PuzzleSolvedDoor] ÆÛÁñ ÇØ°á ¡æ ¹® ¿­¸²!");
-	}
-
-	public string InteractionPrompt
-	{
-		get
-		{
-			if (_isOpen) return "[F] ³ª°¡±â";
-			if (_puzzle != null && _puzzle.IsSolved) return "[F] ¹® ¿­±â";
-			return "[F] ¹® (Àá±è)";
-		}
-	}
-
-	public bool CanInteract(IPlayer player)
-	{
-		return true; // Ç×»ó »óÈ£ÀÛ¿ë °¡´É (Àá±è ´ë»ç Ãâ·ÂÀ» À§ÇØ)
-	}
+	public bool CanInteract(IPlayer player) => true;
 
 	public void Interact(IPlayer player)
 	{
-		// ÀÌ¹Ì ¿­·ÁÀÖÀ¸¸é Åë°ú (Äİ¶óÀÌ´õ Á¦°Å·Î Ã³¸®)
-		if (_isOpen) return;
-
-		// ÆÛÁñ ¾È Ç®¾úÀ¸¸é Àá±è ´ë»ç
-		if (_puzzle != null && !_puzzle.IsSolved)
-		{
-			var uiManager = FindAnyObjectByType<UIManager>();
+		var uiManager = FindAnyObjectByType<UIManager>();
+		if (!_isOpen)
 			uiManager?.ShowDialogue(speaker, lockedDialogue);
-			return;
-		}
-
-		// ÆÛÁñ Ç®¾ú´Âµ¥ ¹®ÀÌ ¾ÆÁ÷ ¾È ¿­·ÈÀ¸¸é ¿­±â
-		if (_puzzle != null && _puzzle.IsSolved && !_isOpen)
-		{
+		else
 			OpenDoor();
-		}
+	}
+
+	// â”€â”€ í¼ì¦ í•´ê²° ì‹œ ìë™ í˜¸ì¶œ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	private void OnPuzzleSolved()
+	{
+		_isOpen = true;
+		var uiManager = FindAnyObjectByType<UIManager>();
+		uiManager?.ShowDialogue(speaker, openDialogue);
+		StartCoroutine(OpenDoorCoroutine());
 	}
 
 	private void OpenDoor()
 	{
-		if (_isOpen) return;
-		_isOpen = true;
+		StartCoroutine(OpenDoorCoroutine());
+	}
 
-		// Äİ¶óÀÌ´õ ºñÈ°¼ºÈ­ (Åë°ú °¡´ÉÇÏ°Ô)
-		var col = GetComponent<Collider>();
-		if (col != null) col.enabled = false;
-
+	private IEnumerator OpenDoorCoroutine()
+	{
 		if (doorAnimator != null)
 		{
-			// ¾Ö´Ï¸ŞÀÌÅÍ ÀÖÀ¸¸é ¾Ö´Ï¸ŞÀÌ¼Ç
 			doorAnimator.SetTrigger("Open");
 		}
 		else
 		{
-			// ¾øÀ¸¸é À§·Î ¿Ã¶ó°¡´Â È¿°ú
-			StartCoroutine(SlideOpen());
+			// ì• ë‹ˆë©”ì´í„° ì—†ì„ ë•Œ ìœ„ë¡œ ì´ë™
+			Vector3 targetPos = _closedPosition + openOffset;
+			float elapsed = 0f;
+			while (elapsed < openDuration)
+			{
+				elapsed += Time.deltaTime;
+				transform.position = Vector3.Lerp(_closedPosition, targetPos, elapsed / openDuration);
+				yield return null;
+			}
+			transform.position = targetPos;
 		}
 	}
 
-	private void CloseDoor()
-	{ 	if (!_isOpen) return;
-		_isOpen = false;
-		var col = GetComponent<Collider>();
-		if (col != null) col.enabled = true;
-		if (doorAnimator != null)
-		{
-			doorAnimator.SetTrigger("Close");
-		}
-		else
-		{
-			StartCoroutine(SlideClose());
-		}
-	}
-
-	private IEnumerator SlideOpen()
+	// â”€â”€ í”Œë ˆì´ì–´ í†µê³¼ ì‹œ ë‚˜ë¬´ì¸í˜• ì§€ê¸‰ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	private void OnTriggerEnter(Collider other)
 	{
-		Vector3 targetPosition = _closedPosition + openOffset;
-		float elapsed = 0f;
+		if (_dollGiven || string.IsNullOrEmpty(woodenDollId)) return;
+		if (!other.CompareTag("Player")) return;
+		if (!_isOpen) return;
 
-		while (elapsed < openDuration)
+		var player = other.GetComponent<Player>();
+		if (player == null) return;
+		if (player.Inventory.HasItem(woodenDollId)) return;
+
+		_dollGiven = true;
+
+		// PlayerInventory ë“±ë¡
+		player.Inventory.AddItem(new ClueItem(woodenDollId, woodenDollName, "í¼ì¦ì„ í’€ì–´ íšë“í•œ ë‚˜ë¬´ì¸í˜•"));
+		GameManager.Instance.ClueTracker.RegisterClue(woodenDollId);
+
+		// InventoryUI ë“±ë¡ â€” ì´ë²ˆì—” itemPrefab í¬í•¨
+		var inventoryUI = FindAnyObjectByType<InventoryUI_Complete>();
+		inventoryUI?.AddItem(new InventoryItemData
 		{
-			elapsed += Time.deltaTime;
-			float t = elapsed / openDuration;
-			transform.position = Vector3.Lerp(_closedPosition, targetPosition, t);
-			yield return null;
-		}
+			itemId = woodenDollId,
+			title = woodenDollName,
+			date = "",
+			itemType = ItemType.UsableItem,
+			description = "í¼ì¦ì„ í’€ì–´ íšë“í•œ ë‚˜ë¬´ì¸í˜•",
+			pages = null,
+			itemPrefab = woodenDollPrefab  // â† í”„ë¦¬íŒ¹ ì—°ê²°
+		});
 
-		transform.position = targetPosition;
-	}
-
-	private IEnumerator SlideClose()
-	{
-		Vector3 startPosition = transform.position;
-		float elapsed = 0f;
-		while (elapsed < openDuration)
-		{
-			elapsed += Time.deltaTime;
-			float t = elapsed / openDuration;
-			transform.position = Vector3.Lerp(startPosition, _closedPosition, t);
-			yield return null;
-		}
-		transform.position = _closedPosition;
-	}
-
-	private void OnDrawGizmos()
-	{
-		// ¹®ÀÌ ¿­¸± À§Ä¡ ¹Ì¸®º¸±â
-		Gizmos.color = Color.green;
-		Gizmos.DrawWireCube(transform.position + openOffset, transform.localScale);
-		Gizmos.DrawLine(transform.position, transform.position + openOffset);
+		// ëŒ€ì‚¬ ì¶œë ¥
+		var uiManager = FindAnyObjectByType<UIManager>();
+		uiManager?.ShowDialogue(speaker, woodenDollDialogue);
 	}
 }
