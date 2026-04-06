@@ -19,7 +19,7 @@ public class ExitDoor : MonoBehaviour, IInteractable
 
 	public bool CanInteract(IPlayer player)
 	{
-		return true;
+		return GameManager.Instance.StageManager.CurrentStage == 5;
 	}
 
 	public void Interact(IPlayer player)
@@ -28,7 +28,7 @@ public class ExitDoor : MonoBehaviour, IInteractable
 		uiManager?.ShowDialogue(speaker, escapeDialogue);
 
 		// 소녀 구출 여부
-		bool girlRescued = girlReference != null && girlReference.gameObject.activeSelf;
+		bool girlRescued = girlReference != null && girlReference.IsRescued;
 
 		// 캠코더 수집 여부
 		bool hasCamcorder = player.Inventory.HasItem("camcorder");
