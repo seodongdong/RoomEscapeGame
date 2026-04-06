@@ -1,86 +1,197 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// ¼Ò³à Ä³¸¯ÅÍ (´©³ª)
-/// ±âÈ¹¼­: Ã¹ ¸¸³² ´ë»ç, Ãß°İÀü ½Ã ÇÃ·¹ÀÌ¾î µû¶ó´Ù´Ï±â
+/// ì†Œë…€ ìºë¦­í„°
+/// ê¸°íšì„œ: ëŒ€ë¬¸ ì• ë“±ì¥ â†’ "ê·¸ ë¬¸ì€ ì•ˆ ì—´ë ¤." â†’ "ë‚˜ë¥¼ êµ¬í•´ì¤˜â€¦" â†’ ì‚¬ë¼ì§
 /// </summary>
 public class Girl : MonoBehaviour
 {
-	[Header("Dialogue")]
-	[SerializeField] private string speaker = "¼Ò³à";
+	[Header("ì²« ë“±ì¥ ëŒ€ì‚¬")]
+	[SerializeField] private string speaker = "ì†Œë…€";
 	[TextArea(2, 5)]
-	[SerializeField] private string firstMeetingDialogue = "±× ¹®Àº ¾È ¿­·Á.";
+	[SerializeField] private string dialogue1 = "ê·¸ ë¬¸ì€ ì•ˆ ì—´ë ¤.";
 	[TextArea(2, 5)]
-	[SerializeField] private string pleaDialogue = "³ª¸¦ ±¸ÇØÁà...";
+	[SerializeField] private string dialogue2 = "ë‚˜ë¥¼ êµ¬í•´ì¤˜â€¦";
 
-	[Header("Follow Settings")]
-	[SerializeField] private bool shouldFollow;
+	[Header("ë“±ì¥ ìœ„ì¹˜")]
+	[SerializeField] private Transform appearPosition;  // ëŒ€ë¬¸ ì• ìœ„ì¹˜
+
+	[Header("ì—°ì¶œ íƒ€ì´ë°")]
+	[SerializeField] private float dialogue1Duration = 3f;   // ì²« ëŒ€ì‚¬ ìœ ì§€ ì‹œê°„
+	[SerializeField] private float betweenDelay = 1f;        // ëŒ€ì‚¬ ì‚¬ì´ ê°„ê²©
+	[SerializeField] private float dialogue2Duration = 3f;   // ë‘ ë²ˆì§¸ ëŒ€ì‚¬ ìœ ì§€ ì‹œê°„
+	[SerializeField] private float disappearDelay = 0.5f;    // ì‚¬ë¼ì§€ê¸° ì „ ëŒ€ê¸°
+
+	[Header("í˜ì´ë“œ ì—°ì¶œ (ì„ íƒ)")]
+	[SerializeField] private bool useFade = true;
+	[SerializeField] private float fadeDuration = 0.8f;
+
+	[Header("5ìŠ¤í…Œì´ì§€ ì¶”ê²©ì „ ì„¤ì •")]
+	[SerializeField] private bool shouldFollow = false;
 	[SerializeField] private float followDistance = 2f;
 	[SerializeField] private float followSpeed = 3f;
 
 	private Player _player;
 	private IUIManager _uiManager;
-	private bool _hasMetPlayer;
+	private bool _hasMetPlayer = false;
+	private Renderer[] _renderers;
+	public bool IsRescued { get; private set; } = false;
+
+	private void Awake()
+	{
+		// Start()ì— ìˆë˜ ê²ƒì„ Awake()ë¡œ ì´ë™
+		_renderers = GetComponentsInChildren<Renderer>(true); // true = ë¹„í™œì„± ìì‹ë„ í¬í•¨
+	}
 
 	private void Start()
 	{
 		_player = FindAnyObjectByType<Player>();
 		_uiManager = FindAnyObjectByType<UIManager>();
 
-		// Ã³À½¿£ ºñÈ°¼ºÈ­
 		gameObject.SetActive(false);
 	}
 
 	private void Update()
 	{
 		if (shouldFollow && _player != null)
-		{
 			FollowPlayer();
-		}
 	}
 
-	#region First Meeting
-
-	/// <summary>
-	/// Ã¹ ¸¸³² (ÀÎÆ®·Î¿¡¼­ È£Ãâ)
-	/// ±âÈ¹¼­: "±× ¹®Àº ¾È ¿­·Á." ¡æ "³ª¸¦ ±¸ÇØÁà..."
-	/// </summary>
+	// â”€â”€ ì²« ë§Œë‚¨ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	public void FirstMeeting()
 	{
-		if (_hasMetPlayer) return;
-
+		Debug.Log("[Girl] FirstMeeting í˜¸ì¶œë¨");
+		if (_hasMetPlayer)
+		{
+			Debug.Log("[Girl] ì´ë¯¸ ë§Œë‚¨ ì²˜ë¦¬ë¨ - return");
+			return;
+		}
 		_hasMetPlayer = true;
+
+		gameObject.SetActive(true);
+		Debug.Log("[Girl] SetActive(true) ì™„ë£Œ");
+
+		if (useFade) SetAlpha(0f);
+		Debug.Log($"[Girl] useFade={useFade}, appearPosition={appearPosition}");
+
 		StartCoroutine(FirstMeetingSequence());
+		Debug.Log("[Girl] ì½”ë£¨í‹´ ì‹œì‘ë¨");
 	}
 
 	private IEnumerator FirstMeetingSequence()
 	{
-		gameObject.SetActive(true);
+		Debug.Log("[Girl] FirstMeetingSequence ì‹œì‘");
 
-		// Ã¹ ´ë»ç
-		_uiManager?.ShowDialogue(speaker, firstMeetingDialogue);
-		yield return new WaitForSeconds(3f);
+		if (appearPosition != null)
+		{
+			transform.position = appearPosition.position;
+			Debug.Log($"[Girl] ìœ„ì¹˜ ì´ë™: {appearPosition.position}");
+		}
+		else
+			Debug.LogWarning("[Girl] appearPositionì´ null!");
 
-		// µÎ ¹øÂ° ´ë»ç
-		_uiManager?.ShowDialogue(speaker, pleaDialogue);
-		yield return new WaitForSeconds(3f);
+		if (useFade)
+		{
+			Debug.Log("[Girl] FadeIn ì‹œì‘");
+			yield return StartCoroutine(FadeIn());
+			Debug.Log("[Girl] FadeIn ì™„ë£Œ");
+		}
+		else
+			gameObject.SetActive(true);
 
-		// »ç¶óÁü
+		Debug.Log("[Girl] ì²« ë²ˆì§¸ ëŒ€ì‚¬ ì¶œë ¥");
+		_uiManager?.ShowDialogue(speaker, dialogue1);
+		yield return new WaitForSeconds(dialogue1Duration);
+		_uiManager?.HideDialogue();
+
+		yield return new WaitForSeconds(betweenDelay);
+
+		Debug.Log("[Girl] ë‘ ë²ˆì§¸ ëŒ€ì‚¬ ì¶œë ¥");
+		_uiManager?.ShowDialogue(speaker, dialogue2);
+		yield return new WaitForSeconds(dialogue2Duration);
+		_uiManager?.HideDialogue();
+
+		yield return new WaitForSeconds(disappearDelay);
+
+		Debug.Log("[Girl] ì‚¬ë¼ì§ ì‹œì‘");
+		if (useFade)
+			yield return StartCoroutine(FadeOut());
+		else
+			gameObject.SetActive(false);
+	}
+
+	// â”€â”€ í˜ì´ë“œ ì¸/ì•„ì›ƒ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	private IEnumerator FadeIn()
+	{
+
+		// íˆ¬ëª…í•˜ê²Œ ì‹œì‘
+		SetAlpha(0f);
+
+		float elapsed = 0f;
+		while (elapsed < fadeDuration)
+		{
+			elapsed += Time.deltaTime;
+			SetAlpha(Mathf.Clamp01(elapsed / fadeDuration));
+			yield return null;
+		}
+		SetAlpha(1f);
+	}
+
+	private IEnumerator FadeOut()
+	{
+		float elapsed = 0f;
+		while (elapsed < fadeDuration)
+		{
+			elapsed += Time.deltaTime;
+			SetAlpha(Mathf.Clamp01(1f - (elapsed / fadeDuration)));
+			yield return null;
+		}
+
+		SetAlpha(0f);
 		gameObject.SetActive(false);
 	}
 
-	#endregion
+	private void SetAlpha(float alpha)
+	{
+		if (_renderers == null || _renderers.Length == 0)
+		{
+			Debug.LogWarning("[Girl] Rendererê°€ ì—†ìŠµë‹ˆë‹¤!");
+			return;
+		}
 
-	#region Follow Player
+		foreach (var r in _renderers)
+		{
+			if (r == null) continue;
+			foreach (var mat in r.materials)
+			{
+				if (mat.HasProperty("_BaseColor"))
+				{
+					var col = mat.GetColor("_BaseColor");
+					col.a = alpha;
+					mat.SetColor("_BaseColor", col);
+				}
+				else if (mat.HasProperty("_Color"))
+				{
+					var col = mat.GetColor("_Color");
+					col.a = alpha;
+					mat.SetColor("_Color", col);
+				}
+			}
+		}
+	}
 
-	/// <summary>
-	/// ÇÃ·¹ÀÌ¾î µû¶ó´Ù´Ï±â (5½ºÅ×ÀÌÁö Ãß°İÀü)
-	/// </summary>
+	// â”€â”€ 5ìŠ¤í…Œì´ì§€ ì¶”ê²©ì „ ë”°ë¼ë‹¤ë‹ˆê¸° â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	public void StartFollowing()
+	{
+		IsRescued = true;
+		shouldFollow = true;
+		gameObject.SetActive(true);
+	}
+
 	private void FollowPlayer()
 	{
 		float distance = Vector3.Distance(transform.position, _player.transform.position);
-
 		if (distance > followDistance)
 		{
 			Vector3 direction = (_player.transform.position - transform.position).normalized;
@@ -89,26 +200,8 @@ public class Girl : MonoBehaviour
 		}
 	}
 
-	/// <summary>
-	/// Ãß°İÀü ½ÃÀÛ ½Ã È£Ãâ
-	/// ±âÈ¹¼­: "´©³ª...! °°ÀÌ °¡ÀÚ!"
-	/// </summary>
-	public void StartFollowing()
-	{
-		shouldFollow = true;
-		gameObject.SetActive(true);
-
-		var uiManager = FindAnyObjectByType<UIManager>();
-		uiManager?.ShowDialogue("¼Ò³â", "´©³ª...! °°ÀÌ °¡ÀÚ!");
-	}
-
-	/// <summary>
-	/// Ãß°İÀü Á¾·á ½Ã È£Ãâ
-	/// </summary>
 	public void StopFollowing()
 	{
 		shouldFollow = false;
 	}
-
-	#endregion
 }

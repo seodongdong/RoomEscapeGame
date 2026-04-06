@@ -67,7 +67,7 @@ public class IntroSequence : MonoBehaviour
 		}
 
 		// 5. 잠시 대기 후 소녀 등장
-		yield return new WaitForSeconds(2f);
+		yield return new WaitForSeconds(4f);  // 딜레이 늘리기
 		girl?.FirstMeeting();
 
 		// 6. 게임 시작
