@@ -1,74 +1,68 @@
 using UnityEngine;
 using System.Collections;
 
-// 카메라 기반 퍼즐의 기본 동작을 정의하는 추상 클래스
 public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 {
-    [Header("Puzzle Settings")]
-    [SerializeField] protected string puzzleId;
-    [SerializeField] protected bool isSolved;
-    
-    [Header("Camera Settings")]
-    [SerializeField] protected Transform puzzleCameraPosition; // 카메라 이동 위치
-    [SerializeField] protected float cameraTransitionDuration = 1f;
-    [SerializeField] protected AnimationCurve cameraTransitionCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-    
-    [Header("UI")]
-    [SerializeField] protected GameObject puzzleUI; // 3D 위에 띄울 UI
-    
-    protected Camera _mainCamera;
-    protected Transform _originalCameraParent;
-    protected Vector3 _originalCameraPosition;
-    protected Quaternion _originalCameraRotation;
-    protected Player _player;
-    
-    public string PuzzleId => puzzleId;
-    public bool IsSolved => isSolved;
-    
-    public event System.Action OnPuzzleSolved;
+	[Header("Puzzle Settings")]
+	[SerializeField] protected string puzzleId;
+	[SerializeField] protected bool isSolved;
 
-    // 카메라 및 플레이어 초기화
-    protected virtual void Awake()
-    {
-        _mainCamera = Camera.main;
-        _player = FindAnyObjectByType<Player>();
-    }
+	[Header("Camera Settings")]
+	[SerializeField] protected Transform puzzleCameraPosition;
+	[SerializeField] protected float cameraTransitionDuration = 1f;
+	[SerializeField] protected AnimationCurve cameraTransitionCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-    // 퍼즐 시작 메서드
-    public virtual void StartPuzzle()
-    {
-        if (isSolved) return;
-        
-        // 게임 상태 변경
-        GameManager.Instance.StateManager.ChangeState(GameState.Puzzle);
+	[Header("UI")]
+	[SerializeField] protected GameObject puzzleUI;
 
-		// ⭐ 상호작용 프롬프트 숨기기 (추가!)
+	protected Camera _mainCamera;
+	protected Transform _originalCameraParent;
+	protected Vector3 _originalCameraPosition;
+	protected Quaternion _originalCameraRotation;
+	protected Player _player;
+
+	public string PuzzleId => puzzleId;
+	public bool IsSolved => isSolved;
+
+	public event System.Action OnPuzzleSolved;
+
+	protected virtual void Awake()
+	{
+		_mainCamera = Camera.main;
+		_player = FindAnyObjectByType<Player>();
+	}
+
+	public virtual void StartPuzzle()
+	{
+		if (isSolved) return;
+
+		GameManager.Instance.StateManager.ChangeState(GameState.Puzzle);
+
 		var uiManager = FindAnyObjectByType<UIManager>();
 		uiManager?.HideInteractionPrompt();
 
-		// 플레이어 조작 비활성화
 		if (_player != null)
-        {
-            _player.enabled = false;
-        }
+		{
+			_player.enabled = false;
 
-		// ⭐ 커서 표시 및 잠금 해제 (추가!)
+			// ⭐ 플레이어 메쉬 숨기기
+			foreach (var mesh in _player.GetComponentsInChildren<MeshRenderer>())
+				mesh.enabled = false;
+			foreach (var mesh in _player.GetComponentsInChildren<SkinnedMeshRenderer>())
+				mesh.enabled = false;
+		}
+
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
 
-		// 원래 카메라 위치 저장
 		_originalCameraParent = _mainCamera.transform.parent;
-        _originalCameraPosition = _mainCamera.transform.position;
-        _originalCameraRotation = _mainCamera.transform.rotation;
-        
-        // 카메라를 부모에서 분리
-        _mainCamera.transform.SetParent(null);
-        
-        // 카메라 전환 시작
-        StartCoroutine(TransitionCamera(true));
-    }
+		_originalCameraPosition = _mainCamera.transform.position;
+		_originalCameraRotation = _mainCamera.transform.rotation;
 
-	// 카메라 전환 코루틴
+		_mainCamera.transform.SetParent(null);
+		StartCoroutine(TransitionCamera(true));
+	}
+
 	protected virtual IEnumerator TransitionCamera(bool toPuzzle)
 	{
 		Vector3 startPos = _mainCamera.transform.position;
@@ -101,91 +95,71 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 			yield return null;
 		}
 
-		// 최종 위치/회전 설정
 		_mainCamera.transform.position = endPos;
 		_mainCamera.transform.rotation = endRot;
 
 		if (toPuzzle)
 		{
-			if (puzzleUI != null)
-			{
-				puzzleUI.SetActive(true);
-			}
+			puzzleUI?.SetActive(true);
 			OnPuzzleStarted();
 		}
 		else
 		{
-			// 카메라를 다시 플레이어 자식으로 복귀
 			_mainCamera.transform.SetParent(_originalCameraParent);
-
 			OnPuzzleExited();
 		}
 	}
 
-	// 하위 클래스에서 오버라이드 가능
 	protected virtual void OnPuzzleStarted()
-    {
-        Debug.Log($"퍼즐 시작: {puzzleId}");
-    }
+	{
+		Debug.Log($"퍼즐 시작: {puzzleId}");
+	}
 
-    protected virtual void OnPuzzleExited()
-    {
-        Debug.Log($"퍼즐 종료: {puzzleId}");
-    }
+	protected virtual void OnPuzzleExited()
+	{
+		Debug.Log($"퍼즐 종료: {puzzleId}");
+	}
 
-    public virtual void CheckSolution()
-    {
-        if (IsSolutionCorrect())
-        {
-            SolvePuzzle();
-        }
-    }
+	public virtual void CheckSolution()
+	{
+		if (IsSolutionCorrect())
+			SolvePuzzle();
+	}
 
-    protected abstract bool IsSolutionCorrect();
+	protected abstract bool IsSolutionCorrect();
 
-    protected virtual void SolvePuzzle()
-    {
-        isSolved = true;
-        
-        // UI 숨김
-        if (puzzleUI != null)
-        {
-            puzzleUI.SetActive(false);
-        }
-        
-        OnPuzzleSolved?.Invoke();
-        Debug.Log($"퍼즐 해결: {puzzleId}");
-        
-        // 카메라 복귀
-        ExitPuzzle();
-    }
+	protected virtual void SolvePuzzle()
+	{
+		isSolved = true;
+		puzzleUI?.SetActive(false);
+		OnPuzzleSolved?.Invoke();
+		Debug.Log($"퍼즐 해결: {puzzleId}");
+		ExitPuzzle();
+	}
 
-    public virtual void ExitPuzzle()
-    {
-        // UI 숨김
-        if (puzzleUI != null)
-        {
-            puzzleUI.SetActive(false);
-        }
-        
-        // 카메라 복귀 애니메이션
-        StartCoroutine(ExitPuzzleCoroutine());
-    }
+	public virtual void ExitPuzzle()
+	{
+		puzzleUI?.SetActive(false);
+		StartCoroutine(ExitPuzzleCoroutine());
+	}
 
-    protected virtual IEnumerator ExitPuzzleCoroutine()
-    {
+	protected virtual IEnumerator ExitPuzzleCoroutine()
+	{
 		yield return StartCoroutine(TransitionCamera(false));
 
-		// 게임 상태 복귀
 		GameManager.Instance.StateManager.ChangeState(GameState.Playing);
 
-		// 플레이어 조작 활성화
 		if (_player != null)
 		{
 			_player.enabled = true;
+
+			// ⭐ 플레이어 메쉬 다시 보이기
+			foreach (var mesh in _player.GetComponentsInChildren<MeshRenderer>())
+				mesh.enabled = true;
+			foreach (var mesh in _player.GetComponentsInChildren<SkinnedMeshRenderer>())
+				mesh.enabled = true;
 		}
 
-		// ⭐ 커서 다시 숨김 및 잠금 (추가!)
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
 	}

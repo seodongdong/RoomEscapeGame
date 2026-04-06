@@ -1,54 +1,49 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-// 엔딩 매니저 클래스 (노말, 진엔딩, 게임오버 처리)
-
+/// <summary>
+/// 엔딩 관리
+/// 기획서: 게임오버 / 노말(캠코더X) / 진엔딩(캠코더O)
+/// </summary>
 public class EndingManager : IEndingManager
 {
-    // 진엔딩에 필요한 전체 단서 개수
-    private const int REQUIRED_CLUES_FOR_TRUE_ENDING = 15;
+	public EndingType CheckEndingConditions(IInventory inventory, bool girlRescued, bool hasCamcorder)
+	{
+		// 소녀 구출 실패 → 게임오버
+		if (!girlRescued)
+		{
+			return EndingType.GameOver;
+		}
 
-    public EndingType CheckEndingConditions(IInventory inventory, bool girlRescued)
-    {
-        // 노말엔딩: 소녀 구출 + 단서 부족
-        if (girlRescued && !HasAllClues())
-        {
-            return EndingType.Normal;
-        }
+		// 소녀 구출 성공 + 캠코더 미수집 → 노말 엔딩
+		if (!hasCamcorder)
+		{
+			Debug.Log("[EndingManager] 노말 엔딩 (캠코더 미수집)");
+			return EndingType.Normal;
+		}
 
-        // 진엔딩: 소녀 구출 + 모든 단서
-        if (girlRescued && HasAllClues())
-        {
-            return EndingType.True;
-        }
+		// 소녀 구출 성공 + 캠코더 수집 → 진엔딩
+		Debug.Log("[EndingManager] 진엔딩 (캠코더 수집 완료)");
+		return EndingType.True;
+	}
 
-        // 여기 도달하면 안 됨 (추격전에서 게임오버 됐어야 함)
-        Debug.LogError("엔딩 조건 오류: 잘못된 경로입니다!");
-        return EndingType.Normal;
-    }
+	public void TriggerEnding(EndingType endingType)
+	{
+		Debug.Log($"[EndingManager] 엔딩 발동: {endingType}");
 
-    private bool HasAllClues()
-    {
-        int totalClues = GameManager.Instance.ClueTracker.GetClueCount();
-        return totalClues >= REQUIRED_CLUES_FOR_TRUE_ENDING;
-    }
+		switch (endingType)
+		{
+			case EndingType.GameOver:
+				SceneManager.LoadScene("GameOverScene");
+				break;
 
-    public void TriggerEnding(EndingType endingType)
-    {
-        Debug.Log($"엔딩 발동: {endingType}");
-        
-        switch (endingType)
-        {
-            case EndingType.GameOver:
-                UnityEngine.SceneManagement.SceneManager.LoadScene("GameOverScene");
-                break;
-                
-            case EndingType.Normal:
-                UnityEngine.SceneManagement.SceneManager.LoadScene("NormalEndingScene");
-                break;
-                
-            case EndingType.True:
-                UnityEngine.SceneManagement.SceneManager.LoadScene("TrueEndingScene");
-                break;
-        }
-    }
+			case EndingType.Normal:
+				SceneManager.LoadScene("NormalEndingScene");
+				break;
+
+			case EndingType.True:
+				SceneManager.LoadScene("TrueEndingScene");
+				break;
+		}
+	}
 }
