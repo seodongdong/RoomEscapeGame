@@ -1,12 +1,10 @@
 using UnityEngine;
 
-/// <summary>
-/// 저장 시스템 인터페이스
-/// 게임 진행 상황 저장/로드
-/// </summary>
+// 세이브/로드 시스템 인터페이스
+
 public interface ISaveSystem
 {
-	void SaveGame(GameData data);
-	GameData LoadGame();
-	bool HasSaveFile();
+    void SaveGame(GameData data);
+    GameData LoadGame();
+    bool HasSaveFile();
 }

@@ -1,14 +1,11 @@
 using UnityEngine;
 
-/// <summary>
-/// 적(크리처/범인) 인터페이스
-/// AI 추격, 정지, 공격 행동 정의
-/// </summary>
+// 적/크리처 인터페이스
+
 public interface IEnemy
 {
-	bool IsChasing { get; }
-
-	void Chase(Transform target);
-	void StopChasing();
-	void AttackTarget(IPlayer target);
+    void Chase(Transform target);
+    void StopChasing();
+    void AttackTarget(IPlayer target);
+    bool IsChasing { get;}
 }

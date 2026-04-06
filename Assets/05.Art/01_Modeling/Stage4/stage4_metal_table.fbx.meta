@@ -3,12 +3,22 @@ guid: f94259c7ab4c6b4469befaa440674e3c
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tile_Plastic_01
+    second: {fileID: 2100000, guid: a4d9611b79942b64e9dc7757b07ac50c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tile_metal_01
+    second: {fileID: 2100000, guid: 41829d1b4be11a94e90a2f3c097e79e1, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
     materialSearch: 1
-    materialLocation: 0
+    materialLocation: 1
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0

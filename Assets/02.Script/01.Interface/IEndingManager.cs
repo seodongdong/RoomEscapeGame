@@ -1,11 +1,9 @@
 using UnityEngine;
 
-/// <summary>
-/// 엔딩 관리 인터페이스
-/// 기획서: 게임오버 / 노말 / 진엔딩
-/// </summary>
+// 엔딩 매니저 인터페이스
+
 public interface IEndingManager
 {
-	EndingType CheckEndingConditions(IInventory inventory, bool girlRescued, bool hasCamcorder);
-	void TriggerEnding(EndingType endingType);
+    EndingType CheckEndingConditions(IInventory inventory, bool girlRescued);
+    void TriggerEnding(EndingType endingType);
 }

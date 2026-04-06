@@ -1,13 +1,10 @@
 using UnityEngine;
 
-/// <summary>
-/// 대사 시스템 인터페이스
-/// 대사 표시/숨김 및 활성 상태 확인
-/// </summary>
+// 대사 시스템 인터페이스
+
 public interface IDialogueSystem
 {
-	bool IsDialogueActive { get; }
-
-	void ShowDialogue(string speaker, string text, float duration);
-	void HideDialogue();
+    void ShowDialogue(string speaker, string text, float duration);
+    void HideDialogue();
+    bool IsDialogueActive { get; }      // 대사 활성화 여부 확인
 }

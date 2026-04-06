@@ -1,58 +1,30 @@
 using UnityEngine;
 
-/// <summary>
-/// 3스테이지: 종이인형 크리처
-/// 기획서: "처음엔 평범한 인형이였다가 뒤로 갈수록 점점 기괴하게"
-/// (고개 돌아감, 눈 떨어짐, 피/먼지로 더러워짐, 옷이 찢어짐 등)
-/// </summary>
 public class Stage3_DollCreature : CreatureBase
 {
-	[System.Serializable]
-	public class DollState
-	{
-		public GameObject dollModel;
-		public string description;
-	}
-
-	[Header("Doll States")]
-	[SerializeField] private DollState[] dollStates; // 4개 (각 퍼즐마다)
-
-	private int _currentStateIndex = 0;
-
-	protected override void Start()
-	{
-		base.Start();
-		UpdateDollState(0);
-	}
+	[Header("Ghost Settings")]
+	[SerializeField] private float ceilingHeight = 5f;
+	[SerializeField] private bool crawlOnCeiling = true;
 
 	protected override void UpdateBehavior()
 	{
-		// 가만히 앉아있음
-		transform.LookAt(_player.transform);
-	}
-
-	public void NextState()
-	{
-		_currentStateIndex++;
-		if (_currentStateIndex < dollStates.Length)
+		if (crawlOnCeiling)
 		{
-			UpdateDollState(_currentStateIndex);
+			// 천장을 기어다님
+			Vector3 targetPos = _player.transform.position;
+			targetPos.y = ceilingHeight;
+
+			Vector3 direction = (targetPos - transform.position).normalized;
+			transform.position += direction * moveSpeed * Time.deltaTime;
+
+			// 플레이어 아래로 내려다보기
+			transform.LookAt(_player.transform);
 		}
-	}
-
-	private void UpdateDollState(int index)
-	{
-		// 모든 상태 비활성화
-		foreach (var state in dollStates)
+		else
 		{
-			state.dollModel.SetActive(false);
-		}
-
-		// 현재 상태만 활성화
-		if (index < dollStates.Length)
-		{
-			dollStates[index].dollModel.SetActive(true);
-			Debug.Log($"[PaperDoll] {dollStates[index].description}");
+			// 일반 추적
+			Vector3 direction = (_player.transform.position - transform.position).normalized;
+			transform.position += direction * moveSpeed * Time.deltaTime;
 		}
 	}
 }

@@ -1,43 +1,44 @@
 using UnityEngine;
 
-/// <summary>
-/// 4스테이지: 아귀
-/// 기획서: "양반다리 테이블에 아귀앉아있고, 가만히 응시"
-/// "음식 가져다주면 비명을 지르고, 몸을 비틀면서 움직임"
-/// </summary>
 public class Stage4_GhoulCreature : CreatureBase
 {
 	[Header("Ghoul Settings")]
-	[SerializeField] private Transform tablePosition;
-	[SerializeField] private Animator animator;
+	[SerializeField] private Transform hidePosition; // 냉장고 뒤
+	[SerializeField] private float stareDistance = 5f;
 
-	private bool _hasScreamed = false;
+	private bool _isHiding = true;
 
 	protected override void Start()
 	{
 		base.Start();
-		transform.position = tablePosition.position;
+
+		if (hidePosition != null)
+		{
+			transform.position = hidePosition.position;
+		}
 	}
 
 	protected override void UpdateBehavior()
 	{
-		// 플레이어 응시
-		transform.LookAt(_player.transform);
-	}
+		float distanceToPlayer = Vector3.Distance(transform.position, _player.transform.position);
 
-	public void TriggerScream()
-	{
-		if (_hasScreamed) return;
+		if (_isHiding)
+		{
+			// 플레이어가 가까이 오면 나타남
+			if (distanceToPlayer < stareDistance)
+			{
+				_isHiding = false;
+			}
 
-		_hasScreamed = true;
-
-		// 비명
-		var audioManager = FindAnyObjectByType<AudioManager>();
-		audioManager?.PlaySFX("ghoul_scream");
-
-		// 애니메이션
-		animator?.SetTrigger("Scream");
-
-		Debug.Log("[Ghoul] 비명!!!");
+			// 숨어서 플레이어 응시
+			transform.LookAt(_player.transform);
+		}
+		else
+		{
+			// 천천히 다가옴
+			Vector3 direction = (_player.transform.position - transform.position).normalized;
+			transform.position += direction * moveSpeed * Time.deltaTime;
+			transform.LookAt(_player.transform);
+		}
 	}
 }

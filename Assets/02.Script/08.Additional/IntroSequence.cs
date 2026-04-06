@@ -1,11 +1,6 @@
 using UnityEngine;
 using System.Collections;
-using UnityEngine.UI;
 
-/// <summary>
-/// 인트로 연출
-/// 기획서: 비디오 화면 → 깨어남 → 소녀 첫 만남
-/// </summary>
 public class IntroSequence : MonoBehaviour
 {
 	[Header("References")]
@@ -13,25 +8,23 @@ public class IntroSequence : MonoBehaviour
 	[SerializeField] private Girl girl;
 	[SerializeField] private Transform doorPosition;
 
-	[Header("Cameras")]
-	[SerializeField] private Camera introCamera;
-	[SerializeField] private Camera playerCamera;
-
-	[Header("Fade")]
-	[SerializeField] private Image fadeImage;
-	[SerializeField] private float fadeDuration = 2f;
-
 	[Header("Dialogue")]
 	[SerializeField] private string speaker = "소년";
 	[TextArea(2, 5)]
 	[SerializeField] private string wakeUpDialogue = "...여기가 어디지?";
+	[TextArea(2, 5)]
+	[SerializeField] private string doorLockedDialogue = "문이... 안 열려!";
 
+	[Header("Camera")]
+	[SerializeField] private Camera introCamera;
 
 	private IUIManager _uiManager;
 
 	private void Start()
 	{
 		_uiManager = FindAnyObjectByType<UIManager>();
+
+		// 인트로 시작
 		StartCoroutine(PlayIntro());
 	}
 
@@ -46,72 +39,40 @@ public class IntroSequence : MonoBehaviour
 		// 상태 변경
 		GameManager.Instance.StateManager.ChangeState(GameState.MainMenu);
 
-		// 1. 페이드 인
-		yield return StartCoroutine(FadeIn());
+		// 1. 비디오 화면 효과 (옵션)
+		yield return new WaitForSeconds(2f);
 
 		// 2. 깨어남
 		_uiManager?.ShowDialogue(speaker, wakeUpDialogue);
 		yield return new WaitForSeconds(3f);
 
-		// 3. 카메라 전환
-		if (introCamera != null && playerCamera != null)
-		{
-			introCamera.gameObject.SetActive(false);
-			playerCamera.gameObject.SetActive(true);
-		}
-
-		// 4. 플레이어 활성화
+		// 3. 플레이어 활성화
 		if (player != null)
 		{
 			player.enabled = true;
 		}
 
-		// 5. 잠시 대기 후 소녀 등장
+		// 인트로 카메라 비활성화
+		if (introCamera != null)
+		{
+			introCamera.gameObject.SetActive(false);
+		}
+
+		// 4. 대문으로 유도 (옵션)
 		yield return new WaitForSeconds(2f);
+
+		// 5. 대문 시도
+		if (doorPosition != null)
+		{
+			// 플레이어가 대문 근처에 가면...
+			// (실제로는 Trigger로 구현)
+		}
+
+		// 6. 소녀 등장
+		yield return new WaitForSeconds(1f);
 		girl?.FirstMeeting();
 
-		// 6. 게임 시작
-		yield return new WaitForSeconds(5f);
+		// 7. 게임 시작
 		GameManager.Instance.StateManager.ChangeState(GameState.Playing);
-	}
-
-	private IEnumerator FadeIn()
-	{
-		if (fadeImage == null) yield break;
-
-		float elapsed = 0f;
-		Color color = fadeImage.color;
-
-		while (elapsed < fadeDuration)
-		{
-			elapsed += Time.deltaTime;
-			color.a = 1f - (elapsed / fadeDuration);
-			fadeImage.color = color;
-			yield return null;
-		}
-
-		color.a = 0f;
-		fadeImage.color = color;
-		fadeImage.gameObject.SetActive(false);
-	}
-
-	private IEnumerator FadeOut()
-	{
-		if (fadeImage == null) yield break;
-
-		fadeImage.gameObject.SetActive(true);
-		float elapsed = 0f;
-		Color color = fadeImage.color;
-
-		while (elapsed < fadeDuration)
-		{
-			elapsed += Time.deltaTime;
-			color.a = elapsed / fadeDuration;
-			fadeImage.color = color;
-			yield return null;
-		}
-
-		color.a = 1f;
-		fadeImage.color = color;
 	}
 }

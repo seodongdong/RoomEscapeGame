@@ -1,53 +1,41 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// 스테이지 관리
-/// 1. 거실 2. 장례식장 3. 미로 4. 주방 5. 지하실
-/// </summary>
+// 스테이지 매니저 인터페이스 구현 클래스
+
 public class StageManager : IStageManager
 {
-	private int _currentStage = 1;
+    private int _currentStage = 1;
+    
+    public int CurrentStage => _currentStage;
+    public event System.Action<int> OnStateChanged;     // 스테이지 상태가 변경되었을 때 발생하는 이벤트
 
-	public int CurrentStage => _currentStage;
-	public event System.Action<int> OnStageChanged;
+    public void LoadStage(int stageNumber)
+    {
+        _currentStage = stageNumber;                    // 현재 스테이지 업데이트
+        OnStateChanged?.Invoke(_currentStage);          // 이벤트 발생
+        Debug.Log($"스테이지 로드 : {_currentStage}");
 
-	public void LoadStage(int stageNumber)
-	{
-		_currentStage = stageNumber;
-		OnStageChanged?.Invoke(_currentStage);
+        // 씬 로드 추가
+        string sceneName = $"Stage{stageNumber}";
 
-		string sceneName = GetSceneName(stageNumber);
-
+		// 씬이 존재하는지 체크 (옵션)
 		if (Application.CanStreamedLevelBeLoaded(sceneName))
 		{
 			SceneManager.LoadScene(sceneName);
-			Debug.Log($"[StageManager] {sceneName} 로드");
+			Debug.Log($"스테이지 {stageNumber} 로드: {sceneName}");
 		}
 		else
 		{
-			Debug.LogWarning($"[StageManager] 씬을 찾을 수 없음: {sceneName}");
+			Debug.LogWarning($"씬을 찾을 수 없음: {sceneName}");
 		}
 	}
 
-	private string GetSceneName(int stageNumber)
-	{
-		switch (stageNumber)
-		{
-			case 1: return "Stage1_LivingRoom";      // 거실
-			case 2: return "Stage2_FuneralHall";     // 장례식장
-			case 3: return "Stage3_Maze";            // 미로
-			case 4: return "Stage4_Kitchen";         // 주방
-			case 5: return "Stage5_Basement";        // 지하실
-			default: return $"Stage{stageNumber}";
-		}
-	}
-
-	public void CompleteStage()
-	{
-		_currentStage++;
-		OnStageChanged?.Invoke(_currentStage);
-
-		Debug.Log($"[StageManager] 스테이지 클리어! 다음: {_currentStage}");
-	}
+    public void CompleteStage()
+    {
+        _currentStage++;                                // 스테이지 완료 후 다음 스테이지로 이동
+        OnStateChanged?.Invoke(_currentStage);          // 이벤트 발생
+        Debug.Log($"스테이지 완료! 다음 스테이지로 이동 : {_currentStage}");
+    }
 }

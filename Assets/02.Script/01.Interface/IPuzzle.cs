@@ -1,16 +1,12 @@
 using UnityEngine;
 
-/// <summary>
-/// 퍼즐 인터페이스
-/// 모든 퍼즐이 따라야 할 기본 구조 (시작/검증/해결)
-/// </summary>
+// 퍼즐 인터페이스
+
 public interface IPuzzle
 {
-	string PuzzleId { get; }
-	bool IsSolved { get; }
-
-	void StartPuzzle();
-	void CheckSolution();
-
-	event System.Action OnPuzzleSolved;
+    string PuzzleId { get; }
+    bool IsSolved { get; }
+    void StartPuzzle();
+    void CheckSolution();
+    event System.Action OnPuzzleSolved;     // 퍼즐이 해결되었을 때 발생하는 이벤트 
 }

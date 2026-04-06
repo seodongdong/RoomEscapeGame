@@ -1,22 +1,18 @@
 using UnityEngine;
 
+// UI 매니저 인터페이스
+
 public interface IUIManager
 {
-	// 상호작용 프롬프트
-	void ShowInteractionPrompt(string text);
-	void HideInteractionPrompt();
+    void ShowInteractionPrompt(string text);
+    void HideInteractionPrompt();
+    void ShowInventoryUI();
+    void HideInventoryUI();
+    void UpdateHealthUI(int current, int max);
+    void StartTimer(float duration);
+    void StopTimer();
 
-	// 인벤토리
-	void ShowInventoryUI();
-	void HideInventoryUI();
-
-	// ❌ UpdateHealthUI 제거
-
-	// 타이머 (5스테이지)
-	void StartTimer(float duration);
-	void StopTimer();
-
-	// 대사 시스템
-	void ShowDialogue(string speaker, string dialogue);
-	void HideDialogue();
+    // 대사 시스템 추가
+    void ShowDialogue(string speaker, string dialogue);
+    void HideDialogue();
 }
