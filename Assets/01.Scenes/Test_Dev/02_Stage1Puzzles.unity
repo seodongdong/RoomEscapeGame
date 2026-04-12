@@ -3698,14 +3698,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81b239d99f4d3ef4784b055cdce3638b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Stage1_DollCreature
+  stageNumber: 1
+  moveSpeed: 2
+  canJumpscare: 1
+  detectionRange: 10
+  jumpscareRange: 2
+  orbitRadius: 3.5
+  orbitSpeed: 30
+  slowApproachSpeed: 1
+  minStopDistance: 2.5
   creatureSpeaker: 
   creatureDialogue: ....................
   playerSpeaker: 
-  playerDialogue: "\uB0A0 \uD574\uCE58\uB824\uB294 \uC874\uC7AC\uB294 \uC544\uB2CC
+  firstReactionDialogue: "\uB0A0 \uD574\uCE58\uB824\uB294 \uC874\uC7AC\uB294 \uC544\uB2CC
     \uAC83 \uAC19\uB2E4."
-  followDistance: 3
-  moveSpeed: 2
-  rotationSpeed: 3
+  repeatDialogue: "...\uC544\uBB34 \uBC18\uC751\uC774 \uC5C6\uB2E4."
+  spotDialogue: 
 --- !u!135 &2010475120
 SphereCollider:
   m_ObjectHideFlags: 0
