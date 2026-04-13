@@ -607,10 +607,10 @@ MonoBehaviour:
     \uAC00\uB4DD\uD558\uB2E4."
   speaker: 
   dialogue: "\uB204\uAC00 \uBAA8\uC73C\uB294 \uBB3C\uAC74\uB4E4\uC778\uAC00?"
-  zoomDistance: 1.5
+  viewDistance: 0.5
+  viewOffsetY: 0
   zoomDuration: 0.5
   rotateSpeed: 3
-  viewScale: {x: 1, y: 1, z: 1}
   viewerHintUI: {fileID: 472184116}
 --- !u!65 &381313286
 BoxCollider:
@@ -2385,6 +2385,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1136154674811587144, guid: 7141e4657d647854986e42f6adfcbb59, type: 3}
+      propertyPath: viewDistance
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1136154674811587144, guid: 7141e4657d647854986e42f6adfcbb59, type: 3}
       propertyPath: viewerHintUI
       value: 
       objectReference: {fileID: 472184116}
@@ -2762,10 +2766,10 @@ MonoBehaviour:
   description: "\uC5EC\uC790\uC544\uC774\uC6A9 \uCC45\uAC00\uBC29\uC774\uB2E4."
   speaker: 
   dialogue: "\uC774 \uC9D1\uC5D0 \uC0AC\uB294 \uC544\uC774\uC758 \uBB3C\uAC74\uC778\uAC00\uBD10."
-  zoomDistance: 1.5
+  viewDistance: 1
+  viewOffsetY: 0
   zoomDuration: 0.5
   rotateSpeed: 3
-  viewScale: {x: 1, y: 1, z: 1}
   viewerHintUI: {fileID: 472184116}
 --- !u!65 &1411446671
 BoxCollider:
@@ -2893,15 +2897,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObjectViewer3D
   viewMode: 0
   clueId: smallpicture_frame
-  clueName: "\uC791\uC740\uC561"
+  clueName: "\uC791\uC740\uC561\uC790"
   description: "\uB2E4\uC815\uD558\uAC8C \uC5B4\uAE68\uB3D9\uBB34\uB97C \uD55C \uBD80\uB140\uC758
     \uAC00\uC871\uC0AC\uC9C4\uC774\uB2E4."
   speaker: 
   dialogue: "\uAC00\uC871\uC0AC\uC9C4\uC778\uAC00? \uC0AC\uC774\uAC00 \uC88B\uC544\uBCF4\uC5EC."
-  zoomDistance: 1.5
+  viewDistance: 0.5
+  viewOffsetY: 0
   zoomDuration: 0.5
   rotateSpeed: 3
-  viewScale: {x: 1, y: 1, z: 1}
   viewerHintUI: {fileID: 472184116}
 --- !u!65 &1514721548
 BoxCollider:
@@ -3287,10 +3291,10 @@ MonoBehaviour:
   description: "\uAC70\uCE5C \uBD84\uC704\uAE30\uC758 \uB3D9\uC591\uD654 \uC791\uD488\uC774\uB2E4."
   speaker: 
   dialogue: "\uBB54\uAC00 \uC12C\uB729\uD55C \uADF8\uB9BC\uC774\uC57C..."
-  zoomDistance: 1.5
+  viewDistance: 0.5
+  viewOffsetY: 0
   zoomDuration: 0.5
   rotateSpeed: 3
-  viewScale: {x: 1, y: 1, z: 1}
   viewerHintUI: {fileID: 472184116}
 --- !u!65 &1836639752
 BoxCollider:
