@@ -1,20 +1,23 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// È¯°æ ¿ÀºêÁ§Æ® »óÈ£ÀÛ¿ë
-/// - ViewMode.Viewer: 3D È®´ë È¸Àü º¸±â (±âÁ¸)
-/// - ViewMode.DialogueOnly: ´ë»ç¸¸ Ãâ·Â (Ä¿´Ù¶õ ¿ÀºêÁ§Æ®¿ë)
+/// í™˜ê²½ ì˜¤ë¸Œì íŠ¸ ìƒí˜¸ì‘ìš©
+/// - ViewMode.Viewer: ì˜¤ë¸Œì íŠ¸ë¥¼ ì¹´ë©”ë¼ ì •ë©´ìœ¼ë¡œ ì´ë™í•´ì„œ ë³´ê¸° (í¬ê¸° ë³€ê²½ ì—†ìŒ)
+/// - ViewMode.DialogueOnly: ëŒ€ì‚¬ë§Œ ì¶œë ¥
+///
+/// [ìˆ˜ì •] ì¹´ë©”ë¼ ìì‹ìœ¼ë¡œ ë¶€ì°© í›„ ë¡œì»¬ ì¢Œí‘œ ê³ ì •
+///        â†’ ì˜¤ë¸Œì íŠ¸ ìœ„ì¹˜/ê±°ë¦¬ì™€ ë¬´ê´€í•˜ê²Œ í•­ìƒ ì¹´ë©”ë¼ ì •ë©´ì— ë“±ì¥
 /// </summary>
 public class ObjectViewer3D : MonoBehaviour, IInteractable
 {
 	public enum ViewMode
 	{
-		Viewer,         // 3D È®´ë È¸Àü
-		DialogueOnly    // ´ë»ç¸¸ Ãâ·Â
+		Viewer,
+		DialogueOnly
 	}
 
-	[Header("¸ğµå ¼±ÅÃ")]
+	[Header("ëª¨ë“œ ì„ íƒ")]
 	[SerializeField] private ViewMode viewMode = ViewMode.Viewer;
 
 	[Header("Clue Info")]
@@ -24,43 +27,42 @@ public class ObjectViewer3D : MonoBehaviour, IInteractable
 	[SerializeField] private string description;
 
 	[Header("Dialogue")]
-	[SerializeField] private string speaker = "¼Ò³â";
+	[SerializeField] private string speaker = "ì†Œë…„";
 	[TextArea(2, 5)]
 	[SerializeField] private string dialogue;
 
-	// ¦¡¦¡ Viewer ¸ğµå Àü¿ë ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-	[Header("Viewer Settings (Viewer ¸ğµå¸¸ »ç¿ë)")]
-	[SerializeField] private float zoomDistance = 1.5f;
-	[SerializeField] private float zoomDuration = 0.5f;
+	[Header("Viewer Settings")]
+	[Tooltip("ì¹´ë©”ë¼ ì• ëª‡ ë¯¸í„°ì— ì˜¤ë¸Œì íŠ¸ë¥¼ ë†“ì„ì§€ (0.3 ~ 1.0 ê¶Œì¥)")]
+	[SerializeField] private float viewDistance = 0.5f;     // ì¹´ë©”ë¼ ë¡œì»¬ Z ê±°ë¦¬
+	[Tooltip("ì¹´ë©”ë¼ ì¤‘ì‹¬ ê¸°ì¤€ ìƒí•˜ ì˜¤í”„ì…‹ (0ì´ë©´ ì •ì¤‘ì•™)")]
+	[SerializeField] private float viewOffsetY = 0f;        // ì¹´ë©”ë¼ ë¡œì»¬ Y ì˜¤í”„ì…‹
+	[SerializeField] private float zoomDuration = 0.4f;
 	[SerializeField] private float rotateSpeed = 3f;
-	[SerializeField] private Vector3 viewScale = Vector3.one;
 	[SerializeField] private GameObject viewerHintUI;
 
-	// ¿ø·¡ »óÅÂ ÀúÀå
+	// ì›ë˜ ìƒíƒœ ì €ì¥
 	private Vector3 _originalPosition;
 	private Quaternion _originalRotation;
 	private Vector3 _originalScale;
 	private Transform _originalParent;
 
-	// ºä¾î »óÅÂ
+	// ë·°ì–´ ìƒíƒœ
 	private bool _isViewing = false;
 	private bool _isRegistered = false;
 	private bool _isDragging = false;
-	private Vector3 _lastMousePosition;
+	private Vector3 _lastMousePos;
 
-	private Camera _playerCamera;
+	private Camera _cam;
 	private Player _player;
 
-	// ¦¡¦¡ IInteractable ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-	public string InteractionPrompt => $"[F] {clueName} Á¶»çÇÏ±â";
-
+	// â”€â”€ IInteractable â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	public string InteractionPrompt => $"[F] {clueName} ì¡°ì‚¬í•˜ê¸°";
 	public bool CanInteract(IPlayer player) => true;
 
 	public void Interact(IPlayer player)
 	{
 		if (Stage1TVPriorityManager.CheckPriorityBlocked(player)) return;
 
-		// ´Ü¼­ ÃÖÃÊ µî·Ï
 		if (!_isRegistered)
 		{
 			_isRegistered = true;
@@ -69,127 +71,109 @@ public class ObjectViewer3D : MonoBehaviour, IInteractable
 
 		if (viewMode == ViewMode.DialogueOnly)
 		{
-			// ¦¡¦¡ ´ë»ç¸¸ Ãâ·Â ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-			var uiManager = FindAnyObjectByType<UIManager>();
-			uiManager?.ShowDialogue(speaker, dialogue);
+			FindAnyObjectByType<UIManager>()?.ShowDialogue(speaker, dialogue);
+			return;
 		}
-		else
-		{
-			// ¦¡¦¡ 3D ºä¾î ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-			if (_isViewing) return;
 
-			_player = FindAnyObjectByType<Player>();
-			_playerCamera = Camera.main;
+		if (_isViewing) return;
 
-			StartCoroutine(ZoomIn());
-		}
+		_player = FindAnyObjectByType<Player>();
+		_cam = Camera.main;
+
+		StartCoroutine(ZoomIn());
 	}
 
-	// ¦¡¦¡ Viewer ¸ğµå Àü¿ë ·ÎÁ÷ ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-
+	// â”€â”€ Update (ë·°ì–´ ì—´ë ¤ìˆì„ ë•Œë§Œ) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	private void Update()
 	{
-		if (viewMode != ViewMode.Viewer) return;
 		if (!_isViewing) return;
 
-		// ¸¶¿ì½º µå·¡±× È¸Àü
-		if (Input.GetMouseButtonDown(0))
-		{
-			_isDragging = true;
-			_lastMousePosition = Input.mousePosition;
-		}
-		if (Input.GetMouseButtonUp(0))
-			_isDragging = false;
+		// ë§ˆìš°ìŠ¤ ë“œë˜ê·¸ â†’ ì˜¤ë¸Œì íŠ¸ íšŒì „
+		if (Input.GetMouseButtonDown(0)) { _isDragging = true; _lastMousePos = Input.mousePosition; }
+		if (Input.GetMouseButtonUp(0)) _isDragging = false;
 
 		if (_isDragging)
 		{
-			Vector3 delta = Input.mousePosition - _lastMousePosition;
+			Vector3 delta = Input.mousePosition - _lastMousePos;
 			transform.Rotate(Vector3.up, -delta.x * rotateSpeed, Space.World);
 			transform.Rotate(Vector3.right, delta.y * rotateSpeed, Space.World);
-			_lastMousePosition = Input.mousePosition;
+			_lastMousePos = Input.mousePosition;
 		}
 
-		// E ¶Ç´Â ESC·Î ´İ±â
 		if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape))
-			HandleExit();
+			StartCoroutine(ZoomOut());
 	}
 
+	// â”€â”€ ZoomIn â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	private IEnumerator ZoomIn()
 	{
 		_isViewing = true;
 
 		if (_player != null) _player.enabled = false;
 		GameManager.Instance?.StateManager.ChangeState(GameState.Viewer);
-
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
-
 		viewerHintUI?.SetActive(true);
 
-		// ¿ø·¡ »óÅÂ ÀúÀå
+		// ì›ë˜ ìƒíƒœ ì €ì¥
 		_originalPosition = transform.position;
 		_originalRotation = transform.rotation;
 		_originalScale = transform.localScale;
 		_originalParent = transform.parent;
 
-		// Ä«¸Ş¶ó ¾ÕÀ¸·Î ÀÌµ¿
-		Vector3 targetPos = _playerCamera.transform.position
-						  + _playerCamera.transform.forward * zoomDistance;
+		// â­ ì¹´ë©”ë¼ ìì‹ìœ¼ë¡œ ë¶€ì°©
+		//    ë¡œì»¬ ì¢Œí‘œ (0, offsetY, viewDistance) = í•­ìƒ ì¹´ë©”ë¼ ì •ë©´ ê³ ì • ìœ„ì¹˜
+		transform.SetParent(_cam.transform);
+
+		Vector3 startLocalPos = transform.localPosition;
+		Vector3 targetLocalPos = new Vector3(0f, viewOffsetY, viewDistance);
 
 		float elapsed = 0f;
 		while (elapsed < zoomDuration)
 		{
 			elapsed += Time.unscaledDeltaTime;
-			float t = elapsed / zoomDuration;
-			transform.position = Vector3.Lerp(_originalPosition, targetPos, t);
-			transform.localScale = Vector3.Lerp(_originalScale, viewScale, t);
+			float t = Mathf.SmoothStep(0f, 1f, elapsed / zoomDuration);
+			transform.localPosition = Vector3.Lerp(startLocalPos, targetLocalPos, t);
 			yield return null;
 		}
 
-		transform.position = targetPos;
-		transform.localScale = viewScale;
+		transform.localPosition = targetLocalPos;
 
-		// ´ë»ç Ãâ·Â
+		// ëŒ€ì‚¬ ì¶œë ¥
 		if (!string.IsNullOrEmpty(dialogue))
-		{
-			var uiManager = FindAnyObjectByType<UIManager>();
-			uiManager?.ShowDialogue(speaker, dialogue);
-		}
+			FindAnyObjectByType<UIManager>()?.ShowDialogue(speaker, dialogue);
 	}
 
+	// â”€â”€ ZoomOut â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	private IEnumerator ZoomOut()
 	{
 		viewerHintUI?.SetActive(false);
 
-		Vector3 startPos = transform.position;
-		Vector3 startScale = transform.localScale;
+		// ì¹´ë©”ë¼ ìì‹ ìƒíƒœì—ì„œ ì›”ë“œ ì¢Œí‘œë¡œ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+		Vector3 startWorldPos = transform.position;
+
+		// ë¶€ëª¨ë¥¼ ì›ë˜ëŒ€ë¡œ ë³µì›
+		transform.SetParent(_originalParent);
 
 		float elapsed = 0f;
 		while (elapsed < zoomDuration)
 		{
 			elapsed += Time.unscaledDeltaTime;
-			float t = elapsed / zoomDuration;
-			transform.position = Vector3.Lerp(startPos, _originalPosition, t);
-			transform.localScale = Vector3.Lerp(startScale, _originalScale, t);
+			float t = Mathf.SmoothStep(0f, 1f, elapsed / zoomDuration);
+			transform.position = Vector3.Lerp(startWorldPos, _originalPosition, t);
 			yield return null;
 		}
 
+		// ì™„ì „ ë³µì›
 		transform.position = _originalPosition;
 		transform.rotation = _originalRotation;
 		transform.localScale = _originalScale;
-		transform.SetParent(_originalParent);
 
 		_isViewing = false;
 
 		if (_player != null) _player.enabled = true;
 		GameManager.Instance?.StateManager.ChangeState(GameState.Playing);
-
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
-	}
-
-	private void HandleExit()
-	{
-		StartCoroutine(ZoomOut());
 	}
 }

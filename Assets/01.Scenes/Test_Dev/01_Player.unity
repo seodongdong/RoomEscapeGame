@@ -1405,14 +1405,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81b239d99f4d3ef4784b055cdce3638b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Stage1_DollCreature
+  stageNumber: 0
+  moveSpeed: 2
+  canJumpscare: 1
+  detectionRange: 10
+  jumpscareRange: 2
+  orbitRadius: 2.5
+  orbitSpeed: 30
+  slowApproachSpeed: 1
+  minStopDistance: 1.5
   creatureSpeaker: 
   creatureDialogue: ....................
   playerSpeaker: 
-  playerDialogue: "\uB0A0 \uD574\uCE58\uB824\uB294 \uC874\uC7AC\uB294 \uC544\uB2CC
+  firstReactionDialogue: "\uB0A0 \uD574\uCE58\uB824\uB294 \uC874\uC7AC\uB294 \uC544\uB2CC
     \uAC83 \uAC19\uB2E4."
-  followDistance: 3
-  moveSpeed: 2
-  rotationSpeed: 3
+  repeatDialogue: "...\uC544\uBB34 \uBC18\uC751\uC774 \uC5C6\uB2E4."
+  spotDialogue: 
 --- !u!135 &602023308
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -2315,7 +2323,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ccaeeb59e2f6cf4d98921e0a407c2bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Girl
-  speaker: 
+  speaker: ???
   dialogue1: "\uADF8 \uBB38\uC740 \uC548 \uC5F4\uB824."
   dialogue2: "\uB098\uB97C \uAD6C\uD574\uC918\u2026"
   appearPosition: {fileID: 606403211}
