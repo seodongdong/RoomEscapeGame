@@ -42,6 +42,7 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
+    - _BumpScale: 1
     - _Smoothness: 0.518
     m_Colors:
     - _BaseColor: {r: 0.4056604, g: 0.35782307, b: 0.35782307, a: 1}
