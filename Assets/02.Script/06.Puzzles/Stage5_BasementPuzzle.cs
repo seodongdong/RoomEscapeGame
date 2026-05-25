@@ -167,7 +167,7 @@ public class Stage5_BasementPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZoneP
 		foreach (var slot in shelfSlots)
 		{
 			if (slot == null) continue;
-			if (slot.IsCorrect) filledCount++;
+			//if (slot.IsCorrect) filledCount++;
 		}
 		return filledCount > 0 && filledCount == _spawnedDolls.Count;
 	}

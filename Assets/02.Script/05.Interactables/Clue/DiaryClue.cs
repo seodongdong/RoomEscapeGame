@@ -17,13 +17,13 @@ public class DiaryClue : MonoBehaviour, IInteractable
 	[SerializeField]
 	private List<string> pages = new List<string>
 	{
-		"2023년 7월 15일\n\n오늘은 친구가 우리집에 놀러왔다.\n맛있는 음식도 같이 먹고,\n인형놀이도 했다.\n\n정말 재미있었다!",
-		"2023년 7월 20일\n\n오늘도 친구랑 놀았다.\n엄마가 만들어준 과자가\n정말 맛있었어.\n\n내일도 같이 놀기로 했다.",
-		"2023년 7월 25일\n\n...\n\n(페이지가 찢어져있다)"
+		"1988년 7월 15일\n\n오늘은 친구가 우리집에 놀러왔다.\n맛있는 음식도 같이 먹고,\n인형놀이도 했다.\n\n정말 재미있었다!",
+		"1988년 7월 20일\n\n오늘도 친구랑 놀았다.\n엄마가 만들어준 과자가\n정말 맛있었어.\n\n내일도 같이 놀기로 했다.",
+		"1988년 7월 25일\n\n...\n\n(페이지가 찢어져있다)"
 	};
 
 	[Header("Inventory Data")]
-	[SerializeField] private string itemDate = "2023.07.15";
+	[SerializeField] private string itemDate = "1988.07.15";
 	[TextArea(3, 5)]
 	[SerializeField] private string summary = "어린 여자아이가 쓴 일기장. 친구와 함께 놀았다는 내용이 적혀있다.";
 
@@ -41,18 +41,14 @@ public class DiaryClue : MonoBehaviour, IInteractable
 
 	private void Start()
 	{
-		_diaryUI = FindAnyObjectByType<DiaryUI>();
-		_inventoryUI = FindAnyObjectByType<InventoryUI_Complete>();
+		// FindObjectsInactive.Include 추가 → 비활성 오브젝트도 탐색
+		_diaryUI = FindAnyObjectByType<DiaryUI>(FindObjectsInactive.Include);
+		_inventoryUI = FindAnyObjectByType<InventoryUI_Complete>(FindObjectsInactive.Include);
 
 		if (_diaryUI == null)
-		{
 			Debug.LogError("[DiaryClue] DiaryUI를 찾을 수 없습니다!");
-		}
-
 		if (_inventoryUI == null)
-		{
 			Debug.LogError("[DiaryClue] InventoryUI_Complete를 찾을 수 없습니다!");
-		}
 	}
 
 	public string InteractionPrompt
