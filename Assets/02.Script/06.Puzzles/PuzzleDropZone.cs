@@ -1,51 +1,46 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 /// <summary>
-/// ¿ùµå ½ºÆäÀÌ½º ÆÛÁñ¿ë µå·ÓÁ¸ (¹æ¼® À§ ½½·Ô, Á¢½Ã À§ Àç·á ÀÚ¸®, Àå½ÄÀå Ä­ µî).
+/// ì›”ë“œ ìŠ¤í˜ì´ìŠ¤ í¼ì¦ìš© ë“œë¡­ì¡´.
 ///
-/// [v2 º¯°æ»çÇ×]
-/// - IDropZonePuzzle ÀÎÅÍÆäÀÌ½º ³»Àå. Stage2/4/5 ÄÁÆ®·Ñ·¯°¡ ÀÌ ÀÎÅÍÆäÀÌ½º¸¦ ±¸ÇöÇÏ¸é
-///   Initialize() ÇÑ ¹øÀ¸·Î ¾î´À ½ºÅ×ÀÌÁöµç ¿¬°áµË´Ï´Ù.
-/// - requiredItemId ÇÊµå Ãß°¡. ºñ¾îÀÖÀ¸¸é »ö»ó ¸ÅÄª(Stage2), °ªÀÌ ÀÖÀ¸¸é ID ¸ÅÄª(Stage4/5).
+/// [v4 ë³€ê²½ì‚¬í•­]
+/// TryAcceptItem() â€” ì–´ë–¤ ì•„ì´í…œì´ë“  ìˆ˜ë½. ë†“ëŠ” ìˆœê°„ ì›ƒëŠ” í‘œì •ìœ¼ë¡œ ë°”ë€œ.
+/// _placedItem í•„ë“œ ì¶”ê°€ â€” í¼ì¦ ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ì •ë‹µ ì²´í¬ ì‹œ ì‚¬ìš©.
+/// IsCorrectlyFilled â€” ì´ ì¡´ì— ì˜¬ë°”ë¥¸ ì•„ì´í…œì´ ë†“ì—¬ìˆëŠ”ì§€ ì™¸ë¶€ì—ì„œ í™•ì¸.
 /// </summary>
 public class PuzzleDropZone : MonoBehaviour
 {
-	/// <summary>
-	/// µå·ÓÁ¸À» »ç¿ëÇÏ´Â ¸ğµç ÆÛÁñ ÄÁÆ®·Ñ·¯°¡ ±¸ÇöÇØ¾ß ÇÏ´Â ÀÎÅÍÆäÀÌ½º.
-	/// Stage2_AltarCandyPuzzle, Stage4_ToyFoodPuzzle, Stage5_BasementPuzzleÀÌ ±¸ÇöÇÕ´Ï´Ù.
-	/// </summary>
 	public interface IDropZonePuzzle
 	{
 		void OnItemPlacedOnZone(PuzzleDropZone zone);
 	}
 
-	[Header("½½·Ô ½Äº° - µÑ Áß ÇÏ³ª¸¸ ¼³Á¤ÇÏ¸é µË´Ï´Ù")]
-	[Tooltip("Stage4/5¿ë: ÀÌ ½½·Ô¿¡ ³õÀ» ¼ö ÀÖ´Â ¾ÆÀÌÅÛ ID. ºñ¿öµÎ¸é »ö»ó ¸ÅÄªÀ¸·Î ´ëÃ¼.")]
+	[Header("ìŠ¬ë¡¯ ì‹ë³„ (ì •ë‹µ ì²´í¬ìš©)")]
+	[Tooltip("Stage4/5ìš©: ì •ë‹µ ì•„ì´í…œ ID")]
 	public string requiredItemId = "";
 
-	[Tooltip("Stage2¿ë: ÀÌ ½½·Ô¿¡ ³õÀ» ¼ö ÀÖ´Â Á¤´ä »ö»ó. requiredItemId°¡ ÀÖÀ¸¸é ¹«½ÃµÊ.")]
+	[Tooltip("Stage2ìš©: ì •ë‹µ ìƒ‰ìƒ")]
 	public Color requiredColor = Color.white;
 
-	[Tooltip("½½·Ô ÀÎµ¦½º (ÆÛÁñ ÄÁÆ®·Ñ·¯¿¡¼­ ÁøÇà »óÈ² ·Î±×¿ë)")]
 	public int slotIndex = 0;
 
-	[Header("½Ã°¢ ÇÇµå¹é")]
+	[Header("ì‹œê° í”¼ë“œë°±")]
 	[SerializeField] private Renderer photoRenderer;
-	[SerializeField] private Material emptyMaterial;
-	[SerializeField] private Material correctMaterial;
-	[SerializeField] private Material bigSmileMaterial;
+	[SerializeField] private Material emptyMaterial;      // ì•„ë¬´ê²ƒë„ ì—†ì„ ë•Œ
+	[SerializeField] private Material smileMaterial;      // ì‚¬íƒ• ë†“ì˜€ì„ ë•Œ (ì •ë‹µ/ì˜¤ë‹µ ë¬´ê´€)
+	[SerializeField] private Material bigSmileMaterial;   // ë§ˆì§€ë§‰ ì •ë‹µì¼ ë•Œë§Œ
+
 	[SerializeField] private Renderer candyVisualRenderer;
 
-	// ÆÛÁñ ÄÁÆ®·Ñ·¯ (ÀÎÅÍÆäÀÌ½º·Î ÂüÁ¶ÇÏ¹Ç·Î ¾î´À ½ºÅ×ÀÌÁöµç È£È¯)
 	private IDropZonePuzzle _puzzle;
+	private PuzzleDraggableItem _placedItem; // í˜„ì¬ ì˜¬ë ¤ì§„ ì•„ì´í…œ
 
 	public bool IsOccupied { get; private set; } = false;
-	public bool IsCorrect { get; private set; } = false;
 
-	/// <summary>
-	/// Awake()¿¡¼­ ÆÛÁñ ÄÁÆ®·Ñ·¯°¡ È£ÃâÇØ¼­ ÀÚ½ÅÀ» µî·ÏÇÕ´Ï´Ù.
-	/// ÄÁÆ®·Ñ·¯°¡ IDropZonePuzzleÀ» ±¸ÇöÇÏ°í ÀÖÀ¸¸é µË´Ï´Ù.
-	/// </summary>
+	/// <summary>ì´ ì¡´ì— ì˜¬ë°”ë¥¸ ì•„ì´í…œì´ ë†“ì—¬ìˆëŠ”ì§€ (ì •ë‹µ ì²´í¬ìš©)</summary>
+	public bool IsCorrectlyFilled =>
+		IsOccupied && _placedItem != null && IsMatchFor(_placedItem);
+
 	public void Initialize(IDropZonePuzzle puzzle)
 	{
 		_puzzle = puzzle;
@@ -53,64 +48,49 @@ public class PuzzleDropZone : MonoBehaviour
 	}
 
 	/// <summary>
-	/// PuzzleDraggableItem.OnMouseUp()¿¡¼­ È£ÃâµË´Ï´Ù.
-	/// Á¤´äÀÌ¸é true, ¾Æ´Ï¸é false¸¦ ¹İÈ¯ÇØ¼­ ¾ÆÀÌÅÛÀÌ ¿øÀ§Ä¡·Î µ¹¾Æ°¡°Ô ÇÕ´Ï´Ù.
+	/// ì–´ë–¤ ì•„ì´í…œì´ë“  ìˆ˜ë½. ë†“ëŠ” ì¦‰ì‹œ ì›ƒëŠ” í‘œì •ìœ¼ë¡œ ë°”ë€ë‹ˆë‹¤.
+	/// ì •ë‹µ ì—¬ë¶€ëŠ” í¼ì¦ ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ë³„ë„ë¡œ íŒë‹¨í•©ë‹ˆë‹¤.
 	/// </summary>
 	public bool TryAcceptItem(PuzzleDraggableItem item)
 	{
 		if (IsOccupied) return false;
 
-		bool matches = IsMatch(item);
-		if (!matches)
-		{
-			Debug.Log($"[DropZone {slotIndex}] ºÒÀÏÄ¡ - °ÅºÎ");
-			return false;
-		}
-
 		IsOccupied = true;
-		IsCorrect = true;
-		UpdatePhotoExpression(false);
+		_placedItem = item;
+
+		// ë†“ëŠ” ìˆœê°„ ë¬´ì¡°ê±´ ì›ƒëŠ” í‘œì •
+		if (photoRenderer != null && smileMaterial != null)
+			photoRenderer.material = smileMaterial;
+
 		ShowCandyVisual(item.itemColor);
 
 		_puzzle?.OnItemPlacedOnZone(this);
 		return true;
 	}
 
-	/// <summary>¾ÆÀÌÅÛÀÌ ´Ù½Ã ÁıÈú ¶§ ¶Ç´Â ¸®¼Â ½Ã ½½·ÔÀ» ºñ¿ó´Ï´Ù.</summary>
 	public void RemoveItem()
 	{
 		IsOccupied = false;
-		IsCorrect = false;
+		_placedItem = null;
 		ResetVisuals();
 	}
 
-	/// <summary>ÆÛÁñ ÀüÃ¼ Á¤´ä ½Ã ¸¶Áö¸· Ç¥Á¤À¸·Î ¾÷µ¥ÀÌÆ®.</summary>
+	/// <summary>ë§ˆì§€ë§‰ ì •ë‹µ ìŠ¬ë¡¯ì—ë§Œ í™œì§ ì›ƒëŠ” í‘œì • ì ìš©.</summary>
 	public void SetBigSmileExpression()
 	{
 		if (photoRenderer != null && bigSmileMaterial != null)
 			photoRenderer.material = bigSmileMaterial;
 	}
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-	// ³»ºÎ ÇïÆÛ
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-
 	/// <summary>
-	/// requiredItemId°¡ ÀÖÀ¸¸é ID ºñ±³, ¾øÀ¸¸é »ö»ó ºñ±³.
+	/// ì´ ì•„ì´í…œì´ ì´ ì¡´ì˜ ì •ë‹µì¸ì§€ í™•ì¸.
+	/// requiredItemIdê°€ ìˆìœ¼ë©´ ID ë¹„êµ, ì—†ìœ¼ë©´ ìƒ‰ìƒ ë¹„êµ.
 	/// </summary>
-	private bool IsMatch(PuzzleDraggableItem item)
+	public bool IsMatchFor(PuzzleDraggableItem item)
 	{
 		if (!string.IsNullOrEmpty(requiredItemId))
 			return item.itemId == requiredItemId;
-		else
-			return ApproxColorEqual(item.itemColor, requiredColor);
-	}
-
-	private void UpdatePhotoExpression(bool isFinal)
-	{
-		if (photoRenderer == null) return;
-		Material mat = isFinal ? bigSmileMaterial : correctMaterial;
-		if (mat != null) photoRenderer.material = mat;
+		return ApproxColorEqual(item.itemColor, requiredColor);
 	}
 
 	private void ShowCandyVisual(Color color)

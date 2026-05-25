@@ -3,11 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 
 /// <summary>
-/// 2스테이지 제단 사탕 퍼즐 - 월드 스페이스 드래그앤드랍 버전 (v2)
+/// 2스테이지 제단 사탕 퍼즐 (v4)
 ///
-/// [v2 변경사항]
-/// PuzzleDropZone.IDropZonePuzzle 인터페이스 구현 추가.
-/// Initialize() 호출 시 this(IDropZonePuzzle)를 전달합니다.
+/// [기획서 기준 동작]
+/// 1. 어느 방석에나 사탕을 올릴 수 있음
+/// 2. 사탕을 올리는 순간 그 자리 사진이 웃는 표정으로 바뀜
+/// 3. 5개를 다 올렸을 때:
+///    - 오답 → 잠깐 대기 후 자동 리셋 (사탕 전부 원위치)
+///    - 정답 → 마지막 자리만 활짝 웃는 표정, 퍼즐 완료
 /// </summary>
 public class Stage2_AltarCandyPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZonePuzzle
 {
@@ -15,33 +18,129 @@ public class Stage2_AltarCandyPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZon
 	[SerializeField] private List<PuzzleDraggableItem> candyItems = new List<PuzzleDraggableItem>();
 	[SerializeField] private List<PuzzleDropZone> dropZones = new List<PuzzleDropZone>();
 
-	[Tooltip("관 표면의 Y 좌표. 씬에서 관 오브젝트의 Transform Y값을 넣으면 됩니다.")]
+	[Tooltip("관 표면의 Y 좌표")]
 	[SerializeField] private float coffinSurfaceY = 0.5f;
 
 	[Header("크리처 연동")]
 	[SerializeField] private Stage2_ShadowCreature shadowCreature;
 
+	[Header("오답 리셋 설정")]
+	[Tooltip("5개 다 놓은 뒤 오답 확인 전 대기 시간 (초). 웃는 표정을 잠깐 보여줍니다.")]
+	[SerializeField] private float wrongAnswerDelay = 1.5f;
+
 	[Header("대사")]
 	[SerializeField] private string speaker = "소년";
 	[TextArea(2, 4)][SerializeField] private string solveDialogue = "...다음 방으로 갈 수 있을 것 같다.";
-	[TextArea(2, 4)][SerializeField] private string exitPuzzleDialogue = "나중에 다시 와야겠다.";
+	[TextArea(2, 4)][SerializeField] private string wrongDialogue = "...아닌 것 같다.";
+	[TextArea(2, 4)][SerializeField] private string exitDialogue = "나중에 다시 와야겠다.";
+
+	private PuzzleDropZone _lastPlacedZone; // 마지막으로 사탕을 받은 존
+	private bool _isCheckingAnswer = false; // 오답 판정 중 중복 체크 방지
 
 	protected override void Awake()
 	{
 		base.Awake();
-		// IDropZonePuzzle로 자신을 등록 (v2: 인터페이스 사용)
 		foreach (var zone in dropZones)
 			if (zone != null) zone.Initialize(this);
 	}
 
-	// ── IDropZonePuzzle 구현 ──
+	// ── IDropZonePuzzle ───────────────────────────────────────
+
+	/// <summary>
+	/// 어느 존에든 사탕이 놓일 때마다 호출됩니다.
+	/// 5개가 다 채워지면 정답 체크를 시작합니다.
+	/// </summary>
 	public void OnItemPlacedOnZone(PuzzleDropZone zone)
 	{
-		Debug.Log($"[AltarPuzzle] 슬롯 {zone.slotIndex} 배치 완료");
-		CheckSolution();
+		if (_isCheckingAnswer) return;
+
+		_lastPlacedZone = zone;
+		int placedCount = CountPlacedCandies();
+
+		Debug.Log($"[AltarPuzzle] {placedCount}/5 배치됨");
+
+		if (placedCount >= candyItems.Count)
+		{
+			// 5개 다 놓임 → 정답 체크 시작
+			StartCoroutine(CheckAnswerCoroutine());
+		}
 	}
 
-	// ── 퍼즐 시작 ──
+	// ── 정답 체크 코루틴 ─────────────────────────────────────
+
+	private IEnumerator CheckAnswerCoroutine()
+	{
+		_isCheckingAnswer = true;
+
+		// 잠깐 대기 (웃는 표정 감상)
+		yield return new WaitForSecondsRealtime(wrongAnswerDelay);
+
+		if (IsSolutionCorrect())
+		{
+			// 정답: 마지막 존만 활짝 웃는 표정
+			_lastPlacedZone?.SetBigSmileExpression();
+			_isCheckingAnswer = false;
+			SolvePuzzle();
+		}
+		else
+		{
+			// 오답: 대사 출력 후 자동 리셋
+			FindAnyObjectByType<UIManager>()?.ShowDialogue(speaker, wrongDialogue);
+			yield return new WaitForSecondsRealtime(1f);
+			ResetPuzzle();
+			_isCheckingAnswer = false;
+		}
+	}
+
+	// ── 정답 판정 ────────────────────────────────────────────
+
+	protected override bool IsSolutionCorrect()
+	{
+		// 정답 존(requiredItemId 또는 requiredColor가 설정된 존)이
+		// 모두 올바른 아이템으로 채워졌는지 확인
+		foreach (var zone in dropZones)
+		{
+			if (zone == null) continue;
+
+			bool isRequiredZone = !string.IsNullOrEmpty(zone.requiredItemId) ||
+								  (zone.requiredColor != Color.white && zone.requiredColor != Color.clear);
+
+			if (isRequiredZone && !zone.IsCorrectlyFilled)
+				return false;
+		}
+		return true;
+	}
+
+	protected override void SolvePuzzle()
+	{
+		foreach (var candy in candyItems)
+			if (candy != null) candy.DisableDragging();
+
+		shadowCreature?.MoveToFinalPosition();
+		FindAnyObjectByType<UIManager>()?.ShowDialogue(speaker, solveDialogue);
+		base.SolvePuzzle();
+	}
+
+	// ── 퍼즐 나가기 ──────────────────────────────────────────
+
+	public override void ExitPuzzle()
+	{
+		foreach (var candy in candyItems)
+			if (candy != null) candy.DisableDragging();
+
+		FindAnyObjectByType<UIManager>()?.ShowDialogue(speaker, exitDialogue);
+		base.ExitPuzzle();
+	}
+
+	public void ExitPuzzlePreserveState()
+	{
+		foreach (var candy in candyItems)
+			if (candy != null) candy.DisableDragging();
+		base.ExitPuzzle();
+	}
+
+	// ── 퍼즐 시작(재진입) ────────────────────────────────────
+
 	protected override void OnPuzzleStarted()
 	{
 		base.OnPuzzleStarted();
@@ -50,51 +149,28 @@ public class Stage2_AltarCandyPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZon
 			if (candy != null) candy.EnableDragging(cam, coffinSurfaceY);
 	}
 
-	// ── 정답 체크 ──
-	protected override bool IsSolutionCorrect()
-	{
-		int correctCount = 0;
-		int requiredCount = 0;
-
-		foreach (var zone in dropZones)
-		{
-			if (zone == null) continue;
-			// requiredColor가 흰색/기본이 아닌 슬롯 = 정답이 있는 슬롯
-			if (zone.requiredColor != Color.white && zone.requiredColor != Color.clear)
-			{
-				requiredCount++;
-				if (zone.IsCorrect) correctCount++;
-			}
-		}
-		return requiredCount > 0 && correctCount >= requiredCount;
-	}
-
-	protected override void SolvePuzzle()
-	{
-		foreach (var zone in dropZones)
-			if (zone != null && zone.IsCorrect) zone.SetBigSmileExpression();
-
-		foreach (var candy in candyItems)
-			if (candy != null) candy.DisableDragging();
-
-		shadowCreature?.MoveToFinalPosition();
-
-		FindAnyObjectByType<UIManager>()?.ShowDialogue(speaker, solveDialogue);
-		base.SolvePuzzle();
-	}
-
-	// ── 퍼즐 나가기 (리셋) ──
-	public override void ExitPuzzle()
-	{
-		ResetPuzzle();
-		FindAnyObjectByType<UIManager>()?.ShowDialogue(speaker, exitPuzzleDialogue);
-		base.ExitPuzzle();
-	}
+	// ── 리셋 ─────────────────────────────────────────────────
 
 	private void ResetPuzzle()
 	{
-		foreach (var zone in dropZones) if (zone != null) zone.RemoveItem();
-		foreach (var candy in candyItems) if (candy != null) candy.ResetToOriginalPosition();
-		Debug.Log("[AltarPuzzle] 퍼즐 리셋됨");
+		_lastPlacedZone = null;
+
+		foreach (var zone in dropZones)
+			if (zone != null) zone.RemoveItem();
+
+		foreach (var candy in candyItems)
+			if (candy != null) candy.ResetToHomePosition();
+
+		Debug.Log("[AltarPuzzle] 오답 → 자동 리셋");
+	}
+
+	// ── 헬퍼 ─────────────────────────────────────────────────
+
+	private int CountPlacedCandies()
+	{
+		int count = 0;
+		foreach (var zone in dropZones)
+			if (zone != null && zone.IsOccupied) count++;
+		return count;
 	}
 }

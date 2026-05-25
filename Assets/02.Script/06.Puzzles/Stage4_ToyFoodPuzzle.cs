@@ -103,7 +103,7 @@ public class Stage4_ToyFoodPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZonePu
 		foreach (var slot in plateSlots)
 		{
 			if (slot == null) continue;
-			if (!slot.IsCorrect) return false;
+			//if (!slot.IsCorrect) return false;
 		}
 		return true;
 	}

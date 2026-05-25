@@ -1,50 +1,47 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 /// <summary>
-/// ¿ùµå ½ºÆäÀÌ½º ÆÛÁñ¿ë µå·¡±× °¡´ÉÇÑ ¾ÆÀÌÅÛ.
-/// »çÅÁ(Stage2), ¿ä¸® Àç·á(Stage4), ¸ñ°¢ÀÎÇü(Stage5) µî ¸ğµç ÆÛÁñ ¾ÆÀÌÅÛ¿¡ »ç¿ë.
+/// ì›”ë“œ ìŠ¤í˜ì´ìŠ¤ í¼ì¦ìš© ë“œë˜ê·¸ ê°€ëŠ¥í•œ ì•„ì´í…œ.
 ///
-/// [v2 º¯°æ»çÇ×]
-/// itemId ÇÊµå Ãß°¡. Stage2Ã³·³ »ö»ó ¸ÅÄªÀÌ ÇÊ¿äÇÏ¸é itemColor¸¦ ¾²°í,
-/// Stage4/5Ã³·³ Á¾·ù ¸ÅÄªÀÌ ÇÊ¿äÇÏ¸é itemId¸¦ ¾²¸é µË´Ï´Ù.
-/// PuzzleDropZoneÀÌ requiredItemId°¡ ºñ¾îÀÖÀ¸¸é »ö»óÀ¸·Î, ÀÖÀ¸¸é ID·Î ÆÇ´ÜÇÕ´Ï´Ù.
+/// [v5 ë³€ê²½ì‚¬í•­]
+/// FindNearestAvailableDropZone() â€” ì •ë‹µ ì—¬ë¶€ ë¬´ê´€í•˜ê²Œ ê°€ì¥ ê°€ê¹Œìš´ ë¹ˆ ì¡´ìœ¼ë¡œ ìŠ¤ëƒ….
+/// ì–´ëŠ ë°©ì„ì—ë‚˜ ë†“ì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
 /// </summary>
 public class PuzzleDraggableItem : MonoBehaviour
 {
-	[Header("¾ÆÀÌÅÛ ½Äº° - µÑ Áß ÇÏ³ª¸¸ ½áµµ µË´Ï´Ù")]
-	[Tooltip("Stage4/5Ã³·³ Á¾·ù ±â¹İ ¸ÅÄª. ºñ¿öµÎ¸é »ö»ó ¸ÅÄªÀ¸·Î ´ëÃ¼µË´Ï´Ù.")]
+	[Header("ì•„ì´í…œ ì‹ë³„")]
 	public string itemId = "";
-
-	[Tooltip("Stage2Ã³·³ »ö»ó ±â¹İ ¸ÅÄª. itemId°¡ ¼³Á¤µÈ °æ¿ì ¿ì¼±¼øÀ§ ³·À½.")]
 	public Color itemColor = Color.white;
 
-	[Header("µå·¡±× ¼³Á¤")]
+	[Header("ë“œë˜ê·¸ ì„¤ì •")]
 	[SerializeField] private float liftHeight = 0.08f;
 	[SerializeField] private float snapDistance = 0.6f;
 
-	[Header("½Ã°¢ ÇÇµå¹é (¼±ÅÃ)")]
+	[Header("ì‹œê° í”¼ë“œë°± (ì„ íƒ)")]
 	[SerializeField] private Material dragMaterial;
 	[SerializeField] private Material defaultMaterial;
 	[SerializeField] private Renderer itemRenderer;
 
-	// ·±Å¸ÀÓ »óÅÂ
-	private Vector3 _originalPosition;
+	private Vector3 _homePosition;
+	private bool _homePositionSet = false;
 	private float _dragPlaneY;
 	private bool _isDragging = false;
 	private bool _isDraggingEnabled = false;
 	private PuzzleDropZone _currentZone;
 	private Camera _puzzleCamera;
 
-	/// <summary>ÆÛÁñ ½ÃÀÛ ½Ã ÄÁÆ®·Ñ·¯°¡ È£Ãâ. ÀÌ ¼ø°£ºÎÅÍ µå·¡±× °¡´É.</summary>
 	public void EnableDragging(Camera cam, float surfaceY)
 	{
 		_puzzleCamera = cam;
 		_dragPlaneY = surfaceY;
 		_isDraggingEnabled = true;
-		_originalPosition = transform.position;
+		if (!_homePositionSet)
+		{
+			_homePosition = transform.position;
+			_homePositionSet = true;
+		}
 	}
 
-	/// <summary>ÆÛÁñ Á¾·á/ÇØ°á ½Ã È£Ãâ.</summary>
 	public void DisableDragging()
 	{
 		_isDraggingEnabled = false;
@@ -52,13 +49,14 @@ public class PuzzleDraggableItem : MonoBehaviour
 		RestoreDefaultMaterial();
 	}
 
-	/// <summary>¸®¼Â ½Ã ¿ø·¡ À§Ä¡·Î °­Á¦ º¹±Í.</summary>
-	public void ResetToOriginalPosition()
+	public void ResetToHomePosition()
 	{
 		if (_currentZone != null) { _currentZone.RemoveItem(); _currentZone = null; }
-		transform.position = _originalPosition;
+		if (_homePositionSet) transform.position = _homePosition;
 		RestoreDefaultMaterial();
 	}
+
+	public void ResetToOriginalPosition() => ResetToHomePosition();
 
 	private void OnMouseDown()
 	{
@@ -76,9 +74,9 @@ public class PuzzleDraggableItem : MonoBehaviour
 		Plane dragPlane = new Plane(Vector3.up, new Vector3(0f, _dragPlaneY, 0f));
 		if (dragPlane.Raycast(ray, out float distance))
 		{
-			Vector3 targetPos = ray.GetPoint(distance);
-			targetPos.y = _dragPlaneY + liftHeight;
-			transform.position = targetPos;
+			Vector3 pos = ray.GetPoint(distance);
+			pos.y = _dragPlaneY + liftHeight;
+			transform.position = pos;
 		}
 	}
 
@@ -86,39 +84,42 @@ public class PuzzleDraggableItem : MonoBehaviour
 	{
 		if (!_isDragging) return;
 		_isDragging = false;
+
+		// ì •ë‹µ ë¬´ê´€í•˜ê²Œ ê°€ì¥ ê°€ê¹Œìš´ ë¹ˆ ì¡´ íƒìƒ‰
 		PuzzleDropZone nearest = FindNearestAvailableDropZone();
+
 		if (nearest != null && nearest.TryAcceptItem(this))
 		{
 			_currentZone = nearest;
 			transform.position = nearest.transform.position + Vector3.up * liftHeight;
 		}
-		else
-		{
-			transform.position = _originalPosition;
-		}
+		// ê·¼ì²˜ì— ë¹ˆ ì¡´ì´ ì—†ìœ¼ë©´ ê·¸ ìë¦¬ì— ê·¸ëƒ¥ ë†”ë‘ 
+
 		RestoreDefaultMaterial();
 	}
 
 	private PuzzleDropZone FindNearestAvailableDropZone()
 	{
-		PuzzleDropZone[] allZones = FindObjectsByType<PuzzleDropZone>(FindObjectsSortMode.None);
+		PuzzleDropZone[] all = FindObjectsByType<PuzzleDropZone>(FindObjectsSortMode.None);
 		PuzzleDropZone nearest = null;
 		float minDist = snapDistance;
-		foreach (var zone in allZones)
+		foreach (var zone in all)
 		{
 			if (zone.IsOccupied) continue;
-			float dist = Vector3.Distance(transform.position, zone.transform.position);
-			if (dist < minDist) { minDist = dist; nearest = zone; }
+			float d = Vector3.Distance(transform.position, zone.transform.position);
+			if (d < minDist) { minDist = d; nearest = zone; }
 		}
 		return nearest;
 	}
 
 	private void ApplyDragMaterial()
 	{
-		if (itemRenderer != null && dragMaterial != null) itemRenderer.material = dragMaterial;
+		if (itemRenderer != null && dragMaterial != null)
+			itemRenderer.material = dragMaterial;
 	}
 	private void RestoreDefaultMaterial()
 	{
-		if (itemRenderer != null && defaultMaterial != null) itemRenderer.material = defaultMaterial;
+		if (itemRenderer != null && defaultMaterial != null)
+			itemRenderer.material = defaultMaterial;
 	}
 }

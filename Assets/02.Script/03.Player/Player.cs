@@ -133,6 +133,9 @@ public class Player : MonoBehaviour, IPlayer
 
 	private void HandleInteraction()
 	{
+		// 임시 디버그 — 원인 찾으면 삭제
+		Debug.Log($"현재 GameState: {GameManager.Instance?.StateManager.CurrentState}");
+
 		RaycastHit hit;
 
 		if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, interactionDistance, ~0, QueryTriggerInteraction.Collide))
@@ -168,6 +171,9 @@ public class Player : MonoBehaviour, IPlayer
 			if (_currentInteractable.CanInteract(this))
 				_currentInteractable.Interact(this);
 		}
+
+
+	
 	}
 
 	public void SetCurrentInteractable(IInteractable interactable)
