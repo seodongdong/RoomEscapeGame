@@ -3081,12 +3081,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PuzzleSolvedDoor
   puzzleObject: {fileID: 907592430}
+  doorTransform: {fileID: 0}
   doorAnimator: {fileID: 0}
   openOffset: {x: 2, y: 0, z: 0}
   openDuration: 1
   speaker: 
   lockedDialogue: "\uBB38\uC774 \uC7A0\uACA8\uC788\uB2E4."
   openDialogue: "\uBB38\uC774 \uC5F4\uB838\uB2E4!"
+  closeDialogue: 
   woodenDollId: wooden_doll_1
   woodenDollName: "\uBAA9\uAC01\uC778\uD615"
   woodenDollDialogue: "\uBAA9\uAC01\uC778\uD615 \uD68D\uB4DD"
@@ -3383,26 +3385,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2312612437863074420, guid: f7546078d0aac34478c09dfbe2a2c517, type: 3}
       propertyPath: 'pages.Array.data[0]'
-      value: "1982\uB144 8\uC6D4 3\uC77C   \uB0A0\uC528: \uD574\n\n\uC624\uB298\uC740
-        \uCE5C\uAD6C\uAC00 \uC6B0\uB9AC\uC9D1\uC5D0 \uB180\uB7EC\uC654\uB2E4!!!!!\n\uC5C4\uB9C8\uAC00
-        \uC218\uBC15\uC774\uB791 \uC2DD\uD61C\uB3C4 \uB9CC\uB4E4\uC5B4\uC92C\uB2E4.\n\uC6B0\uB9AC\uB294
-        \uAC70\uC2E4\uC5D0\uC11C \uC778\uD615\uB180\uC774\uB97C \uD588\uB2E4.\n\n\uCE5C\uAD6C\uAC00
-        \uC6B0\uB9AC \uC778\uD615\uC758 \uC9D1 \uBCF4\uACE0 \uC5C4\uCCAD \uC88B\uB2E4\uACE0
-        \uD588\uB2E4.\n\uB098\uB294 \uAE30\uBD84\uC774 \uB108\uBB34 \uC88B\uC558\uB2E4.\n\n[\uADF8\uB9BC:
-        \uB450 \uC5EC\uC790\uC544\uC774\uAC00 \uC778\uD615\uC758 \uC9D1 \uC55E\uC5D0
-        \uC549\uC544\uC788\uB294 \uADF8\uB9BC.\n \uD55C \uBA85\uC740 \uB2E8\uBC1C\uBA38\uB9AC,
-        \uD55C \uBA85\uC740 \uAE34 \uBA38\uB9AC.\n \uD574\uAC00 \uCA0D\uCA0D\uD55C
-        \uCC3D\uBB38\uC774 \uBC30\uACBD\uC5D0 \uADF8\uB824\uC838 \uC788\uB2E4.]"
+      value: "1982\uB144 8\uC6D4 3\uC77C   \uB0A0\uC528: \uD574\n\n\uCE5C\uAD6C \uC654\uB2E4\n\uC218\uBC15
+        \uBA38\uAC84\uB2E4\n\uC528\uAC00 \uD280\uACBC\uB2E4\n\uC778\uD615 \uB178\uB790\uB2E4\n\uCE5C\uAD6C\uAC00
+        \uC6B0\uB9AC\uC9D1 \uC870\uD0C0\uACE0 \uD588\uB2E4\n\uB098\uB3C4 \uC870\uD0C0\n\uB610
+        \uC624\uBA74 \uC870\uAC84\uB2E4\n\n[\uADF8\uB9BC: \uB3D9\uADF8\uB780 \uC5BC\uAD74
+        \uB450 \uAC1C. \uD558\uB098\uB294 \uB2E8\uBC1C, \uD558\uB098\uB294 \uAE34
+        \uBA38\uB9AC]]"
       objectReference: {fileID: 0}
     - target: {fileID: 2312612437863074420, guid: f7546078d0aac34478c09dfbe2a2c517, type: 3}
       propertyPath: 'pages.Array.data[1]'
-      value: "\uCE5C\uAD6C \uC774\uB984\uC740 \u2588\u2588\uC774\uB2E4.\r\n\u2588\u2588\uC774\uB294
-        \uC6B0\uB9AC \uC9D1\uC774 \uCC98\uC74C\uC774\uB798\uC11C\r\n\uB450\uB9AC\uBC88\uB450\uB9AC\uBC88
-        \uD588\uB2E4. \uADC0\uC5EC\uC6E0\uB2E4.\r\n\r\n\uC544\uBE60\uAC00 \uC8FC\uBC29\uC740
-        \uC704\uD5D8\uD558\uB2C8\uAE4C\r\n\uAC70\uC2E4\uC5D0\uC11C\uB9CC \uB180\uB77C\uACE0
-        \uD588\uB2E4.\r\n\r\n\u2588\u2588\uC774\uAC00 \uB0B4\uB144\uC5D0\uB3C4 \uB610
-        \uC624\uBA74 \uC88B\uACA0\uB2E4.\r\n\uC6B0\uB9AC \uC774\uC81C \uB2E8\uC9DD\uC774\r\n\r\n[\uC774
-        \uC544\uB798\uBD80\uD130 \uCC22\uACA8\uC838 \uC5C6\uB2E4]"
+      value: "\uCE5C\uAD6C \uC774\uB984\uC740 \u2588\u2588\n\u2588\u2588\uC774 \uB610
+        \uC624\uBA74 \uC870\uAC84\uB2E4\n\uC544\uBE60\uAC00 \uBD80\uC5CC\uC740 \uC704\uD5D8\uD558\uB2E4\uACE0
+        \uD588\uB2E4\n\uC6B0\uB9AC\uB294 \uAC70\uC2E4\uC5D0\uC11C \uB180\uC558\uB2E4\n\uB098\uB294
+        \u2588\u2588\uC774\uAC00 \uC870\uD0C0\n\n[\uCC22\uACA8\uC9C4 \uBD80\uBD84]"
       objectReference: {fileID: 0}
     - target: {fileID: 2312612437863074420, guid: f7546078d0aac34478c09dfbe2a2c517, type: 3}
       propertyPath: 'pages.Array.data[2]'

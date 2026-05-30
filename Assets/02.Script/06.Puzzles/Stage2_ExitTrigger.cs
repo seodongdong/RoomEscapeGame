@@ -3,42 +3,56 @@ using UnityEngine;
 /// <summary>
 /// 2스테이지: 퇴장 트리거
 ///
-/// [기획서 내용]
-/// "아이템 획득 후 똑같이 아저씨의 시선을 느끼며 퇴실
-///  (이때도 아저씨는 상호작용불가이지만, 입만 활짝 웃고 있는걸로 해도 괜찮을 듯;
-///  납치를 성공했으니)"
+/// [문 세 개 구조]
+/// 입구 (Door.cs)          : 열쇠로 열고 영구 잠금. 이 트리거와 무관.
+/// 퍼즐 문 (PuzzleSolveDoor): 퍼즐 완료 시 자동으로 열림. 이 트리거와 무관.
+/// 출구 (PuzzleSolveDoor)  : 퍼즐 완료 시 잠금 해제, 플레이어가 직접 열어야 함.
+///                           이 트리거 통과 시 자유 출입으로 전환.
 ///
-/// [씬 배치]
-/// 출구 문 앞/안쪽에 BoxCollider(IsTrigger)를 가진 오브젝트로 배치.
-/// 플레이어가 통과하면 크리처 웃음 연출 발동.
+/// [흐름]
+/// 퍼즐 완료 → 출구 잠금 해제 → 플레이어가 F키로 출구 열기
+/// → 통과 시 첫 퇴장: 크리처 웃음 + 대사 + 자유 출입 전환
+/// → 이후: 자유 출입
 /// </summary>
 public class Stage2_ExitTrigger : MonoBehaviour
 {
-	[Header("크리처 연결")]
+	[Header("퍼즐 연결 (완료 여부 확인용)")]
+	[SerializeField] private MonoBehaviour puzzleObject;
+
+	[Header("크리처")]
 	[SerializeField] private Stage2_ShadowCreature shadowCreature;
 
-	[Header("대사 설정")]
+	[Header("출구 문 연결")]
+	[Tooltip("출구에 붙은 PuzzleSolveDoor. 첫 퇴장 후 자유 출입으로 전환.")]
+	[SerializeField] private PuzzleSolveDoor exitDoor;
+
+	[Header("대사")]
 	[SerializeField] private string speaker = "소년";
 	[TextArea(2, 4)]
 	[SerializeField] private string exitDialogue = "...뒤에서 시선이 느껴진다.";
 
-	private bool _hasTriggered = false;
+	private IPuzzle _puzzle;
+	private bool _hasExitedOnce = false;
+
+	private void Awake()
+	{
+		_puzzle = puzzleObject as IPuzzle;
+	}
 
 	private void OnTriggerEnter(Collider other)
 	{
-		if (_hasTriggered) return;
 		if (!other.CompareTag("Player")) return;
 
-		_hasTriggered = true;
+		bool puzzleSolved = _puzzle == null || _puzzle.IsSolved;
+		if (!puzzleSolved) return;
 
-		// 크리처 웃음 연출
-		if (shadowCreature != null)
-			shadowCreature.TriggerExitSmile();
-
-		// 대사 출력
-		var uiManager = FindAnyObjectByType<UIManager>();
-		uiManager?.ShowDialogue(speaker, exitDialogue);
-
-		Debug.Log("[Stage2_ExitTrigger] 퇴장 연출 발동");
+		if (!_hasExitedOnce)
+		{
+			_hasExitedOnce = true;
+			shadowCreature?.TriggerExitSmile();
+			FindAnyObjectByType<UIManager>()?.ShowDialogue(speaker, exitDialogue);
+			exitDoor?.UnlockFreeAccess();
+			Debug.Log("[ExitTrigger] 첫 퇴장 연출");
+		}
 	}
 }

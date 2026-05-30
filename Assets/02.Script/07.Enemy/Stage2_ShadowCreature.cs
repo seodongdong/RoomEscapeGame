@@ -128,7 +128,7 @@ public class Stage2_ShadowCreature : CreatureBase
 	{
 		if (!enableExitSmile) return;
 		SetFaceExpression(true);
-		Debug.Log("[ShadowCreature] ÅğÀå ¿ôÀ½ ¿¬Ãâ");
+		Debug.Log("[ShadowCreature] ÅğÀå ½Ã¼± ¿¬Ãâ");
 	}
 
 	private void SetFaceExpression(bool isSmiling)
