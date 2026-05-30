@@ -26,7 +26,7 @@ public class Stage2_AltarCandyPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZon
 
 	[Header("오답 리셋 설정")]
 	[Tooltip("5개 다 놓은 뒤 오답 확인 전 대기 시간 (초). 웃는 표정을 잠깐 보여줍니다.")]
-	[SerializeField] private float wrongAnswerDelay = 1.5f;
+	[SerializeField] private float wrongAnswerDelay = 2.0f;
 
 	[Header("대사")]
 	[SerializeField] private string speaker = "소년";
@@ -77,8 +77,11 @@ public class Stage2_AltarCandyPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZon
 
 		if (IsSolutionCorrect())
 		{
-			// 정답: 마지막 존만 활짝 웃는 표정
-			_lastPlacedZone?.SetBigSmileExpression();
+			// 정답: 5개 사진 전부 활짝 웃는 표정으로 변경
+			foreach (var zone in dropZones)
+				if (zone != null && zone.IsOccupied)
+					zone.SetBigSmileExpression();
+
 			_isCheckingAnswer = false;
 			SolvePuzzle();
 		}

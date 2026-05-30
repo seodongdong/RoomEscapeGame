@@ -70,20 +70,34 @@ public class InventoryUI_Complete : MonoBehaviour
 		viewButton?.onClick.AddListener(View3DItem);
 		useButton?.onClick.AddListener(() =>
 		{
-			if (_selectedItem != null)
+			if (_selectedItem == null) return;
+
+			var usableObjects = FindObjectsOfType<MonoBehaviour>().OfType<IItemUsable>();
+			foreach (var obj in usableObjects)
 			{
-				var usableObjects = FindObjectsOfType<MonoBehaviour>().OfType<IItemUsable>();
-				foreach (var obj in usableObjects)
+				if (obj.CanUseItem(_selectedItem.itemId))
 				{
-					if (obj.CanUseItem(_selectedItem.itemId))
-					{
-						obj.UseItem(_selectedItem.itemId);
-						CloseInventory();
-						return;
-					}
+					string usedItemId = _selectedItem.itemId;
+
+					obj.UseItem(usedItemId);
+
+					// InventoryUI 목록에서 제거
+					RemoveItem(usedItemId);
+
+					// PlayerInventory에서도 제거
+					var player = FindAnyObjectByType<Player>();
+					var item = player?.Inventory.GetItem(usedItemId);
+					if (item != null)
+						player.Inventory.RemoveItem(item);
+
+					CloseInventory();
+					return;
 				}
-				Debug.LogWarning($"[InventoryUI] {_selectedItem.title}을(를) 사용할 수 있는 대상이 없습니다.");
 			}
+
+			// 사용 가능한 대상이 없을 때 안내
+			var uiManager = FindAnyObjectByType<UIManager>();
+			uiManager?.ShowDialogue("", $"지금은 사용할 수 없다.");
 		});
 	}
 
