@@ -1,9 +1,24 @@
 fileFormatVersion: 2
-guid: 7b69763609d5d7a45890c1ddeca5e2ef
+guid: 80a2394e06864c841935742d12e08c20
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stage4_ceiling
+    second: {fileID: 2100000, guid: fdadc830d0a9ee94bbc5aab23c923859, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stage4_floor
+    second: {fileID: 2100000, guid: fcbdd1bea0aa4fb40835272b12695cde, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stage4_wall
+    second: {fileID: 2100000, guid: 4321586c250b9b44ca8aad068f14a3e4, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
