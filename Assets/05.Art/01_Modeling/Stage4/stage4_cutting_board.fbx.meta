@@ -1,19 +1,9 @@
 fileFormatVersion: 2
-guid: 6ad6eff1927432a44ac506237089c413
+guid: d604ed977eebd5946a524572b95425e8
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: stage4_window
-    second: {fileID: 2100000, guid: e67754bb9acb25d4c9726aca48eeae25, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: stage4_window_glass
-    second: {fileID: 2100000, guid: 580140219edd4a4448964ebbe281b87e, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
