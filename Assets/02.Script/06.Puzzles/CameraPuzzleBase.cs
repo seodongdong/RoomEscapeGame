@@ -2,15 +2,12 @@ using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// 카메라 전환 기반 퍼즐의 베이스 클래스.
-/// 퍼즐 진입 시 카메라를 지정된 위치로 이동시키고,
-/// 완료/나가기 시 원래 위치로 복귀합니다.
+/// 카메라 전환 기반 퍼즐 베이스 클래스
 ///
-/// [수정 사항]
-/// puzzleUI?.SetActive() → if (puzzleUI != null) puzzleUI.SetActive()
-/// Unity의 가짜 null 오브젝트는 ?. 연산자로 안전하게 처리되지 않아
-/// UnassignedReferenceException이 발생합니다.
-/// puzzleUI를 Inspector에서 비워둬도 에러가 나지 않습니다.
+/// [수정]
+/// - puzzleUI 완전 제거 → 패널 없이 3D 월드에서 직접 퍼즐
+/// - 퍼즐 진입 시 UILayerManager.Push → ESC로 나가기 가능
+/// - null 안전 체크, 중복 호출 방지 플래그 유지
 /// </summary>
 public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 {
@@ -19,51 +16,75 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 	[SerializeField] protected bool isSolved;
 
 	[Header("Camera Settings")]
+	[Tooltip("퍼즐 카메라 위치. 비워두면 현재 위치에서 시작.")]
 	[SerializeField] protected Transform puzzleCameraPosition;
 	[SerializeField] protected float cameraTransitionDuration = 1f;
-	[SerializeField] protected AnimationCurve cameraTransitionCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+	[SerializeField]
+	protected AnimationCurve cameraTransitionCurve
+		= AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-	[Header("UI (선택 — 월드 스페이스 퍼즐은 비워두세요)")]
-	[SerializeField] protected GameObject puzzleUI;
-
+	// ── 캐싱 ─────────────────────────────────────────────────
 	protected Camera _mainCamera;
 	protected Transform _originalCameraParent;
 	protected Vector3 _originalCameraPosition;
 	protected Quaternion _originalCameraRotation;
 	protected Player _player;
 
+	// ── 상태 플래그 ───────────────────────────────────────────
+	private bool _isTransitioning = false;
+	private bool _isExiting = false;
+
+	// ── IPuzzle ───────────────────────────────────────────────
 	public string PuzzleId => puzzleId;
 	public bool IsSolved => isSolved;
 	public event System.Action OnPuzzleSolved;
 
+	// ── 초기화 ────────────────────────────────────────────────
 	protected virtual void Awake()
 	{
 		_mainCamera = Camera.main;
 		_player = FindAnyObjectByType<Player>();
 	}
 
-	// ── 퍼즐 시작 ────────────────────────────────────────────
+	protected virtual void Start()
+	{
+		if (_mainCamera == null) _mainCamera = Camera.main;
+		if (_player == null) _player = FindAnyObjectByType<Player>();
+	}
 
+	// ── 퍼즐 시작 ────────────────────────────────────────────
 	public virtual void StartPuzzle()
 	{
 		if (isSolved) return;
+		if (_isTransitioning) return;
 
-		GameManager.Instance.StateManager.ChangeState(GameState.Puzzle);
+		if (_mainCamera == null)
+		{
+			_mainCamera = Camera.main;
+			if (_mainCamera == null)
+			{
+				Debug.LogError($"[Puzzle:{puzzleId}] Camera.main을 찾을 수 없습니다!");
+				return;
+			}
+		}
 
-		var uiManager = FindAnyObjectByType<UIManager>();
-		uiManager?.HideInteractionPrompt();
+		_isExiting = false;
+		_isTransitioning = true;
+
+		GameManager.Instance?.StateManager.ChangeState(GameState.Puzzle);
+		FindAnyObjectByType<UIManager>()?.HideInteractionPrompt();
 
 		if (_player != null)
 		{
 			_player.enabled = false;
-			foreach (var mesh in _player.GetComponentsInChildren<MeshRenderer>())
-				mesh.enabled = false;
-			foreach (var mesh in _player.GetComponentsInChildren<SkinnedMeshRenderer>())
-				mesh.enabled = false;
+			SetPlayerMeshVisible(false);
 		}
 
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
+
+		// ★ UILayerManager에 등록 → ESC 누르면 ExitPuzzle 호출
+		UILayerManager.Instance?.Push(this, ExitPuzzle);
 
 		_originalCameraParent = _mainCamera.transform.parent;
 		_originalCameraPosition = _mainCamera.transform.position;
@@ -74,7 +95,6 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 	}
 
 	// ── 카메라 전환 ──────────────────────────────────────────
-
 	protected virtual IEnumerator TransitionCamera(bool toPuzzle)
 	{
 		Vector3 startPos = _mainCamera.transform.position;
@@ -84,8 +104,17 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 
 		if (toPuzzle)
 		{
-			endPos = puzzleCameraPosition.position;
-			endRot = puzzleCameraPosition.rotation;
+			if (puzzleCameraPosition != null)
+			{
+				endPos = puzzleCameraPosition.position;
+				endRot = puzzleCameraPosition.rotation;
+			}
+			else
+			{
+				endPos = startPos;
+				endRot = startRot;
+				Debug.LogWarning($"[Puzzle:{puzzleId}] puzzleCameraPosition 없음 — 현재 위치에서 시작");
+			}
 		}
 		else
 		{
@@ -93,25 +122,29 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 			endRot = _originalCameraRotation;
 		}
 
-		float elapsed = 0f;
-		while (elapsed < cameraTransitionDuration)
+		bool needsTransition = Vector3.Distance(startPos, endPos) > 0.01f
+							|| Quaternion.Angle(startRot, endRot) > 0.1f;
+
+		if (needsTransition && cameraTransitionDuration > 0f)
 		{
-			elapsed += Time.unscaledDeltaTime;
-			float t = cameraTransitionCurve.Evaluate(elapsed / cameraTransitionDuration);
-			_mainCamera.transform.position = Vector3.Lerp(startPos, endPos, t);
-			_mainCamera.transform.rotation = Quaternion.Slerp(startRot, endRot, t);
-			yield return null;
+			float elapsed = 0f;
+			while (elapsed < cameraTransitionDuration)
+			{
+				elapsed += Time.unscaledDeltaTime;
+				float t = cameraTransitionCurve.Evaluate(
+					Mathf.Clamp01(elapsed / cameraTransitionDuration));
+				_mainCamera.transform.position = Vector3.Lerp(startPos, endPos, t);
+				_mainCamera.transform.rotation = Quaternion.Slerp(startRot, endRot, t);
+				yield return null;
+			}
 		}
 
 		_mainCamera.transform.position = endPos;
 		_mainCamera.transform.rotation = endRot;
+		_isTransitioning = false;
 
 		if (toPuzzle)
-		{
-			// ★ 수정: ?. 대신 명시적 null 체크 (Unity 가짜 null 대응)
-			if (puzzleUI != null) puzzleUI.SetActive(true);
 			OnPuzzleStarted();
-		}
 		else
 		{
 			_mainCamera.transform.SetParent(_originalCameraParent);
@@ -119,22 +152,13 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 		}
 	}
 
-	protected virtual void OnPuzzleStarted()
-	{
-		Debug.Log($"[Puzzle] 시작: {puzzleId}");
-	}
-
-	protected virtual void OnPuzzleExited()
-	{
-		Debug.Log($"[Puzzle] 종료: {puzzleId}");
-	}
+	protected virtual void OnPuzzleStarted() { }
+	protected virtual void OnPuzzleExited() { }
 
 	// ── 정답 체크 ────────────────────────────────────────────
-
 	public virtual void CheckSolution()
 	{
-		if (IsSolutionCorrect())
-			SolvePuzzle();
+		if (IsSolutionCorrect()) SolvePuzzle();
 	}
 
 	protected abstract bool IsSolutionCorrect();
@@ -142,19 +166,25 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 	protected virtual void SolvePuzzle()
 	{
 		isSolved = true;
-		// ★ 수정: 명시적 null 체크
-		if (puzzleUI != null) puzzleUI.SetActive(false);
 		OnPuzzleSolved?.Invoke();
-		Debug.Log($"[Puzzle] 해결: {puzzleId}");
+		Debug.Log($"[Puzzle:{puzzleId}] 해결!");
+
+		// 해결됐으므로 UILayerManager 스택에서 제거
+		UILayerManager.Instance?.Pop(this);
+
 		ExitPuzzle();
 	}
 
 	// ── 퍼즐 나가기 ──────────────────────────────────────────
-
 	public virtual void ExitPuzzle()
 	{
-		// ★ 수정: 명시적 null 체크
-		if (puzzleUI != null) puzzleUI.SetActive(false);
+		if (_isExiting) return;
+		_isExiting = true;
+
+		// ESC로 나갈 때 UILayerManager 스택 정리
+		// (SolvePuzzle에서 이미 Pop한 경우 Pop 내부에서 중복 처리됨)
+		UILayerManager.Instance?.Pop(this);
+
 		StartCoroutine(ExitPuzzleCoroutine());
 	}
 
@@ -162,18 +192,29 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 	{
 		yield return StartCoroutine(TransitionCamera(false));
 
-		GameManager.Instance.StateManager.ChangeState(GameState.Playing);
+		GameManager.Instance?.StateManager.ChangeState(GameState.Playing);
 
 		if (_player != null)
 		{
 			_player.enabled = true;
-			foreach (var mesh in _player.GetComponentsInChildren<MeshRenderer>())
-				mesh.enabled = true;
-			foreach (var mesh in _player.GetComponentsInChildren<SkinnedMeshRenderer>())
-				mesh.enabled = true;
+			SetPlayerMeshVisible(true);
 		}
 
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
+
+		_isExiting = false;
 	}
+
+	// ── 헬퍼 ─────────────────────────────────────────────────
+	private void SetPlayerMeshVisible(bool visible)
+	{
+		if (_player == null) return;
+		foreach (var m in _player.GetComponentsInChildren<MeshRenderer>())
+			m.enabled = visible;
+		foreach (var m in _player.GetComponentsInChildren<SkinnedMeshRenderer>())
+			m.enabled = visible;
+	}
+
+	protected void InvokeOnPuzzleSolved() => OnPuzzleSolved?.Invoke();
 }

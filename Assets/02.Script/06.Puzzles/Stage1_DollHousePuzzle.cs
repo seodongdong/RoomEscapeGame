@@ -3,179 +3,158 @@ using System.Collections.Generic;
 
 /// <summary>
 /// 1스테이지: 인형의 집 퍼즐
-/// CameraPuzzleBase 상속 - 카메라 전환 포함
 ///
-/// [버그 수정] DollHouseSlotButton 제거 - 슬롯 버튼 onClick이 이미 Inspector에서
-///            TryPlaceItemToSlot에 연결되어 있어서 DollHouseSlotButton이 중복 호출 유발
+/// [기획서]
+/// - 3D 드래그앤드롭 (UI 창/패널 방식 아님, 스냅 없음)
+/// - 맞는 슬롯에 드롭 → 인형 눈 뜸 (즉시 피드백)
+/// - 틀린 슬롯 → 눈 안 뜸 + 오류 효과음 + 아이템 원위치
+/// - 모든 슬롯 정답 → 자동 클리어
+/// - 나갈 때(ESC) 리셋
+///
+/// [수정]
+/// - exitButton 제거 → ESC로 나가기 (CameraPuzzleBase + UILayerManager 처리)
+/// - puzzleUI 제거 → CameraPuzzleBase에서 이미 제거됨
+/// - IsSolutionCorrect: 슬롯 없으면 false (즉시 클리어 방지)
+/// - 오답 시 GetPlacedItem()으로 아이템 명시적 원위치
 /// </summary>
-public class Stage1_DollHousePuzzle : CameraPuzzleBase
+public class Stage1_DollHousePuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZonePuzzle
 {
-    [System.Serializable]
-    public class DollItem
-    {
-        public string itemId;
-        public Transform targetSlot;
-        public GameObject prefab;
-        public Vector3 spawnScale = Vector3.one;
-    }
+	[Header("드래그 아이템 목록")]
+	[Tooltip("씬에 배치된 PuzzleDraggableItem 오브젝트들 연결")]
+	[SerializeField] private List<PuzzleDraggableItem> dollItems = new List<PuzzleDraggableItem>();
 
-    [Header("Items")]
-    [SerializeField] private List<DollItem> requiredItems;
+	[Header("드롭존 목록 (인형의 집 슬롯)")]
+	[Tooltip("PuzzleDropZone 오브젝트들 연결. requiredItemId 반드시 설정")]
+	[SerializeField] private List<PuzzleDropZone> dollSlots = new List<PuzzleDropZone>();
 
-    [Header("UI Buttons")]
-    [SerializeField] private UnityEngine.UI.Button exitButton;
+	[Header("퍼즐 표면 높이")]
+	[Tooltip("드래그 평면 Y좌표 — 인형의 집 선반/바닥 높이")]
+	[SerializeField] private float dollHouseSurfaceY = 0.5f;
 
-    [Header("Feedback")]
-    [SerializeField] private string speaker = "소년";
-    [TextArea(2, 5)]
-    [SerializeField] private string correctPositionDialogue = "이 자리가 맞는 것 같아!";
-    [TextArea(2, 5)]
-    [SerializeField] private string noItemDialogue = "이 아이템이 없다...";
-    [TextArea(2, 5)]
-    [SerializeField] private string alreadyPlacedDialogue = "이미 배치된 아이템이야.";
+	[Header("대사")]
+	[SerializeField] private string speaker = "소년";
+	[TextArea(2, 4)][SerializeField] private string startDialogue = "인형 장난감을 알맞은 자리에 놓아보자.";
+	[TextArea(2, 4)][SerializeField] private string correctDialogue = "맞는 자리인 것 같아!";
+	[TextArea(2, 4)][SerializeField] private string wrongDialogue = "...여기가 아닌 것 같다.";
+	[TextArea(2, 4)][SerializeField] private string solveDialogue = "인형을 모두 제자리에 찾아줬다!";
 
-    [Header("Tolerance")]
-    [SerializeField] private float positionTolerance = 0.5f;
+	[Header("크리처")]
+	[SerializeField] private GameObject creature;
 
-    [Header("Creature")]
-    [SerializeField] private GameObject creature;
+	// ── 캐싱 ─────────────────────────────────────────────────
+	private UIManager _uiManager;
+	private AudioManager _audioManager;
 
-	private Dictionary<string, bool> _placedItems = new Dictionary<string, bool>();
-
-    protected override void Awake()
-    {
-        base.Awake();
-
-        foreach (var item in requiredItems)
-        {
-            _placedItems[item.itemId] = false;
-        }
-
-        if (exitButton != null)
-        {
-            exitButton.onClick.RemoveAllListeners();
-            exitButton.onClick.AddListener(ExitPuzzleButton);
-        }
-    }
-
-    public void ExitPuzzleButton()
-    {
-        ExitPuzzle();
-    }
-
-    protected override void OnPuzzleStarted()
-    {
-        base.OnPuzzleStarted();
-        ShowFeedback("인형 부품을 알맞은 자리에 배치하세요.");
-    }
-
-    /// <summary>
-    /// 슬롯 버튼 onClick에서 직접 호출 (Inspector에서 연결)
-    /// DollHouseSlotButton 스크립트 없이 이것만 사용
-    /// </summary>
-    public void TryPlaceItemToSlot(string itemId)
-    {
-        if (_player == null)
-        {
-            Debug.LogError("[DollHousePuzzle] _player가 null입니다!");
-            return;
-        }
-
-        // 이미 배치된 슬롯인지 먼저 체크
-        if (_placedItems.ContainsKey(itemId) && _placedItems[itemId])
-        {
-            ShowFeedback(alreadyPlacedDialogue);
-            return;
-        }
-
-        // 아이템 보유 여부 체크
-        if (!_player.Inventory.HasItem(itemId))
-        {
-            ShowFeedback(noItemDialogue);
-            return;
-        }
-
-        var item = requiredItems.Find(i => i.itemId == itemId);
-        if (item == null)
-        {
-            Debug.LogError($"[DollHousePuzzle] requiredItems에 itemId={itemId}가 없습니다!");
-            return;
-        }
-
-        PlaceItemToSlot(itemId, item);
-    }
-
-	private void PlaceItemToSlot(string itemId, DollItem item)
+	// ── 초기화 ────────────────────────────────────────────────
+	protected override void Awake()
 	{
-		_placedItems[itemId] = true;
+		base.Awake();
 
-		// 3D 프리팹 생성
-		if (item.prefab != null && item.targetSlot != null)
+		// 드롭존에 이 퍼즐 등록
+		foreach (var slot in dollSlots)
+			if (slot != null) slot.Initialize(this);
+	}
+
+	protected override void Start()
+	{
+		base.Start();
+		_uiManager = FindAnyObjectByType<UIManager>();
+		_audioManager = FindAnyObjectByType<AudioManager>();
+	}
+
+	// ── 퍼즐 시작 콜백 ───────────────────────────────────────
+	protected override void OnPuzzleStarted()
+	{
+		// 드래그 활성화
+		foreach (var item in dollItems)
+			if (item != null) item.EnableDragging(_mainCamera, dollHouseSurfaceY);
+
+		_uiManager?.ShowDialogue(speaker, startDialogue);
+	}
+
+	// ── 아이템이 슬롯에 놓일 때 ──────────────────────────────
+	public void OnItemPlacedOnZone(PuzzleDropZone zone)
+	{
+		if (zone.IsCorrectlyFilled)
 		{
-			GameObject spawned = Instantiate(
-				item.prefab,
-				item.targetSlot.position,
-				item.targetSlot.rotation
-			);
-			spawned.SetActive(true);
-			foreach (Transform child in spawned.GetComponentsInChildren<Transform>(true))
-				child.gameObject.SetActive(true);
-			spawned.transform.localScale = item.spawnScale;
+			// 정답: smileSprite는 PuzzleDropZone.TryAcceptItem에서 이미 처리됨
+			_uiManager?.ShowDialogue(speaker, correctDialogue);
+			_audioManager?.PlaySFX("puzzle_correct");
 		}
+		else
+		{
+			// 오답: 슬롯 초기화 + 아이템 원위치
+			var placedItem = zone.GetPlacedItem();
+			zone.RemoveItem();                  // emptySprite 복원
+			placedItem?.ResetToHomePosition();  // 아이템 원위치
 
-		// ✅ PlayerInventory에서 제거 (한 번만)
-		var inventoryItem = _player.Inventory.GetItem(itemId);
-		if (inventoryItem != null)
-			_player.Inventory.RemoveItem(inventoryItem);
-
-		// ✅ InventoryUI에서도 제거 (화면 갱신)
-		var inventoryUI = FindAnyObjectByType<InventoryUI_Complete>();
-		inventoryUI?.RemoveItem(itemId);
-
-		ShowFeedback(correctPositionDialogue);
-		Debug.Log($"[DollHousePuzzle] {itemId} 배치 완료!");
+			_uiManager?.ShowDialogue(speaker, wrongDialogue);
+			_audioManager?.PlaySFX("puzzle_wrong");
+		}
 
 		CheckSolution();
 	}
 
-	private void ShowFeedback(string message)
-    {
-        var uiManager = FindAnyObjectByType<UIManager>();
-        uiManager?.ShowDialogue(speaker, message);
-    }
+	// ── 정답 판정 ────────────────────────────────────────────
+	protected override bool IsSolutionCorrect()
+	{
+		// 슬롯이 없으면 false (즉시 클리어 방지)
+		if (dollSlots == null || dollSlots.Count == 0) return false;
 
-    protected override bool IsSolutionCorrect()
-    {
-        foreach (var placed in _placedItems.Values)
-        {
-            if (!placed) return false;
-        }
-        return true;
-    }
-
-    protected override void SolvePuzzle()
-    {
-        isSolved = true;
-        ShowFeedback("인형을 모두 찾았다!");
-        var audioManager = FindAnyObjectByType<AudioManager>();
-        audioManager?.PlaySFX("door_unlock");
-        ExitPuzzle();
-
-        base.SolvePuzzle();
-        if (creature != null)
-        {
-            creature.SetActive(false);
+		foreach (var slot in dollSlots)
+		{
+			if (slot == null) continue;
+			if (!slot.IsCorrectlyFilled) return false;
 		}
+		return true;
 	}
 
-    private void OnDrawGizmos()
-    {
-        if (requiredItems == null) return;
-        Gizmos.color = Color.green;
-        foreach (var item in requiredItems)
-        {
-            if (item.targetSlot != null)
-                Gizmos.DrawWireSphere(item.targetSlot.position, positionTolerance);
-        }
-    }
+	// ── 퍼즐 해결 ────────────────────────────────────────────
+	protected override void SolvePuzzle()
+	{
+		// 모든 슬롯 bigSmile 표정
+		foreach (var slot in dollSlots) slot?.SetBigSmileExpression();
+
+		// 드래그 비활성화
+		foreach (var item in dollItems) item?.DisableDragging();
+
+		_uiManager?.ShowDialogue(speaker, solveDialogue);
+		_audioManager?.PlaySFX("door_unlock");
+
+		// 크리처 비활성화
+		if (creature != null) creature.SetActive(false);
+
+		// base: isSolved=true, UILayerManager.Pop, OnPuzzleSolved 이벤트, ExitPuzzle
+		base.SolvePuzzle();
+	}
+
+	// ── 퍼즐 나가기 (ESC 또는 해결 시) ──────────────────────
+	public override void ExitPuzzle()
+	{
+		if (!isSolved)
+		{
+			// 미해결 상태로 나가면 리셋
+			foreach (var item in dollItems) item?.DisableDragging();
+			ResetPuzzle();
+		}
+
+		base.ExitPuzzle();
+	}
+
+	// ── 리셋 ─────────────────────────────────────────────────
+	private void ResetPuzzle()
+	{
+		foreach (var slot in dollSlots) slot?.RemoveItem();
+		foreach (var item in dollItems) item?.ResetToHomePosition();
+		Debug.Log("[Stage1DollHouse] 퍼즐 리셋");
+	}
+
+	// ── 기즈모 ────────────────────────────────────────────────
+	private void OnDrawGizmos()
+	{
+		if (dollSlots == null) return;
+		Gizmos.color = Color.cyan;
+		foreach (var slot in dollSlots)
+			if (slot != null) Gizmos.DrawWireSphere(slot.transform.position, 0.2f);
+	}
 }

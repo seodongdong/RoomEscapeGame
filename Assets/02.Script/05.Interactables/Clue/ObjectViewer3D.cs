@@ -3,19 +3,19 @@ using System.Collections;
 
 /// <summary>
 /// 환경 오브젝트 상호작용
-/// - ViewMode.Viewer: 오브젝트를 카메라 정면으로 이동해서 보기 (크기 변경 없음)
-/// - ViewMode.DialogueOnly: 대사만 출력
 ///
-/// [수정] 카메라 자식으로 부착 후 로컬 좌표 고정
-///        → 오브젝트 위치/거리와 무관하게 항상 카메라 정면에 등장
+/// [모드]
+/// - ViewMode.Viewer      : 오브젝트를 카메라 정면으로 이동해서 돌려보기
+/// - ViewMode.DialogueOnly: 대사만 출력 (오브젝트 이동 없음)
+///
+/// [수정]
+/// - 뷰어 열릴 때 UILayerManager.Push → ESC/E로 닫기 가능
+/// - 선택적 인벤토리 등록 옵션 추가 (addToInventory = true 시)
+/// - 카메라 자식 부착 방식 유지
 /// </summary>
 public class ObjectViewer3D : MonoBehaviour, IInteractable
 {
-	public enum ViewMode
-	{
-		Viewer,
-		DialogueOnly
-	}
+	public enum ViewMode { Viewer, DialogueOnly }
 
 	[Header("모드 선택")]
 	[SerializeField] private ViewMode viewMode = ViewMode.Viewer;
@@ -33,20 +33,26 @@ public class ObjectViewer3D : MonoBehaviour, IInteractable
 
 	[Header("Viewer Settings")]
 	[Tooltip("카메라 앞 몇 미터에 오브젝트를 놓을지 (0.3 ~ 1.0 권장)")]
-	[SerializeField] private float viewDistance = 0.5f;     // 카메라 로컬 Z 거리
-	[Tooltip("카메라 중심 기준 상하 오프셋 (0이면 정중앙)")]
-	[SerializeField] private float viewOffsetY = 0f;        // 카메라 로컬 Y 오프셋
+	[SerializeField] private float viewDistance = 0.5f;
+	[Tooltip("카메라 중심 기준 상하 오프셋")]
+	[SerializeField] private float viewOffsetY = 0f;
 	[SerializeField] private float zoomDuration = 0.4f;
 	[SerializeField] private float rotateSpeed = 3f;
 	[SerializeField] private GameObject viewerHintUI;
 
-	// 원래 상태 저장
+	[Header("인벤토리 등록 (선택)")]
+	[Tooltip("true: 첫 조사 시 아이템 탭에 등록됨 (살펴보기용 단서)")]
+	[SerializeField] private bool addToInventory = false;
+	[SerializeField] private string itemDate = "";
+	[SerializeField] private GameObject itemPrefab;   // 3D 뷰어용 프리팹 (없으면 자기 자신)
+
+	// ── 원래 상태 저장 ────────────────────────────────────────
 	private Vector3 _originalPosition;
 	private Quaternion _originalRotation;
 	private Vector3 _originalScale;
 	private Transform _originalParent;
 
-	// 뷰어 상태
+	// ── 뷰어 상태 ─────────────────────────────────────────────
 	private bool _isViewing = false;
 	private bool _isRegistered = false;
 	private bool _isDragging = false;
@@ -55,7 +61,8 @@ public class ObjectViewer3D : MonoBehaviour, IInteractable
 	private Camera _cam;
 	private Player _player;
 
-	// ── IInteractable ──────────────────────────────────
+	// ── IInteractable ─────────────────────────────────────────
+
 	public string InteractionPrompt => $"[F] {clueName} 조사하기";
 	public bool CanInteract(IPlayer player) => true;
 
@@ -63,18 +70,43 @@ public class ObjectViewer3D : MonoBehaviour, IInteractable
 	{
 		if (Stage1TVPriorityManager.CheckPriorityBlocked(player)) return;
 
+		// 첫 조사: 단서 등록
 		if (!_isRegistered)
 		{
 			_isRegistered = true;
-			GameManager.Instance?.ClueTracker.RegisterClue(clueId);
+
+			// 클루 트래커 등록 (항상)
+			if (!string.IsNullOrEmpty(clueId))
+				GameManager.Instance?.ClueTracker.RegisterClue(clueId);
+
+			// ★ 인벤토리 등록 (옵션)
+			if (addToInventory && !string.IsNullOrEmpty(clueId))
+			{
+				// PlayerInventory
+				player.Inventory.AddItem(new ClueItem(clueId, clueName, description));
+
+				// InventoryUI_Complete
+				var inventoryUI = FindAnyObjectByType<InventoryUI_Complete>(FindObjectsInactive.Include);
+				inventoryUI?.AddItem(new InventoryItemData
+				{
+					itemId = clueId,
+					title = clueName,
+					date = itemDate,
+					itemType = ItemType.UsableItem,
+					description = description,
+					itemPrefab = itemPrefab != null ? itemPrefab : gameObject
+				});
+			}
 		}
 
+		// DialogueOnly 모드: 대사만 출력하고 끝
 		if (viewMode == ViewMode.DialogueOnly)
 		{
 			FindAnyObjectByType<UIManager>()?.ShowDialogue(speaker, dialogue);
 			return;
 		}
 
+		// Viewer 모드: 이미 보는 중이면 무시
 		if (_isViewing) return;
 
 		_player = FindAnyObjectByType<Player>();
@@ -83,7 +115,8 @@ public class ObjectViewer3D : MonoBehaviour, IInteractable
 		StartCoroutine(ZoomIn());
 	}
 
-	// ── Update (뷰어 열려있을 때만) ────────────────────
+	// ── Update (뷰어 열려있을 때만) ───────────────────────────
+
 	private void Update()
 	{
 		if (!_isViewing) return;
@@ -100,11 +133,12 @@ public class ObjectViewer3D : MonoBehaviour, IInteractable
 			_lastMousePos = Input.mousePosition;
 		}
 
-		if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape))
-			StartCoroutine(ZoomOut());
+		// ★ ESC/E는 UILayerManager가 처리 → 여기서는 제거
+		//   (ZoomOut은 UILayerManager의 onClose 콜백으로 호출됨)
 	}
 
-	// ── ZoomIn ─────────────────────────────────────────
+	// ── ZoomIn ────────────────────────────────────────────────
+
 	private IEnumerator ZoomIn()
 	{
 		_isViewing = true;
@@ -115,14 +149,16 @@ public class ObjectViewer3D : MonoBehaviour, IInteractable
 		Cursor.visible = true;
 		viewerHintUI?.SetActive(true);
 
+		// ★ UILayerManager에 등록 → ESC/E 눌리면 ZoomOut 호출
+		UILayerManager.Instance?.Push(this, () => StartCoroutine(ZoomOut()));
+
 		// 원래 상태 저장
 		_originalPosition = transform.position;
 		_originalRotation = transform.rotation;
 		_originalScale = transform.localScale;
 		_originalParent = transform.parent;
 
-		// ⭐ 카메라 자식으로 부착
-		//    로컬 좌표 (0, offsetY, viewDistance) = 항상 카메라 정면 고정 위치
+		// 카메라 자식으로 부착
 		transform.SetParent(_cam.transform);
 
 		Vector3 startLocalPos = transform.localPosition;
@@ -136,7 +172,6 @@ public class ObjectViewer3D : MonoBehaviour, IInteractable
 			transform.localPosition = Vector3.Lerp(startLocalPos, targetLocalPos, t);
 			yield return null;
 		}
-
 		transform.localPosition = targetLocalPos;
 
 		// 대사 출력
@@ -144,15 +179,18 @@ public class ObjectViewer3D : MonoBehaviour, IInteractable
 			FindAnyObjectByType<UIManager>()?.ShowDialogue(speaker, dialogue);
 	}
 
-	// ── ZoomOut ────────────────────────────────────────
+	// ── ZoomOut ───────────────────────────────────────────────
+
 	private IEnumerator ZoomOut()
 	{
 		viewerHintUI?.SetActive(false);
 
-		// 카메라 자식 상태에서 월드 좌표로 현재 위치 기록
+		// UILayerManager에서 제거
+		UILayerManager.Instance?.Pop(this);
+
 		Vector3 startWorldPos = transform.position;
 
-		// 부모를 원래대로 복원
+		// 부모 복원
 		transform.SetParent(_originalParent);
 
 		float elapsed = 0f;

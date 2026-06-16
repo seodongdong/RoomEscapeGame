@@ -3,9 +3,16 @@ using System.Collections;
 
 /// <summary>
 /// 완전한 문 스크립트
-/// - 일반 잠긴 문 / 열쇠 필요 문 / 열고 닫기 토글
-/// - lockAfterOpen: 한 번 열리면 자동으로 닫히고 퍼즐 완료 전까지 잠김
-/// - 열쇠 사용 시 거리 + 방향 체크 (문 근처에서 문을 향해야만 사용 가능)
+///
+/// [기획서 기준 수정]
+/// - 열쇠 없이 잠겨있을 때 : 프롬프트 미표시 + 철컥 효과음만
+/// - 열쇠 있고 잠겨있을 때 : "열쇠 사용하기" 프롬프트
+/// - 열쇠 사용 후           : "열기 / 닫기" 프롬프트
+///
+/// [기존 기능 유지]
+/// - lockAfterOpen : 한 번 열리면 자동으로 닫히고 퍼즐 완료 전까지 잠김
+/// - 열쇠 거리 + 방향 체크
+/// - IItemUsable : 인벤토리에서 열쇠 아이템 직접 사용 가능
 /// </summary>
 public class Door : MonoBehaviour, IInteractable, IItemUsable
 {
@@ -18,10 +25,10 @@ public class Door : MonoBehaviour, IInteractable, IItemUsable
 	[Header("열쇠 사용 범위")]
 	[Tooltip("이 거리 이내에서만 열쇠를 사용할 수 있습니다.")]
 	[SerializeField] private float keyUseDistance = 3f;
-	[Tooltip("플레이어가 문을 향해 있어야 하는 각도 범위 (클수록 넓음, 0~1 사이 dot값)")]
+	[Tooltip("플레이어가 문을 향해 있어야 하는 각도 범위 (0~1 dot값, 클수록 넓음)")]
 	[SerializeField] private float keyUseFacingDot = 0.3f;
 
-	[Header("한 번 열리면 다시 잠기는 옵션")]
+	[Header("lockAfterOpen")]
 	[Tooltip("켜두면 열린 직후 자동으로 닫히고 퍼즐 완료 전까지 다시 열리지 않습니다.")]
 	[SerializeField] private bool lockAfterOpen = false;
 	[SerializeField] private MonoBehaviour puzzleObject;
@@ -46,7 +53,7 @@ public class Door : MonoBehaviour, IInteractable, IItemUsable
 	private bool _isOpen = false;
 	private bool _isMoving = false;
 	private bool _lockedByPuzzle = false;
-	private bool _keyUsed = false;  // 열쇠 사용 여부 (자유 출입 판단용)
+	private bool _keyUsed = false;
 	private Vector3 _closedPosition;
 
 	private void Awake()
@@ -71,7 +78,6 @@ public class Door : MonoBehaviour, IInteractable, IItemUsable
 
 	private void OnPuzzleSolvedHandler()
 	{
-		// lockAfterOpen으로 잠긴 경우
 		if (_lockedByPuzzle)
 		{
 			_lockedByPuzzle = false;
@@ -80,7 +86,6 @@ public class Door : MonoBehaviour, IInteractable, IItemUsable
 			return;
 		}
 
-		// 열쇠 없이 잠긴 문 (출구 등) — 퍼즐 완료 시 잠금 해제
 		if (isLocked && string.IsNullOrEmpty(requiredKeyId))
 		{
 			isLocked = false;
@@ -88,15 +93,11 @@ public class Door : MonoBehaviour, IInteractable, IItemUsable
 		}
 	}
 
-	// ── 외부에서 자유 출입 해제 (ExitTrigger 등에서 호출) ────
+	// ── 외부 호출 ─────────────────────────────────────────────
 
-	/// <summary>
-	/// 열쇠를 이미 사용한 문에서 lockAfterOpen으로 잠긴 상태를 풀어줍니다.
-	/// 이후 자유롭게 여닫을 수 있습니다.
-	/// </summary>
 	public void UnlockForFreeAccess()
 	{
-		if (!_keyUsed) return; // 열쇠 사용 전에는 효과 없음
+		if (!_keyUsed) return;
 		_lockedByPuzzle = false;
 		isLocked = false;
 		Debug.Log("[Door] 자유 출입 해제됨");
@@ -108,37 +109,79 @@ public class Door : MonoBehaviour, IInteractable, IItemUsable
 	{
 		get
 		{
+			// ★ lockAfterOpen으로 잠긴 상태: 프롬프트 표시 (이미 열쇠는 썼으니 안내)
 			if (_lockedByPuzzle) return "[F] 문 (잠김)";
+
+			// ★ 열쇠 사용 후 자유 출입: 열기/닫기
 			if (!isLocked) return _isOpen ? "[F] 문 닫기" : "[F] 문 열기";
-			if (string.IsNullOrEmpty(requiredKeyId)) return "[F] 문 (잠김)";
-			return $"[F] 잠긴 문 ({requiredKeyName} 필요)";
+
+			// ★ 잠긴 문
+			if (string.IsNullOrEmpty(requiredKeyId))
+			{
+				// 열쇠 없이 잠긴 문 → 기획서: 프롬프트 미표시
+				// 빈 문자열 반환 → Player.cs가 ShowInteractionPrompt 호출 안 함
+				return "";
+			}
+
+			// 열쇠 필요 문: 플레이어가 열쇠를 갖고 있는지에 따라 다른 프롬프트
+			return $"[F] {requiredKeyName} 사용하기";
 		}
 	}
 
-	public bool CanInteract(IPlayer player) => true;
+	public bool CanInteract(IPlayer player)
+	{
+		// 빈 프롬프트(열쇠 없이 잠긴 문)는 F키 눌렀을 때도 동작 허용
+		// → Interact() 안에서 철컥 효과음만 냄
+		return true;
+	}
 
 	public void Interact(IPlayer player)
 	{
 		if (_isMoving) return;
 		var ui = FindAnyObjectByType<UIManager>();
 
-		if (_lockedByPuzzle) { ui?.ShowDialogue(speaker, puzzleLockedDialogue); return; }
-		if (!isLocked) { if (_isOpen) CloseDoor(); else OpenDoor(); return; }
-		if (string.IsNullOrEmpty(requiredKeyId)) ui?.ShowDialogue(speaker, lockedDialogue);
-		else ui?.ShowDialogue(speaker, needKeyDialogue);
+		// lockAfterOpen으로 잠긴 상태
+		if (_lockedByPuzzle)
+		{
+			ui?.ShowDialogue(speaker, puzzleLockedDialogue);
+			FindAnyObjectByType<AudioManager>()?.PlaySFX("door_locked");
+			return;
+		}
+
+		// 잠금 해제 → 여닫기
+		if (!isLocked)
+		{
+			if (_isOpen) CloseDoor();
+			else OpenDoor();
+			return;
+		}
+
+		// 잠긴 문
+		if (string.IsNullOrEmpty(requiredKeyId))
+		{
+			// ★ 기획서: 열쇠 없이 잠겨있을 때 → 대사 없음, 철컥 효과음만
+			FindAnyObjectByType<AudioManager>()?.PlaySFX("door_locked");
+			Debug.Log("[Door] 잠김 (철컥)");
+		}
+		else
+		{
+			// 열쇠 필요 문: 인벤토리에 열쇠 있으면 사용, 없으면 안내 대사
+			if (player.Inventory.HasItem(requiredKeyId))
+				UnlockAndOpen(player);
+			else
+				ui?.ShowDialogue(speaker, needKeyDialogue);
+		}
 	}
 
-	// ── IItemUsable ───────────────────────────────────────────
+	// ── IItemUsable (인벤토리 사용 버튼) ─────────────────────
 
 	public bool CanUseItem(string itemId)
 	{
 		if (itemId != requiredKeyId || !isLocked) return false;
 
-		// 거리 + 방향 체크
 		var player = FindAnyObjectByType<Player>();
 		if (player == null) return false;
 
-		// 거리 체크
 		float dist = Vector3.Distance(player.transform.position, transform.position);
 		if (dist > keyUseDistance)
 		{
@@ -147,7 +190,6 @@ public class Door : MonoBehaviour, IInteractable, IItemUsable
 			return false;
 		}
 
-		// 방향 체크 (플레이어가 문을 향해 있는지)
 		Vector3 toDoor = (transform.position - player.transform.position).normalized;
 		float dot = Vector3.Dot(player.transform.forward, toDoor);
 		if (dot < keyUseFacingDot)
@@ -181,7 +223,7 @@ public class Door : MonoBehaviour, IInteractable, IItemUsable
 	private void UnlockAndOpen(IPlayer player)
 	{
 		isLocked = false;
-		_keyUsed = true;  // 열쇠 사용 기록
+		_keyUsed = true;
 
 		if (consumeKey && !string.IsNullOrEmpty(requiredKeyId))
 		{
@@ -225,12 +267,7 @@ public class Door : MonoBehaviour, IInteractable, IItemUsable
 		CloseDoor();
 		yield return new WaitForSeconds(openDuration);
 
-		// 열쇠로 연 문이면 → lockAfterOpen이지만 _lockedByPuzzle만 true로 (isLocked는 false 유지)
-		// UnlockForFreeAccess() 호출 시 _lockedByPuzzle만 풀면 됨
-		if (!_keyUsed)
-		{
-			isLocked = true;
-		}
+		if (!_keyUsed) isLocked = true;
 		_lockedByPuzzle = true;
 		Debug.Log("[Door] 자동 잠김");
 	}
@@ -246,14 +283,22 @@ public class Door : MonoBehaviour, IInteractable, IItemUsable
 		while (elapsed < openDuration)
 		{
 			elapsed += Time.deltaTime;
-			transform.position = Vector3.Lerp(start, end, Mathf.SmoothStep(0, 1, elapsed / openDuration));
+			transform.position = Vector3.Lerp(
+				start, end,
+				Mathf.SmoothStep(0, 1, elapsed / openDuration));
 			yield return null;
 		}
 		transform.position = end;
 		_isMoving = false;
 
-		if (!opening) { var col = GetComponent<Collider>(); if (col != null) col.isTrigger = false; }
+		if (!opening)
+		{
+			var col = GetComponent<Collider>();
+			if (col != null) col.isTrigger = false;
+		}
 	}
+
+	// ── 기즈모 ────────────────────────────────────────────────
 
 	private void OnDrawGizmos()
 	{
@@ -261,7 +306,6 @@ public class Door : MonoBehaviour, IInteractable, IItemUsable
 		Gizmos.DrawWireCube(transform.position + openOffset, transform.localScale);
 		Gizmos.DrawLine(transform.position, transform.position + openOffset);
 
-		// 열쇠 사용 범위 시각화
 		Gizmos.color = Color.yellow;
 		Gizmos.DrawWireSphere(transform.position, keyUseDistance);
 	}
