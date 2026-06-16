@@ -1,13 +1,19 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 /// <summary>
-/// Stage 1 Àü¿ë TV ¿ì¼± ½ÃÃ» °­Á¦ ½Ã½ºÅÛ.
-/// TV¸¦ 4È¸ ½ÃÃ»ÇÏ±â Àü±îÁö ´Ù¸¥ ¸ğµç FÅ° »óÈ£ÀÛ¿ëÀ» Â÷´ÜÇÕ´Ï´Ù.
+/// Stage 1 ì „ìš© â€” TV ë¨¼ì € ì‹œì²­ ìš”êµ¬ ì‹œìŠ¤í…œ
+/// TVë¥¼ 4íšŒ ì‹œì²­í•˜ê¸° ì „ê¹Œì§€ ë‹¤ë¥¸ ì˜¤ë¸Œì íŠ¸ì˜ Fí‚¤ ìƒí˜¸ì‘ìš©ì„ ì°¨ë‹¨í•œë‹¤.
 ///
-/// [ÇÙ½É ¼öÁ¤ »çÇ×]
-/// CheckPriorityBlocked()¿¡ Instance == null Ã¼Å© Ãß°¡.
-/// Stage 2~5Ã³·³ ÀÌ ¸Å´ÏÀú°¡ ¾À¿¡ ¾øÀ¸¸é Àı´ë Â÷´ÜÇÏÁö ¾Ê½À´Ï´Ù.
-/// Stage 1 ¾À¿¡¸¸ ÀÌ ¿ÀºêÁ§Æ®¸¦ ¹èÄ¡ÇÏ¸é ´Ù¸¥ ½ºÅ×ÀÌÁö¿£ ¿µÇâ ¾øÀ½.
+/// [ë²„ê·¸ ìˆ˜ì •]
+/// - IsTVWatchedë¥¼ Awakeì—ì„œ í•­ìƒ falseë¡œ ì´ˆê¸°í™”
+///   â†’ ì”¬ ì¬ì§„ì… / ê²Œì„ ì¬ì‹œì‘ ì‹œ trueê°€ ê³ ì •ë˜ë˜ ë²„ê·¸ í•´ê²°
+/// - OnDestroyì—ì„œ static ìƒíƒœë„ í•¨ê»˜ ì´ˆê¸°í™”
+///   â†’ Stage 2~5 ì”¬ì—ì„œ Instance == null ì²´í¬ê°€ ì˜¬ë°”ë¥´ê²Œ ì‘ë™
+///
+/// [ì‚¬ìš©ë²•]
+/// ê° Interactable.Interact() ì²« ì¤„ì— ì•„ë˜ ì½”ë“œ ì‚½ì…:
+///   if (Stage1TVPriorityManager.CheckPriorityBlocked(player)) return;
+/// Stage 2~5ëŠ” Instanceê°€ nullì´ë¯€ë¡œ ìë™ìœ¼ë¡œ ì°¨ë‹¨ ì•ˆ ë¨.
 /// </summary>
 public class Stage1TVPriorityManager : MonoBehaviour
 {
@@ -15,52 +21,60 @@ public class Stage1TVPriorityManager : MonoBehaviour
 	public static Stage1TVPriorityManager Instance => _instance;
 
 	[Header("Settings")]
-	[SerializeField] private string priorityDialogue = "¿ì¼± TV¸¦ »ìÆìº¸ÀÚ...";
-	[SerializeField] private string speaker = "¼Ò³â";
+	[SerializeField] private string priorityDialogue = "ë¨¼ì € TVë¥¼ ì‚´í´ë³´ì...";
+	[SerializeField] private string speaker = "ì†Œë…„";
 
-	// TV ½ÃÃ» ¿Ï·á ¿©ºÎ (staticÀÌ¶ó ¾À ÀüÈ¯ ÈÄ¿¡µµ À¯ÁöµÉ ¼ö ÀÖÀ½)
+	// â˜… static ìƒíƒœ â€” Awakeì™€ OnDestroy ì–‘ìª½ì—ì„œ ëª…ì‹œì ìœ¼ë¡œ ì´ˆê¸°í™”
 	public static bool IsTVWatched { get; private set; } = false;
 
 	private void Awake()
 	{
 		_instance = this;
-		IsTVWatched = false; // ¾À ÁøÀÔ ½Ã ÃÊ±âÈ­
+
+		// â˜… ì”¬ ì¬ì§„ì… / ì¬ì‹œì‘ ì‹œ í•­ìƒ falseë¡œ ì´ˆê¸°í™”
+		IsTVWatched = false;
+		Debug.Log("[Stage1TVPriority] ì´ˆê¸°í™” â€” IsTVWatched = false");
 	}
 
 	private void OnDestroy()
 	{
-		// ¾À¿¡¼­ Á¦°ÅµÉ ¶§ Instance Á¤¸®
-		// ´ÙÀ½ ¾À(Stage 2~5)¿¡¼­ Instance°¡ ³²¾ÆÀÖÁö ¾Êµµ·Ï
+		// â˜… ì”¬ ì „í™˜ ì‹œ static ìƒíƒœë„ í•¨ê»˜ ë¦¬ì…‹
 		if (_instance == this)
+		{
 			_instance = null;
-	}
-
-	public static void SetTVWatched()
-	{
-		IsTVWatched = true;
-		Debug.Log("[Stage1TVPriority] TV ½ÃÃ» ¿Ï·á ¡æ ´Ù¸¥ »óÈ£ÀÛ¿ë ÇØ±İ");
+			IsTVWatched = false;
+			Debug.Log("[Stage1TVPriority] íŒŒê´´ â€” static ìƒíƒœ ì´ˆê¸°í™”");
+		}
 	}
 
 	/// <summary>
-	/// °¢ InteractableÀÇ Interact() ¸Ç À§¿¡¼­ È£ÃâÇÕ´Ï´Ù.
-	/// true ¹İÈ¯ ½Ã ¡æ »óÈ£ÀÛ¿ë Â÷´Ü (TV ¸ÕÀú º¸¼¼¿ä)
-	/// false ¹İÈ¯ ½Ã ¡æ »óÈ£ÀÛ¿ë Çã¿ë
+	/// TV ì‹œì²­ ì™„ë£Œ í‘œì‹œ (TVPlayer.csì˜ 4ë‹¨ê³„ ì™„ë£Œ ì‹œ í˜¸ì¶œ)
+	/// </summary>
+	public static void SetTVWatched()
+	{
+		IsTVWatched = true;
+		Debug.Log("[Stage1TVPriority] TV ì‹œì²­ ì™„ë£Œ â€” ë‹¤ë¥¸ ìƒí˜¸ì‘ìš© í—ˆìš©");
+	}
+
+	/// <summary>
+	/// ê° Interactable.Interact() ì²« ì¤„ì—ì„œ í˜¸ì¶œ.
+	/// true ë°˜í™˜ â†’ ì°¨ë‹¨ (TV ë¨¼ì € ë´ì•¼ í•¨)
+	/// false ë°˜í™˜ â†’ í†µê³¼ (ìƒí˜¸ì‘ìš© í—ˆìš©)
 	///
-	/// [¼öÁ¤] Instance == nullÀÌ¸é ¹«Á¶°Ç false(Çã¿ë) ¹İÈ¯.
-	///        Stage 2~5Ã³·³ ÀÌ ¸Å´ÏÀú°¡ ¾ø´Â ¾À¿¡¼­´Â Àı´ë Â÷´ÜÇÏÁö ¾Ê½À´Ï´Ù.
+	/// Instance == nullì´ë©´ Stage 2~5 ì”¬ì´ë¯€ë¡œ í•­ìƒ false(í—ˆìš©).
 	/// </summary>
 	public static bool CheckPriorityBlocked(IPlayer player)
 	{
-		// ¡Ú ÇÙ½É ¼öÁ¤: ¾À¿¡ ¸Å´ÏÀú°¡ ¾øÀ¸¸é Â÷´ÜÇÏÁö ¾ÊÀ½
+		// Stage 2~5 ë“± ì´ ë§¤ë‹ˆì €ê°€ ì—†ëŠ” ì”¬ â†’ ì°¨ë‹¨ ì•ˆ í•¨
 		if (Instance == null) return false;
 
-		// TV¸¦ ÀÌ¹Ì ºÃÀ¸¸é Â÷´ÜÇÏÁö ¾ÊÀ½
+		// TV ì´ë¯¸ ì‹œì²­ ì™„ë£Œ â†’ ì°¨ë‹¨ ì•ˆ í•¨
 		if (IsTVWatched) return false;
 
-		// TV ¾ÆÁ÷ ¾È ºÃÀ½ ¡æ ¾È³» ´ë»ç Ãâ·Â ÈÄ Â÷´Ü
+		// TV ë¨¼ì € ë³´ë¼ëŠ” ì•ˆë‚´ ëŒ€ì‚¬ ì¶œë ¥
 		var uiManager = UnityEngine.Object.FindAnyObjectByType<UIManager>();
 		uiManager?.ShowDialogue(Instance.speaker, Instance.priorityDialogue);
 
-		return true; // Â÷´Ü
+		return true; // ì°¨ë‹¨
 	}
 }

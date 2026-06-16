@@ -4,14 +4,21 @@ using System.Collections;
 /// <summary>
 /// 퍼즐 완료 후 열리는 문. 열린 뒤에는 여닫기가 자유롭습니다.
 ///
+/// [기획서 기준]
+/// - 퍼즐 해결 시에만 열림. 자동 개방 없이 수동 상호작용 필요
+/// - 퍼즐 해결 시 문 열리는 효과음 재생
+///
+/// [autoOpen 기본값 변경]
+/// true  → 퍼즐 완료 즉시 자동 열림  (방 안쪽 → 복도 연결문 등)
+/// false → 잠금만 해제, F키로 직접 열어야 함  ← 기획서 기본값
+///
 /// [동작]
-/// 퍼즐 미완료: "[F] ..." 프롬프트 + 잠김 대사
-/// 퍼즐 완료 후 닫힌 상태: "[F] 문 열기" → 문 열림
-/// 퍼즐 완료 후 열린 상태: "[F] 문 닫기" → 문 닫힘
+/// 퍼즐 미완료 : lockedPrompt 프롬프트 + 잠김 대사
+/// 퍼즐 완료 후 닫힌 상태 : "[F] 문 열기" → 열림
+/// 퍼즐 완료 후 열린 상태 : "[F] 문 닫기" → 닫힘
 ///
 /// [목각인형 지급]
 /// 문을 통과(OnTriggerEnter)할 때 한 번만 지급.
-/// 방에 들어갔다 나올 때마다 중복 지급되지 않습니다.
 /// </summary>
 public class PuzzleSolveDoor : MonoBehaviour, IInteractable
 {
@@ -27,8 +34,10 @@ public class PuzzleSolveDoor : MonoBehaviour, IInteractable
 	[SerializeField] private Vector3 openOffset = new Vector3(0, 3, 0);
 	[SerializeField] private float openDuration = 0.6f;
 
-	[Tooltip("true: 퍼즐 완료 시 자동으로 열림 (작은 방 문용)\nfalse: 잠금만 해제, 플레이어가 직접 열어야 함 (출구용)")]
-	[SerializeField] private bool autoOpen = true;
+	[Tooltip(
+		"false(기본) : 잠금만 해제, 플레이어가 F키로 직접 열어야 함 ← 기획서 기준\n" +
+		"true         : 퍼즐 완료 즉시 자동 열림 (작은 방 문 등 특수 케이스)")]
+	[SerializeField] private bool autoOpen = false;   // ★ 기본값 false로 변경
 
 	[Header("대사")]
 	[SerializeField] private string speaker = "소년";
@@ -39,7 +48,7 @@ public class PuzzleSolveDoor : MonoBehaviour, IInteractable
 	[TextArea(2, 4)]
 	[SerializeField] private string openDialogue = "문이 열렸다.";
 	[TextArea(2, 4)]
-	[SerializeField] private string closeDialogue = "";  // 비워두면 대사 없음
+	[SerializeField] private string closeDialogue = "";   // 비워두면 대사 없음
 
 	[Header("목각인형 지급 (선택)")]
 	[SerializeField] private string woodenDollId = "";
@@ -55,7 +64,7 @@ public class PuzzleSolveDoor : MonoBehaviour, IInteractable
 	private bool _isAnimating = false;
 	private bool _dollGiven = false;
 	private Vector3 _closedPosition;
-	private Transform _doorTarget;   // doorTransform 없으면 this.transform 사용
+	private Transform _doorTarget;
 
 	private void Awake()
 	{
@@ -97,35 +106,32 @@ public class PuzzleSolveDoor : MonoBehaviour, IInteractable
 
 		if (!_puzzleSolved)
 		{
+			// 퍼즐 미완료 → 잠김 대사 + 효과음
 			ui?.ShowDialogue(speaker, lockedDialogue);
+			FindAnyObjectByType<AudioManager>()?.PlaySFX("door_locked");
 			return;
 		}
 
 		if (_isOpen)
 		{
-			// 열린 문 → 닫기
 			if (!string.IsNullOrEmpty(closeDialogue))
 				ui?.ShowDialogue(speaker, closeDialogue);
 			StartCoroutine(AnimateDoor(false));
 		}
 		else
 		{
-			// 닫힌 문 → 열기
 			ui?.ShowDialogue(speaker, openDialogue);
+			FindAnyObjectByType<AudioManager>()?.PlaySFX("door_open");
 			StartCoroutine(AnimateDoor(true));
 		}
 	}
 
-	// ── 자유 출입 해제 (Stage2_ExitTrigger에서 호출) ────────
+	// ── 자유 출입 해제 (Stage2_ExitTrigger 등에서 호출) ──────
 
-	/// <summary>
-	/// 첫 퇴장 후 호출. 이후 문을 자유롭게 여닫을 수 있게 잠금 상태를 완전히 해제합니다.
-	/// 프롬프트가 "문 열기 / 문 닫기"로 바뀌고 목각인형 지급 여부와 무관하게 출입 가능.
-	/// </summary>
 	public void UnlockFreeAccess()
 	{
-		_puzzleSolved = true;  // 이미 true겠지만 확실히
-		_isOpen = false; // 현재 닫힌 상태로 간주
+		_puzzleSolved = true;
+		_isOpen = false;
 		Debug.Log("[PuzzleSolveDoor] 자유 출입 해제됨");
 	}
 
@@ -134,18 +140,21 @@ public class PuzzleSolveDoor : MonoBehaviour, IInteractable
 	private void OnPuzzleSolvedHandler()
 	{
 		_puzzleSolved = true;
-		var ui = FindAnyObjectByType<UIManager>();
+
+		// 효과음: 잠겼던 문이 열리는 소리
+		FindAnyObjectByType<AudioManager>()?.PlaySFX("door_unlock");
 
 		if (autoOpen)
 		{
-			// 퍼즐 완료 시 자동으로 열림 (작은 방 문)
+			// 특수 케이스: 자동 열림
+			var ui = FindAnyObjectByType<UIManager>();
 			ui?.ShowDialogue(speaker, openDialogue);
 			StartCoroutine(AnimateDoor(true));
 		}
 		else
 		{
-			// 잠금만 해제, 대사 없음 (출구 문 — 플레이어가 직접 F키로 열어야 함)
-			Debug.Log("[PuzzleSolveDoor] 퍼즐 완료 → 잠금 해제 (수동 열기)");
+			// 기획서 기본: 잠금만 해제, 플레이어가 F키로 직접 열어야 함
+			Debug.Log("[PuzzleSolveDoor] 퍼즐 완료 → 잠금 해제 (수동 열기 대기)");
 		}
 	}
 
@@ -196,26 +205,24 @@ public class PuzzleSolveDoor : MonoBehaviour, IInteractable
 
 		_dollGiven = true;
 
-		// PlayerInventory 등록 (IItem 인터페이스용)
+		// PlayerInventory 등록
 		var clueItem = new ClueItem(woodenDollId, woodenDollName, woodenDollDialogue);
 		player.Inventory.AddItem(clueItem);
 		GameManager.Instance?.ClueTracker.RegisterClue(woodenDollId);
 
 		// InventoryUI_Complete 등록 (UI 표시용)
-		// itemPrefab 연결 → 인벤토리에서 "3D로 보기" 버튼 활성화
 		var inventoryData = new InventoryItemData
 		{
 			itemId = woodenDollId,
 			title = woodenDollName,
 			description = woodenDollDialogue,
 			itemType = ItemType.UsableItem,
-			itemPrefab = woodenDollPrefab  // ← Inspector에서 연결한 프리팹
+			itemPrefab = woodenDollPrefab
 		};
 		var inventoryUI = FindAnyObjectByType<InventoryUI_Complete>();
 		inventoryUI?.AddItem(inventoryData);
 
 		FindAnyObjectByType<UIManager>()?.ShowDialogue(speaker, woodenDollDialogue);
-
 		Debug.Log($"[PuzzleSolveDoor] 목각인형 지급: {woodenDollName}");
 	}
 }

@@ -95,6 +95,9 @@ public class DiaryUI : MonoBehaviour
 	/// </summary>
 	public void CloseDiary()
 	{
+		// UILayerManager에서 제거 (ESC로 닫혔을 때 중복 Pop 방지는 Pop 내부에서 처리)
+		UILayerManager.Instance?.Pop(this);
+
 		diaryPanel?.SetActive(false);
 
 		if (_returnToInventory && _inventoryUI != null)

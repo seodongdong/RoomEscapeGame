@@ -5,18 +5,19 @@ using System.Collections;
 
 /// <summary>
 /// UI 통합 매니저
+/// 담당: 상호작용 프롬프트 / 대사 / 타이머
 ///
-/// [수정사항]
-/// - 다이얼로그/인벤토리 등 UI가 활성화될 때 InteractionPrompt 자동 숨김
-/// - UI가 비활성화될 때 InteractionPrompt 복원 (Player Raycast가 자연스럽게 처리)
-/// - _isUIOpen 플래그로 프롬프트 표시 차단
+/// [이번 수정]
+/// - I키 토글 제거 → Player.cs + InventoryUI_Complete에서 처리
+/// - ShowInventoryUI / HideInventoryUI 레거시 유지
+///   (IUIManager 인터페이스 구현 의무 때문)
 /// </summary>
 public class UIManager : MonoBehaviour, IUIManager
 {
 	[Header("UI References")]
 	[SerializeField] private GameObject interactionPrompt;
 	[SerializeField] private TextMeshProUGUI interactionText;
-	[SerializeField] private GameObject inventoryPanel;
+	[SerializeField] private GameObject inventoryPanel;    // 레거시 슬롯 (미사용 가능)
 	[SerializeField] private GameObject timerPanel;
 	[SerializeField] private TextMeshProUGUI timerText;
 
@@ -31,47 +32,38 @@ public class UIManager : MonoBehaviour, IUIManager
 
 	private Coroutine _timerCoroutine;
 	private Coroutine _dialogueCoroutine;
-
-	/// <summary>
-	/// 다른 UI(인벤토리, 다이어리, 뷰어 등)가 열려있는지 여부.
-	/// true일 때는 ShowInteractionPrompt 무시.
-	/// </summary>
 	private bool _isAnyUIOpen = false;
 
 	private void Start()
 	{
 		HideInteractionPrompt();
-		if (inventoryPanel != null) HideInventoryUI();
+		if (inventoryPanel != null) inventoryPanel.SetActive(false);
 		HideDialogue();
 		timerPanel?.SetActive(false);
 	}
 
 	private void Update()
 	{
-		// 스페이스바로 대사 스킵
+		// Space → 대사 스킵
 		if (Input.GetKeyDown(KeyCode.Space) &&
 			dialoguePanel != null &&
 			dialoguePanel.activeSelf)
 		{
 			HideDialogue();
 		}
+		// ★ I키 제거 — Player.cs + InventoryUI_Complete에서 처리
 	}
 
-	// ─────────────────────────────────────────────
-	// Interaction Prompt
-	// ─────────────────────────────────────────────
+	// ─── Interaction Prompt ───────────────────────────────────
 
 	public void ShowInteractionPrompt(string text)
 	{
-		// 다른 UI가 열려있으면 프롬프트 표시 차단
 		if (_isAnyUIOpen) return;
+		if (interactionPrompt == null) return;
 
-		if (interactionPrompt != null)
-		{
-			interactionPrompt.SetActive(true);
-			if (interactionText != null)
-				interactionText.text = text;
-		}
+		interactionPrompt.SetActive(true);
+		if (interactionText != null)
+			interactionText.text = text;
 	}
 
 	public void HideInteractionPrompt()
@@ -79,51 +71,34 @@ public class UIManager : MonoBehaviour, IUIManager
 		interactionPrompt?.SetActive(false);
 	}
 
-	// ─────────────────────────────────────────────
-	// UI Open/Close 상태 알림 (인벤토리, 다이어리, 뷰어 등에서 호출)
-	// ─────────────────────────────────────────────
+	// ─── UI 열림/닫힘 알림 ────────────────────────────────────
 
-	/// <summary>
-	/// 다른 UI가 열릴 때 호출 → InteractionPrompt 숨기고 표시 차단
-	/// </summary>
 	public void NotifyUIOpened()
 	{
 		_isAnyUIOpen = true;
 		HideInteractionPrompt();
 	}
 
-	/// <summary>
-	/// 다른 UI가 닫힐 때 호출 → InteractionPrompt 차단 해제
-	/// (실제 표시는 Player Raycast가 다음 프레임에 처리)
-	/// </summary>
 	public void NotifyUIClosed()
 	{
 		_isAnyUIOpen = false;
 	}
 
-	// ─────────────────────────────────────────────
-	// Inventory (UIManager 자체 패널 - 레거시 지원)
-	// ─────────────────────────────────────────────
+	// ─── Inventory (IUIManager 구현 — 레거시) ─────────────────
 
 	public void ShowInventoryUI()
 	{
-		if (inventoryPanel == null) return;
-		inventoryPanel.SetActive(true);
-		Time.timeScale = 0;
+		inventoryPanel?.SetActive(true);
 		NotifyUIOpened();
 	}
 
 	public void HideInventoryUI()
 	{
-		if (inventoryPanel == null) return;
-		inventoryPanel.SetActive(false);
-		Time.timeScale = 1;
+		inventoryPanel?.SetActive(false);
 		NotifyUIClosed();
 	}
 
-	// ─────────────────────────────────────────────
-	// Timer
-	// ─────────────────────────────────────────────
+	// ─── Timer ────────────────────────────────────────────────
 
 	public void StartTimer(float duration)
 	{
@@ -159,25 +134,20 @@ public class UIManager : MonoBehaviour, IUIManager
 				int seconds = Mathf.FloorToInt(remaining % 60);
 				timerText.text = $"{minutes:00}:{seconds:00}";
 
-				if (remaining <= 30f)
-					timerText.color = Color.red;
+				timerText.color = remaining <= 30f ? Color.red : Color.white;
 			}
 
 			yield return null;
 		}
 	}
 
-	// ─────────────────────────────────────────────
-	// Dialogue
-	// ─────────────────────────────────────────────
+	// ─── Dialogue ─────────────────────────────────────────────
 
 	public void ShowDialogue(string speaker, string dialogue)
 	{
 		if (dialoguePanel == null) return;
 
 		dialoguePanel.SetActive(true);
-
-		// 대화창이 열리면 프롬프트 숨기기
 		HideInteractionPrompt();
 
 		if (speakerText != null)
@@ -199,13 +169,6 @@ public class UIManager : MonoBehaviour, IUIManager
 			_dialogueCoroutine = null;
 		}
 		dialoguePanel?.SetActive(false);
-
-		// 대화창 닫히면 프롬프트 차단 해제
-		// (다른 UI가 열려있지 않은 경우에만)
-		if (!_isAnyUIOpen)
-		{
-			// Player Raycast가 다음 프레임에 자연스럽게 ShowInteractionPrompt 호출
-		}
 	}
 
 	private IEnumerator TypeDialogue(string dialogue)

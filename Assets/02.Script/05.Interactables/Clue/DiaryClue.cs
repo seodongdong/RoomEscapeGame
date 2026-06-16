@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 
 /// <summary>
-/// 일기장 단서 (최종 버전)
-/// - F키 상호작용 → 인벤토리 등록 + DiaryUI 열기
-/// - 인벤토리에서 다시 볼 수 있음
+/// 일기장 단서
+/// - F키 상호작용 → PlayerInventory + InventoryUI_Complete 동시 등록 → DiaryUI 열기
+/// - 인벤토리에서 다시 읽기 가능
+///
+/// [수정]
+/// - PlayerInventory.AddItem() 추가 (Door.HasItem() 등 체크용)
+/// - DiaryUI 열릴 때 UILayerManager.Push → ESC로 닫기 가능
 /// </summary>
 public class DiaryClue : MonoBehaviour, IInteractable
 {
@@ -35,13 +39,14 @@ public class DiaryClue : MonoBehaviour, IInteractable
 	[Header("Settings")]
 	[SerializeField] private bool collectOnRead = true;
 
+	// ── 런타임 ───────────────────────────────────────────────
 	private bool _hasRead = false;
 	private DiaryUI _diaryUI;
 	private InventoryUI_Complete _inventoryUI;
 
 	private void Start()
 	{
-		// FindObjectsInactive.Include 추가 → 비활성 오브젝트도 탐색
+		// 비활성 오브젝트도 탐색 (DiaryUI가 꺼져있을 수 있음)
 		_diaryUI = FindAnyObjectByType<DiaryUI>(FindObjectsInactive.Include);
 		_inventoryUI = FindAnyObjectByType<InventoryUI_Complete>(FindObjectsInactive.Include);
 
@@ -51,76 +56,66 @@ public class DiaryClue : MonoBehaviour, IInteractable
 			Debug.LogError("[DiaryClue] InventoryUI_Complete를 찾을 수 없습니다!");
 	}
 
-	public string InteractionPrompt
-	{
-		get
-		{
-			if (_hasRead)
-				return $"[F] {clueName} 다시 보기";
-			else
-				return $"[F] {clueName} 조사하기";
-		}
-	}
+	// ── IInteractable ─────────────────────────────────────────
 
-	public bool CanInteract(IPlayer player)
-	{
-		return true;
-	}
+	public string InteractionPrompt =>
+		_hasRead ? $"[F] {clueName} 다시 보기" : $"[F] {clueName} 조사하기";
+
+	public bool CanInteract(IPlayer player) => true;
 
 	public void Interact(IPlayer player)
 	{
+		// Stage1 TV 우선순위 체크
 		if (Stage1TVPriorityManager.CheckPriorityBlocked(player)) return;
 
-		// 첫 상호작용: 대사 + 인벤토리 추가
-		if (!_hasRead)
+		// 첫 상호작용: 대사 + 인벤토리 등록
+		if (!_hasRead && collectOnRead)
 		{
+			_hasRead = true;
+
+			// 대사 출력
 			var uiManager = FindAnyObjectByType<UIManager>();
 			if (!string.IsNullOrEmpty(firstDialogue))
-			{
 				uiManager?.ShowDialogue(speaker, firstDialogue);
-			}
 
-			// 인벤토리에 추가
-			if (collectOnRead && _inventoryUI != null)
+			// ★ PlayerInventory 등록 (HasItem 체크용)
+			player.Inventory.AddItem(new ClueItem(clueId, clueName, summary));
+
+			// ★ InventoryUI_Complete 등록 (UI 표시용)
+			_inventoryUI?.AddItem(new InventoryItemData
 			{
-				InventoryItemData itemData = new InventoryItemData
-				{
-					itemId = clueId,
-					title = clueName,
-					date = itemDate,
-					itemType = ItemType.Document,
-					description = summary,
-					pages = new List<string>(pages)
-				};
+				itemId = clueId,
+				title = clueName,
+				date = itemDate,
+				itemType = ItemType.Document,
+				description = summary,
+				pages = new List<string>(pages)
+			});
 
-				_inventoryUI.AddItem(itemData);
-			}
-
+			// 단서 추적 등록
 			GameManager.Instance?.ClueTracker.RegisterClue(clueId);
-
-			_hasRead = true;
 		}
 
-		// 일기장 UI 열기
+		// 일기장 UI 열기 (첫 조사 / 다시 보기 모두)
 		if (_diaryUI != null)
 		{
+			// UILayerManager에 등록 → ESC로 닫기 가능
+			UILayerManager.Instance?.Push(_diaryUI, _diaryUI.CloseDiary);
 			_diaryUI.OpenDiary(pages);
 		}
 	}
 
+	// ── Trigger (보조 — Raycast와 병행) ──────────────────────
+
 	private void OnTriggerEnter(Collider other)
 	{
 		if (other.TryGetComponent<Player>(out var player))
-		{
 			player.SetCurrentInteractable(this);
-		}
 	}
 
 	private void OnTriggerExit(Collider other)
 	{
 		if (other.TryGetComponent<Player>(out var player))
-		{
 			player.SetCurrentInteractable(null);
-		}
 	}
 }
