@@ -2,7 +2,12 @@ using UnityEngine;
 
 /// <summary>
 /// 5스테이지 추격전
-/// 기획서: 2분 제한, 범인 추격, 소녀 구출, 엔딩 분기
+/// 기획서: 1분 제한, 범인 추격, 소녀 구출, 엔딩 분기
+///
+/// [버그 수정]
+/// - chaseDuration이 120f(2분)로 설정되어 있던 것을 60f(1분)로 수정.
+///   기획서 "3. 엔딩 분기" 및 "7. 스테이지별 상세 기획 - 5스테이지" 모두
+///   "제한시간 1분"으로 명시되어 있어 기획서 기준으로 정정.
 /// </summary>
 public class ChaseSequence : MonoBehaviour
 {
@@ -13,7 +18,7 @@ public class ChaseSequence : MonoBehaviour
 	[SerializeField] private Transform exitDoor;
 
 	[Header("Chase Settings")]
-	[SerializeField] private float chaseDuration = 120f; // 2분
+	[SerializeField] private float chaseDuration = 60f; // 1분 (기획서 기준)
 	[SerializeField] private float catchDistance = 1.5f;
 	[SerializeField] private float girlRescueDistance = 2f;
 

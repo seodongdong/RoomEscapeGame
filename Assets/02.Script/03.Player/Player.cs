@@ -7,6 +7,10 @@ using UnityEngine;
 /// - ESC: UILayerManager에 위임 (열린 UI 닫기 → 없으면 일시정지)
 /// - E  : 열린 UI가 있을 때만 닫기
 /// - I  : 인벤토리 토글 (InventoryUI_Complete에 위임)
+///
+/// [추가 - 손전등]
+/// - O 또는 L : 손전등 On/Off 토글 (Flashlight에 위임)
+///   손전등 미획득 상태면 Flashlight.Toggle() 내부에서 무시됨.
 /// </summary>
 public class Player : MonoBehaviour, IPlayer
 {
@@ -34,6 +38,7 @@ public class Player : MonoBehaviour, IPlayer
 	private InventoryUI_Complete _inventoryUI;
 	private AudioManager _audioManager;
 	private IInteractable _currentInteractable;
+	private Flashlight _flashlight; // ★ 추가: 손전등 캐싱
 
 	private Vector3 _velocity;
 	private bool _isGrounded;
@@ -60,6 +65,7 @@ public class Player : MonoBehaviour, IPlayer
 		_uiManager = FindAnyObjectByType<UIManager>();
 		_inventoryUI = FindAnyObjectByType<InventoryUI_Complete>();
 		_audioManager = FindAnyObjectByType<AudioManager>();
+		_flashlight = GetComponentInChildren<Flashlight>(); // ★ 추가: 자식에서 손전등 탐색
 	}
 
 	// ── 매 프레임 ─────────────────────────────────────────────
@@ -90,6 +96,21 @@ public class Player : MonoBehaviour, IPlayer
 				else
 					_inventoryUI.OpenInventory();
 			}
+		}
+
+		// ── O 또는 L: 손전등 토글 ★ 추가 ──────────────────────
+		if (Input.GetKeyDown(KeyCode.O) || Input.GetKeyDown(KeyCode.L))
+		{
+			// 다른 UI가 열려있는 상태(인벤토리/퍼즐/일시정지 등)에서는
+			// 다른 입력들과 동일하게 토글을 막아 의도치 않은 조작을 방지합니다.
+			bool uiBlocking = (UILayerManager.Instance != null && UILayerManager.Instance.HasOpenUI);
+			bool stateBlocking = GameManager.Instance != null &&
+				(GameManager.Instance.StateManager.CurrentState == GameState.Puzzle ||
+				 GameManager.Instance.StateManager.CurrentState == GameState.Paused ||
+				 GameManager.Instance.StateManager.CurrentState == GameState.Viewer);
+
+			if (!uiBlocking && !stateBlocking)
+				_flashlight?.Toggle();
 		}
 
 		// ── 게임 상태 차단 ────────────────────────────────────

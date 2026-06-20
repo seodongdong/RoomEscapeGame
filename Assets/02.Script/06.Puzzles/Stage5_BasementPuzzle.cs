@@ -1,73 +1,79 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
-/// 5½ºÅ×ÀÌÁö ÁöÇÏ½Ç ÆÛÁñ: ¸ñ°¢ÀÎÇü Àå½ÄÀå ¹è¿­ - ¿ùµå ½ºÆäÀÌ½º µå·¡±×¾Øµå¶ø ¹öÀü
+/// 5ìŠ¤í…Œì´ì§€ ì§€í•˜ì‹¤ í¼ì¦: ëª©ê°ì¸í˜• ì¥ì‹ì¥ ë°°ì—´ - ì›”ë“œ ìŠ¤í˜ì´ìŠ¤ ë“œë˜ê·¸ì•¤ë“œë ë²„ì „
 ///
-/// [±âÈ¹¼­ ±âÁØ µ¿ÀÛ]
-/// 1~4½ºÅ×ÀÌÁö¿¡¼­ ¼öÁıÇÑ ¸ñ°¢ÀÎÇü 4°³¸¦ Àå½ÄÀåÀÇ ¿Ã¹Ù¸¥ ½½·Ô¿¡ ¹èÄ¡ÇÕ´Ï´Ù.
-/// ÆÛÁñ ÁøÀÔ ½Ã, ÇÃ·¹ÀÌ¾î ÀÎº¥Åä¸®¿¡ ÀÖ´Â ¸ñ°¢ÀÎÇüµéÀ» 3D ¿ÀºêÁ§Æ®·Î ¾À¿¡ ¼ÒÈ¯ÇÕ´Ï´Ù.
-/// ¸ğµÎ ¿Ã¹Ù¸£°Ô ¹èÄ¡ÇÏ¸é »óÀÚ ¿­¼è°¡ µîÀåÇÕ´Ï´Ù.
+/// [ê¸°íšì„œ ê¸°ì¤€ ë™ì‘]
+/// 1~4ìŠ¤í…Œì´ì§€ì—ì„œ ìˆ˜ì§‘í•œ ëª©ê°ì¸í˜• 4ê°œë¥¼ ì¥ì‹ì¥ì˜ ì˜¬ë°”ë¥¸ ìŠ¬ë¡¯ì— ë°°ì¹˜í•©ë‹ˆë‹¤.
+/// í¼ì¦ ì§„ì… ì‹œ, í”Œë ˆì´ì–´ ì¸ë²¤í† ë¦¬ì— ìˆëŠ” ëª©ê°ì¸í˜•ë“¤ì„ 3D ì˜¤ë¸Œì íŠ¸ë¡œ ì”¬ì— ì†Œí™˜í•©ë‹ˆë‹¤.
+/// ëª¨ë‘ ì˜¬ë°”ë¥´ê²Œ ë°°ì¹˜í•˜ë©´ ìƒì ì—´ì‡ ê°€ ë“±ì¥í•©ë‹ˆë‹¤.
 ///
-/// [Stage 2/4¿ÍÀÇ Â÷ÀÌÁ¡]
-/// ¾ÆÀÌÅÛÀÌ ÀÎº¥Åä¸®¿¡¼­ ¿À±â ¶§¹®¿¡ ÆÛÁñ ½ÃÀÛ ½Ã ¼ÒÈ¯(Instantiate)ÀÌ ÇÊ¿äÇÕ´Ï´Ù.
-/// ¸ğµç ÀÎÇüÀ» ¸ğ¾Æ¿ÀÁö ¾ÊÀº »óÅÂ¿¡¼­µµ ÀÏºÎ¸¸ °¡Áö°í ÁøÀÔÇÒ ¼ö ÀÖ½À´Ï´Ù.
-/// (°¡Áø ÀÎÇü¸¸ ¼ÒÈ¯µË´Ï´Ù. Á¤´ä ½½·Ô ¼ö == ¼ÒÈ¯µÈ ÀÎÇü ¼ö¿©¾ß ÆÛÁñ ¿Ï·á °¡´É.)
+/// [Stage 2/4ì™€ì˜ ì°¨ì´ì ]
+/// ì•„ì´í…œì´ ì¸ë²¤í† ë¦¬ì—ì„œ ì˜¤ê¸° ë•Œë¬¸ì— í¼ì¦ ì‹œì‘ ì‹œ ì†Œí™˜(Instantiate)ì´ í•„ìš”í•©ë‹ˆë‹¤.
+/// ëª¨ë“  ì¸í˜•ì„ ëª¨ì•„ì˜¤ì§€ ì•Šì€ ìƒíƒœì—ì„œë„ ì¼ë¶€ë§Œ ê°€ì§€ê³  ì§„ì…í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+/// (ê°€ì§„ ì¸í˜•ë§Œ ì†Œí™˜ë©ë‹ˆë‹¤. ì •ë‹µ ìŠ¬ë¡¯ ìˆ˜ == ì†Œí™˜ëœ ì¸í˜• ìˆ˜ì—¬ì•¼ í¼ì¦ ì™„ë£Œ ê°€ëŠ¥.)
 ///
-/// [¾À ¼³Á¤]
-/// 1. shelfSlots: Àå½ÄÀå À§ ºó ¿ÀºêÁ§Æ®µé (PuzzleDropZone + requiredItemId ¼³Á¤)
-///    ¿¹: 1¹ø ½½·Ô ¡æ requiredItemId = "wooden_doll_stage1"
-/// 2. woodenDolls: °¢ ¸ñ°¢ÀÎÇüÀÇ inventoryItemId, prefab, spawnPoint ¼³Á¤
-///    prefab¿¡´Â PuzzleDraggableItem ÄÄÆ÷³ÍÆ®°¡ ºÙ¾îÀÖ¾î¾ß ÇÕ´Ï´Ù.
-/// 3. keyObject: ÆÛÁñ ¿Ï·á ½Ã ³ªÅ¸³¯ ¿­¼è ¿ÀºêÁ§Æ® ¿¬°á
+/// [ë²„ê·¸ ìˆ˜ì •]
+/// - IsSolutionCorrect()ì—ì„œ slot.IsCorrect ì²´í¬ ì‹œ filledCountë¥¼ ì¦ê°€ì‹œí‚¤ëŠ” ì½”ë“œê°€
+///   ì£¼ì„ ì²˜ë¦¬ë˜ì–´ ìˆì–´ filledCountê°€ í•­ìƒ 0ìœ¼ë¡œ ë‚¨ì•„, ì¸í˜•ì„ ëª¨ë‘ ì˜¬ë°”ë¥´ê²Œ ë°°ì¹˜í•´ë„
+///   í¼ì¦ì´ ì ˆëŒ€ í´ë¦¬ì–´ë˜ì§€ ì•Šë˜ ë¬¸ì œ ìˆ˜ì •. (ì •ë‹µ ì¡°ê±´ ìì²´ëŠ” ë³€ê²½ ì—†ìŒ:
+///   "ì†Œí™˜ëœ ì¸í˜• ìˆ˜ == ì˜¬ë°”ë¥´ê²Œ ì±„ì›Œì§„ ìŠ¬ë¡¯ ìˆ˜")
+///
+/// [ì”¬ ì„¤ì •]
+/// 1. shelfSlots: ì¥ì‹ì¥ ìœ„ ë¹ˆ ì˜¤ë¸Œì íŠ¸ë“¤ (PuzzleDropZone + requiredItemId ì„¤ì •)
+///    ì˜ˆ: 1ë²ˆ ìŠ¬ë¡¯ â†’ requiredItemId = "wooden_doll_stage1"
+/// 2. woodenDolls: ê° ëª©ê°ì¸í˜•ì˜ inventoryItemId, prefab, spawnPoint ì„¤ì •
+///    prefabì—ëŠ” PuzzleDraggableItem ì»´í¬ë„ŒíŠ¸ê°€ ë¶™ì–´ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
+/// 3. keyObject: í¼ì¦ ì™„ë£Œ ì‹œ ë‚˜íƒ€ë‚  ì—´ì‡  ì˜¤ë¸Œì íŠ¸ ì—°ê²°
 /// </summary>
 public class Stage5_BasementPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZonePuzzle
 {
-	// ¦¡¦¡ ¸ñ°¢ÀÎÇü µ¥ÀÌÅÍ ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€ ëª©ê°ì¸í˜• ë°ì´í„° â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	[System.Serializable]
 	public class WoodenDollEntry
 	{
-		[Tooltip("ÇÃ·¹ÀÌ¾î ÀÎº¥Åä¸®¿¡¼­ È®ÀÎÇÒ ¾ÆÀÌÅÛ ID.\n¿¹: wooden_doll_stage1")]
+		[Tooltip("í”Œë ˆì´ì–´ ì¸ë²¤í† ë¦¬ì—ì„œ í™•ì¸í•  ì•„ì´í…œ ID.\nì˜ˆ: wooden_doll_stage1")]
 		public string inventoryItemId;
 
-		[Tooltip("ÆÛÁñ ½ÃÀÛ ½Ã ¼ÒÈ¯ÇÒ 3D ÇÁ¸®ÆÕ.\nPuzzleDraggableItem ÄÄÆ÷³ÍÆ®°¡ ÀÖ¾î¾ß ÇÕ´Ï´Ù.")]
+		[Tooltip("í¼ì¦ ì‹œì‘ ì‹œ ì†Œí™˜í•  3D í”„ë¦¬íŒ¹.\nPuzzleDraggableItem ì»´í¬ë„ŒíŠ¸ê°€ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.")]
 		public GameObject prefab;
 
-		[Tooltip("¼ÒÈ¯µÉ À§Ä¡ (Àå½ÄÀå ¾Õ Å×ÀÌºíÀÌ³ª ¹Ù´Ú À§).")]
+		[Tooltip("ì†Œí™˜ë  ìœ„ì¹˜ (ì¥ì‹ì¥ ì• í…Œì´ë¸”ì´ë‚˜ ë°”ë‹¥ ìœ„).")]
 		public Transform spawnPoint;
 	}
 
-	[Header("¸ñ°¢ÀÎÇü ¸ñ·Ï (½ºÅ×ÀÌÁö 1~4 ¼ø¼­)")]
+	[Header("ëª©ê°ì¸í˜• ëª©ë¡ (ìŠ¤í…Œì´ì§€ 1~4 ìˆœì„œ)")]
 	[SerializeField] private List<WoodenDollEntry> woodenDolls = new List<WoodenDollEntry>();
 
-	[Header("Àå½ÄÀå ½½·Ôµé")]
-	[Tooltip("PuzzleDropZone ÄÄÆ÷³ÍÆ® + requiredItemId°¡ ¼³Á¤µÈ ½½·Ô ¿ÀºêÁ§Æ®µé.")]
+	[Header("ì¥ì‹ì¥ ìŠ¬ë¡¯ë“¤")]
+	[Tooltip("PuzzleDropZone ì»´í¬ë„ŒíŠ¸ + requiredItemIdê°€ ì„¤ì •ëœ ìŠ¬ë¡¯ ì˜¤ë¸Œì íŠ¸ë“¤.")]
 	[SerializeField] private List<PuzzleDropZone> shelfSlots = new List<PuzzleDropZone>();
 
-	[Header("ÆÛÁñ ¿Ï·á º¸»ó")]
-	[Tooltip("ÆÛÁñ ¿Ï·á ½Ã ³ªÅ¸³¯ ¿­¼è ¿ÀºêÁ§Æ®.")]
+	[Header("í¼ì¦ ì™„ë£Œ ë³´ìƒ")]
+	[Tooltip("í¼ì¦ ì™„ë£Œ ì‹œ ë‚˜íƒ€ë‚  ì—´ì‡  ì˜¤ë¸Œì íŠ¸.")]
 	[SerializeField] private GameObject keyObject;
 
-	[Tooltip("ÇÃ·¹ÀÌ¾î ÀÎº¥Åä¸®¿¡ Ãß°¡µÉ ¿­¼è ¾ÆÀÌÅÛ ID.")]
+	[Tooltip("í”Œë ˆì´ì–´ ì¸ë²¤í† ë¦¬ì— ì¶”ê°€ë  ì—´ì‡  ì•„ì´í…œ ID.")]
 	[SerializeField] private string keyItemId = "basement_key";
-	[SerializeField] private string keyItemName = "³ì½¼ ¿­¼è";
-	[SerializeField] private string keyItemDesc = "¿À·¡µÈ »óÀÚ¸¦ ¿­ ¼ö ÀÖÀ» °Í °°´Ù.";
+	[SerializeField] private string keyItemName = "ë…¹ìŠ¨ ì—´ì‡ ";
+	[SerializeField] private string keyItemDesc = "ì˜¤ë˜ëœ ìƒìë¥¼ ì—´ ìˆ˜ ìˆì„ ê²ƒ ê°™ë‹¤.";
 
-	[Tooltip("¸ñ°¢ÀÎÇüÀ» µå·¡±×ÇÒ Ç¥¸éÀÇ Y ÁÂÇ¥. Àå½ÄÀå ¼±¹İÀÇ Y°ªÀ» ³ÖÀ¸¼¼¿ä.")]
+	[Tooltip("ëª©ê°ì¸í˜•ì„ ë“œë˜ê·¸í•  í‘œë©´ì˜ Y ì¢Œí‘œ. ì¥ì‹ì¥ ì„ ë°˜ì˜ Yê°’ì„ ë„£ìœ¼ì„¸ìš”.")]
 	[SerializeField] private float shelfSurfaceY = 0.5f;
 
-	[Header("´ë»ç")]
-	[SerializeField] private string speaker = "¼Ò³â";
-	[TextArea(2, 4)][SerializeField] private string solveDialogue = "¹º°¡ ¿­¸®´Â ¼Ò¸®°¡ µé¸°´Ù.";
-	[TextArea(2, 4)][SerializeField] private string notEnoughDollsDialogue = "¾ÆÁ÷ ÀÎÇüµéÀÌ ºÎÁ·ÇÏ´Ù...";
-	[TextArea(2, 4)][SerializeField] private string exitDialogue = "´Ù½Ã ³ª°¡¼­ ´õ Ã£¾ÆºÁ¾ß°Ú´Ù.";
+	[Header("ëŒ€ì‚¬")]
+	[SerializeField] private string speaker = "ì†Œë…„";
+	[TextArea(2, 4)][SerializeField] private string solveDialogue = "ë­”ê°€ ì—´ë¦¬ëŠ” ì†Œë¦¬ê°€ ë“¤ë¦°ë‹¤.";
+	[TextArea(2, 4)][SerializeField] private string notEnoughDollsDialogue = "ì•„ì§ ì¸í˜•ë“¤ì´ ë¶€ì¡±í•˜ë‹¤...";
+	[TextArea(2, 4)][SerializeField] private string exitDialogue = "ë‹¤ì‹œ ë‚˜ê°€ì„œ ë” ì°¾ì•„ë´ì•¼ê² ë‹¤.";
 
-	// ÆÛÁñ ½ÃÀÛ ½Ã ¼ÒÈ¯µÈ ÀÎÇü ¿ÀºêÁ§Æ®µé (³ª°¥ ¶§ Á¤¸® ¹× ÀçÀÔÀå ½Ã Àç¼ÒÈ¯¿ë)
+	// í¼ì¦ ì‹œì‘ ì‹œ ì†Œí™˜ëœ ì¸í˜• ì˜¤ë¸Œì íŠ¸ë“¤ (ë‚˜ê°ˆ ë•Œ ì •ë¦¬ ë° ì¬ì…ì¥ ì‹œ ì¬ì†Œí™˜ìš©)
 	private readonly List<PuzzleDraggableItem> _spawnedDolls = new List<PuzzleDraggableItem>();
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-	// ÃÊ±âÈ­
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	// ì´ˆê¸°í™”
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 	protected override void Awake()
 	{
@@ -78,25 +84,25 @@ public class Stage5_BasementPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZoneP
 		if (keyObject != null) keyObject.SetActive(false);
 	}
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-	// IDropZonePuzzle ±¸Çö
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	// IDropZonePuzzle êµ¬í˜„
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 	public void OnItemPlacedOnZone(PuzzleDropZone zone)
 	{
-		Debug.Log($"[BasementPuzzle] ÀÎÇü ¹èÄ¡: {zone.requiredItemId}");
+		Debug.Log($"[BasementPuzzle] ì¸í˜• ë°°ì¹˜: {zone.requiredItemId}");
 		CheckSolution();
 	}
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-	// ÆÛÁñ ½ÃÀÛ
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	// í¼ì¦ ì‹œì‘
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 	public override void StartPuzzle()
 	{
 		if (isSolved) return;
 
-		// ÀÎÇüÀÌ ÇÏ³ªµµ ¾øÀ¸¸é ¾È³» ÈÄ Â÷´Ü
+		// ì¸í˜•ì´ í•˜ë‚˜ë„ ì—†ìœ¼ë©´ ì•ˆë‚´ í›„ ì°¨ë‹¨
 		var player = FindAnyObjectByType<Player>();
 		if (player != null && !HasAnyDoll(player))
 		{
@@ -104,7 +110,7 @@ public class Stage5_BasementPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZoneP
 			return;
 		}
 
-		base.StartPuzzle(); // Ä«¸Ş¶ó ÀÌµ¿ ½ÃÀÛ
+		base.StartPuzzle(); // ì¹´ë©”ë¼ ì´ë™ ì‹œì‘
 	}
 
 	protected override void OnPuzzleStarted()
@@ -122,8 +128,8 @@ public class Stage5_BasementPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZoneP
 	}
 
 	/// <summary>
-	/// ÀÎº¥Åä¸®¿¡ ÀÖ´Â ¸ñ°¢ÀÎÇüµé¸¸ ¾À¿¡ ¼ÒÈ¯ÇÕ´Ï´Ù.
-	/// ¾ø´Â ÀÎÇüÀº ¼ÒÈ¯ÇÏÁö ¾Ê½À´Ï´Ù (±× ½½·ÔÀº ¸ø Ã¤¿ò).
+	/// ì¸ë²¤í† ë¦¬ì— ìˆëŠ” ëª©ê°ì¸í˜•ë“¤ë§Œ ì”¬ì— ì†Œí™˜í•©ë‹ˆë‹¤.
+	/// ì—†ëŠ” ì¸í˜•ì€ ì†Œí™˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤ (ê·¸ ìŠ¬ë¡¯ì€ ëª» ì±„ì›€).
 	/// </summary>
 	private void SpawnCollectedDolls()
 	{
@@ -139,49 +145,54 @@ public class Stage5_BasementPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZoneP
 			if (!player.Inventory.HasItem(entry.inventoryItemId)) continue;
 			if (entry.prefab == null || entry.spawnPoint == null) continue;
 
-			// ¼ÒÈ¯
+			// ì†Œí™˜
 			GameObject dollObj = Instantiate(entry.prefab, entry.spawnPoint.position, Quaternion.identity);
 			var draggable = dollObj.GetComponent<PuzzleDraggableItem>();
 
 			if (draggable != null)
 			{
-				draggable.itemId = entry.inventoryItemId; // ID ¼³Á¤ (½½·Ô ¸ÅÄª¿ë)
+				draggable.itemId = entry.inventoryItemId; // ID ì„¤ì • (ìŠ¬ë¡¯ ë§¤ì¹­ìš©)
 				draggable.EnableDragging(cam, shelfSurfaceY);
 				_spawnedDolls.Add(draggable);
 			}
 		}
 
-		Debug.Log($"[BasementPuzzle] {_spawnedDolls.Count}°³ ¸ñ°¢ÀÎÇü ¼ÒÈ¯µÊ.");
+		Debug.Log($"[BasementPuzzle] {_spawnedDolls.Count}ê°œ ëª©ê°ì¸í˜• ì†Œí™˜ë¨.");
 	}
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-	// Á¤´ä ÆÇÁ¤
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	// ì •ë‹µ íŒì •
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+	/// <summary>
+	/// ì†Œí™˜ëœ ëª©ê°ì¸í˜• ìˆ˜ì™€, ì˜¬ë°”ë¥´ê²Œ ì±„ì›Œì§„ ìŠ¬ë¡¯ ìˆ˜ê°€ ì¼ì¹˜í•´ì•¼ ì™„ë£Œë©ë‹ˆë‹¤.
+	/// [ë²„ê·¸ ìˆ˜ì •] filledCount++ ì£¼ì„ í•´ì œ â€” ì‹¤ì œ ì¹´ìš´íŠ¸ê°€ ë™ì‘í•˜ë„ë¡ ë³µì›.
+	/// </summary>
 	protected override bool IsSolutionCorrect()
 	{
 		if (shelfSlots.Count == 0) return false;
-		// ½½·ÔÀÌ ¿©·¯ °³ÀÎµ¥, ¼ÒÈ¯µÈ ÀÎÇüÀÌ ºÎÁ·ÇÏ¸é ÀÏºÎ ½½·ÔÀº ¿µ¿øÈ÷ ¸ø Ã¤¿ò
-		// ¡æ ¼ÒÈ¯µÈ ÀÎÇü ¼ö == Ã¤¿öÁø ½½·Ô ¼ö ÀÌ¾î¾ß ¿Ï·á
+
+		// ìŠ¬ë¡¯ì´ ì—¬ëŸ¬ ê°œì¸ë°, ì†Œí™˜ëœ ì¸í˜•ì´ ë¶€ì¡±í•˜ë©´ ì¼ë¶€ ìŠ¬ë¡¯ì€ ì˜ì›íˆ ëª» ì±„ì›€
+		// â†’ ì†Œí™˜ëœ ì¸í˜• ìˆ˜ == ì±„ì›Œì§„ ìŠ¬ë¡¯ ìˆ˜ ì´ì–´ì•¼ ì™„ë£Œ
 		int filledCount = 0;
 		foreach (var slot in shelfSlots)
 		{
 			if (slot == null) continue;
-			//if (slot.IsCorrect) filledCount++;
+			if (slot.IsCorrect) filledCount++;
 		}
 		return filledCount > 0 && filledCount == _spawnedDolls.Count;
 	}
 
 	protected override void SolvePuzzle()
 	{
-		// µå·¡±× ºñÈ°¼ºÈ­
+		// ë“œë˜ê·¸ ë¹„í™œì„±í™”
 		foreach (var doll in _spawnedDolls)
 			if (doll != null) doll.DisableDragging();
 
-		// ¿­¼è µîÀå
+		// ì—´ì‡  ë“±ì¥
 		if (keyObject != null) keyObject.SetActive(true);
 
-		// ¿­¼è ¾ÆÀÌÅÛ Áö±Ş
+		// ì—´ì‡  ì•„ì´í…œ ì§€ê¸‰
 		var player = FindAnyObjectByType<Player>();
 		if (player != null)
 		{
@@ -193,17 +204,17 @@ public class Stage5_BasementPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZoneP
 		base.SolvePuzzle();
 	}
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-	// ³ª°¡±â (¼ÒÈ¯µÈ ÀÎÇü Á¤¸®)
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	// ë‚˜ê°€ê¸° (ì†Œí™˜ëœ ì¸í˜• ì •ë¦¬)
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 	public override void ExitPuzzle()
 	{
-		// ½½·Ô ÃÊ±âÈ­
+		// ìŠ¬ë¡¯ ì´ˆê¸°í™”
 		foreach (var slot in shelfSlots)
 			if (slot != null) slot.RemoveItem();
 
-		// ¼ÒÈ¯µÈ ÀÎÇü Á¦°Å (ÀçÀÔÀå ½Ã ´Ù½Ã ¼ÒÈ¯µÊ)
+		// ì†Œí™˜ëœ ì¸í˜• ì œê±° (ì¬ì…ì¥ ì‹œ ë‹¤ì‹œ ì†Œí™˜ë¨)
 		foreach (var doll in _spawnedDolls)
 			if (doll != null) Destroy(doll.gameObject);
 		_spawnedDolls.Clear();
