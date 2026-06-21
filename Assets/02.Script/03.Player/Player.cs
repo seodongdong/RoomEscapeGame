@@ -62,9 +62,9 @@ public class Player : MonoBehaviour, IPlayer
 
 	private void Start()
 	{
-		_uiManager = FindAnyObjectByType<UIManager>();
+		_uiManager = GameServices.UI;
 		_inventoryUI = FindAnyObjectByType<InventoryUI_Complete>();
-		_audioManager = FindAnyObjectByType<AudioManager>();
+		_audioManager = GameServices.Audio;
 		_flashlight = GetComponentInChildren<Flashlight>(); // ★ 추가: 자식에서 손전등 탐색
 	}
 
@@ -105,9 +105,9 @@ public class Player : MonoBehaviour, IPlayer
 			// 다른 입력들과 동일하게 토글을 막아 의도치 않은 조작을 방지합니다.
 			bool uiBlocking = (UILayerManager.Instance != null && UILayerManager.Instance.HasOpenUI);
 			bool stateBlocking = GameManager.Instance != null &&
-				(GameManager.Instance.StateManager.CurrentState == GameState.Puzzle ||
-				 GameManager.Instance.StateManager.CurrentState == GameState.Paused ||
-				 GameManager.Instance.StateManager.CurrentState == GameState.Viewer);
+				(GameManager.Instance.CurrentState == GameState.Puzzle ||
+				 GameManager.Instance.CurrentState == GameState.Paused ||
+				 GameManager.Instance.CurrentState == GameState.Viewer);
 
 			if (!uiBlocking && !stateBlocking)
 				_flashlight?.Toggle();
@@ -116,7 +116,7 @@ public class Player : MonoBehaviour, IPlayer
 		// ── 게임 상태 차단 ────────────────────────────────────
 		if (GameManager.Instance != null)
 		{
-			var state = GameManager.Instance.StateManager.CurrentState;
+			var state = GameManager.Instance.CurrentState;
 			if (state == GameState.Puzzle ||
 				state == GameState.Paused ||
 				state == GameState.Viewer)
@@ -147,13 +147,13 @@ public class Player : MonoBehaviour, IPlayer
 		{
 			Cursor.lockState = CursorLockMode.None;
 			Cursor.visible = true;
-			GameManager.Instance?.StateManager.ChangeState(GameState.Paused);
+			GameManager.Instance?.ChangeState(GameState.Paused);
 		}
 		else
 		{
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
-			GameManager.Instance?.StateManager.ChangeState(GameState.Playing);
+			GameManager.Instance?.ChangeState(GameState.Playing);
 		}
 	}
 
@@ -268,7 +268,7 @@ public class Player : MonoBehaviour, IPlayer
 	public void Die()
 	{
 		Debug.Log("[Player] 사망!");
-		GameManager.Instance?.StateManager.ChangeState(GameState.GameOver);
+		GameManager.Instance?.ChangeState(GameState.GameOver);
 		GameManager.Instance?.EndingManager.TriggerEnding(EndingType.GameOver);
 		enabled = false;
 	}

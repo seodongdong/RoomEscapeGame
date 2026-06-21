@@ -16,7 +16,7 @@ using System.Collections;
 ///
 /// [씬 배치]
 /// Player의 자식인 카메라(Player.cs의 cameraTransform과 동일한 오브젝트)에 부착.
-/// GameStateManager.OnStateChanged 이벤트를 구독해 GameState.Chase 진입/이탈을 감지합니다.
+/// GameManager.OnStateChanged 이벤트를 구독해 GameState.Chase 진입/이탈을 감지합니다.
 /// </summary>
 public class ThirdPersonCameraRig : MonoBehaviour
 {
@@ -53,7 +53,7 @@ public class ThirdPersonCameraRig : MonoBehaviour
 	private void Start()
 	{
 		if (GameManager.Instance != null)
-			GameManager.Instance.StateManager.OnStateChanged += HandleStateChanged;
+			GameManager.Instance.OnStateChanged += HandleStateChanged;
 		else
 			Debug.LogWarning("[ThirdPersonCameraRig] GameManager.Instance가 null입니다. 추격전 카메라 전환이 동작하지 않습니다.");
 	}
@@ -61,7 +61,7 @@ public class ThirdPersonCameraRig : MonoBehaviour
 	private void OnDestroy()
 	{
 		if (GameManager.Instance != null)
-			GameManager.Instance.StateManager.OnStateChanged -= HandleStateChanged;
+			GameManager.Instance.OnStateChanged -= HandleStateChanged;
 	}
 
 	private void HandleStateChanged(GameState newState)

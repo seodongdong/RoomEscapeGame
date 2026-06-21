@@ -2,8 +2,8 @@ using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
-/// ºñµğ¿À ³ª·¹ÀÌ¼Ç µ¥ÀÌÅÍº£ÀÌ½º
-/// °¢ ½ºÅ×ÀÌÁöº° ºñµğ¿ÀÅ×ÀÌÇÁ ³»¿ë °ü¸®
+/// ë¹„ë””ì˜¤ ë‚˜ë ˆì´ì…˜ ë°ì´í„°ë² ì´ìŠ¤
+/// ê° ìŠ¤í…Œì´ì§€ë³„ ë¹„ë””ì˜¤í…Œì´í”„ ë‚´ìš© ê´€ë¦¬
 /// </summary>
 [CreateAssetMenu(fileName = "VideoTapeDatabase", menuName = "Game/VideoTape Database")]
 public class VideoTapeDatabase : ScriptableObject
@@ -14,10 +14,10 @@ public class VideoTapeDatabase : ScriptableObject
 		public string tapeId;
 		public int stageNumber;
 		[TextArea(5, 15)]
-		public string narration; // ¹üÀÎÀÇ ³ª·¹ÀÌ¼Ç
+		public string narration; // ë²”ì¸ì˜ ë‚˜ë ˆì´ì…˜
 
 		[Header("Visual")]
-		public Sprite thumbnailImage; // TV È­¸é¿¡ Ç¥½ÃµÉ ÀÌ¹ÌÁö
+		public Sprite thumbnailImage; // TV í™”ë©´ì— í‘œì‹œë  ì´ë¯¸ì§€
 	}
 
 	[SerializeField] private List<VideoData> allVideos = new List<VideoData>();
@@ -38,25 +38,25 @@ public class VideoTapeDatabase : ScriptableObject
 	{
 		allVideos.Clear();
 
-		// 1½ºÅ×ÀÌÁö »ùÇÃ
+		// 1ìŠ¤í…Œì´ì§€ ìƒ˜í”Œ
 		allVideos.Add(new VideoData
 		{
 			tapeId = "tape_stage1",
 			stageNumber = 1,
-			narration = "¾êµé¾Æ, ÁÖ¹æÀº À§ÇèÇÏ´Ï±î °Å½Ç¿¡¼­ ³î°í ÀÖ¾î¶ó.\n" +
-					   "¾Æºü°¡ ¸ÀÀÖ´Â °Å ¸¸µé¾îÁÙ°Ô."
+			narration = "ì–˜ë“¤ì•„, ì£¼ë°©ì€ ìœ„í—˜í•˜ë‹ˆê¹Œ ê±°ì‹¤ì—ì„œ ë†€ê³  ìˆì–´ë¼.\n" +
+					   "ì•„ë¹ ê°€ ë§›ìˆëŠ” ê±° ë§Œë“¤ì–´ì¤„ê²Œ."
 		});
 
-		// 2½ºÅ×ÀÌÁö »ùÇÃ
+		// 2ìŠ¤í…Œì´ì§€ ìƒ˜í”Œ
 		allVideos.Add(new VideoData
 		{
 			tapeId = "tape_stage2",
 			stageNumber = 2,
-			narration = "¿ì¸® µş... ¾îµğ °¬´Ï...\n" +
-					   "¾Æºü°¡ ¹Ì¾ÈÇØ... ¾Æºü°¡ ÁöÄÑÁÖÁö ¸øÇØ¼­..."
+			narration = "ìš°ë¦¬ ë”¸... ì–´ë”” ê°”ë‹ˆ...\n" +
+					   "ì•„ë¹ ê°€ ë¯¸ì•ˆí•´... ì•„ë¹ ê°€ ì§€ì¼œì£¼ì§€ ëª»í•´ì„œ..."
 		});
 
-		Debug.Log("»ùÇÃ ºñµğ¿À Ãß°¡ ¿Ï·á!");
+		Debug.Log("ìƒ˜í”Œ ë¹„ë””ì˜¤ ì¶”ê°€ ì™„ë£Œ!");
 	}
 #endif
 }
