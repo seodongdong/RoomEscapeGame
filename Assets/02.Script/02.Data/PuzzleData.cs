@@ -1,8 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// ÆÛÁñ µ¥ÀÌÅÍ (ScriptableObject)
-/// ÆÛÁñ ¸ŞÅ¸µ¥ÀÌÅÍ °ü¸®
+/// í¼ì¦ ë°ì´í„° (ScriptableObject)
+/// í¼ì¦ ë©”íƒ€ë°ì´í„° ê´€ë¦¬
 /// </summary>
 [CreateAssetMenu(fileName = "PuzzleData", menuName = "Game/Puzzle Data")]
 public class PuzzleData : ScriptableObject
@@ -20,15 +20,15 @@ public class PuzzleData : ScriptableObject
 	public Sprite puzzleIcon;
 
 	[Header("Reward")]
-	public string rewardItemId; // ÆÛÁñ ÇØ°á ½Ã È¹µæ ¾ÆÀÌÅÛ (¿¹: ¿­¼è)
+	public string rewardItemId; // í¼ì¦ í•´ê²° ì‹œ íšë“ ì•„ì´í…œ (ì˜ˆ: ì—´ì‡ )
 
 #if UNITY_EDITOR
 	[ContextMenu("Set Default Values")]
 	private void SetDefaultValues()
 	{
-		hint = "ÆÛÁñÀ» Ç®¾îº¸¼¼¿ä.";
-		successMessage = "ÆÛÁñÀ» ÇØ°áÇß½À´Ï´Ù!";
-		Debug.Log("±âº»°ª ¼³Á¤ ¿Ï·á!");
+		hint = "í¼ì¦ì„ í’€ì–´ë³´ì„¸ìš”.";
+		successMessage = "í¼ì¦ì„ í•´ê²°í–ˆìŠµë‹ˆë‹¤!";
+		Debug.Log("ê¸°ë³¸ê°’ ì„¤ì • ì™„ë£Œ!");
 	}
 #endif
 }
