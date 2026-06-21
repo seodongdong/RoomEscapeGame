@@ -8,17 +8,22 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: stage4_ceiling
-    second: {fileID: 2100000, guid: fdadc830d0a9ee94bbc5aab23c923859, type: 2}
+    second: {fileID: 2100000, guid: 05b7c234a6e70ce489c1754726c7803e, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: stage4_floor
-    second: {fileID: 2100000, guid: fcbdd1bea0aa4fb40835272b12695cde, type: 2}
+    second: {fileID: 2100000, guid: 00ec9fd93f5d9f644949d76f7b4ddd15, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stage4_floor_tile
+    second: {fileID: 2100000, guid: 4a0469d833ff2ef4d880699758a0f09e, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: stage4_wall
-    second: {fileID: 2100000, guid: 4321586c250b9b44ca8aad068f14a3e4, type: 2}
+    second: {fileID: 2100000, guid: a36c1bc6542d3ba438bf4e864de1eaf9, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -61,7 +66,7 @@ ModelImporter:
     nodeNameCollisionStrategy: 1
     fileIdsGeneration: 2
     swapUVChannels: 0
-    generateSecondaryUV: 0
+    generateSecondaryUV: 1
     useFileUnits: 1
     keepQuads: 0
     weldVertices: 1
