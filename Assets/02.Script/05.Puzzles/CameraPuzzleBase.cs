@@ -76,14 +76,17 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 
 		if (_player != null)
 		{
-			_player.enabled = false;
+			// ★ 수정: _player.enabled = false 제거
+			// Player.cs의 Update()가 멈추면 퍼즐 완료 후에도
+			// 어떤 키 입력도 받지 못하는 버그가 있었습니다.
+			// 이동/상호작용 차단은 Player.cs 내부에서 GameState.Puzzle
+			// 체크로 이미 처리되므로, 컴포넌트를 끄지 않습니다.
 			SetPlayerMeshVisible(false);
 		}
 
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
 
-		// ★ UILayerManager에 등록 → ESC 누르면 ExitPuzzle 호출
 		UILayerManager.Instance?.Push(this, ExitPuzzle);
 
 		_originalCameraParent = _mainCamera.transform.parent;
@@ -196,7 +199,7 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 
 		if (_player != null)
 		{
-			_player.enabled = true;
+			// ★ 수정: _player.enabled = true 제거 (StartPuzzle과 동일한 이유)
 			SetPlayerMeshVisible(true);
 		}
 
