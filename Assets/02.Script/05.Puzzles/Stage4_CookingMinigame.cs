@@ -201,6 +201,7 @@ public class Stage4_CookingMinigame : MonoBehaviour
 			_halfDone = false;
 			RegisterProgress("Chop");
 		}
+
 	}
 
 	// ── Circle ────────────────────────────────────────────────

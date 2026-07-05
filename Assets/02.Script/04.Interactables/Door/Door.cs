@@ -14,7 +14,7 @@ using System.Collections;
 /// - 열쇠 거리 + 방향 체크
 /// - IItemUsable : 인벤토리에서 열쇠 아이템 직접 사용 가능
 /// </summary>
-public class Door : MonoBehaviour, IInteractable, IItemUsable
+public class Door : MonoBehaviour, IInteractable, IItemUsable, ISaveableObject
 {
 	[Header("Door Settings")]
 	[SerializeField] private bool isLocked = true;
@@ -56,6 +56,42 @@ public class Door : MonoBehaviour, IInteractable, IItemUsable
 	private bool _keyUsed = false;
 	private Vector3 _closedPosition;
 
+	[Header("저장 ID (씬 내 유일해야 함)")]
+	[SerializeField] private string saveId = "door_001";
+
+	public string SaveId => saveId;
+
+	[System.Serializable]
+	private class DoorState
+	{
+		public bool isLocked;
+		public bool isOpen;
+		public bool keyUsed;
+	}
+
+	public string SaveState()
+	{
+		return JsonUtility.ToJson(new DoorState
+		{
+			isLocked = isLocked,
+			isOpen = _isOpen,
+			keyUsed = _keyUsed
+		});
+	}
+
+	public void LoadState(string json)
+	{
+		if (string.IsNullOrEmpty(json)) return;
+		var state = JsonUtility.FromJson<DoorState>(json);
+		isLocked = state.isLocked;
+		_keyUsed = state.keyUsed;
+
+		if (state.isOpen && !_isOpen)
+			OpenDoor();
+		else if (!state.isOpen && _isOpen)
+			CloseDoor();
+	}
+
 	private void Awake()
 	{
 		_closedPosition = transform.position;
@@ -95,12 +131,20 @@ public class Door : MonoBehaviour, IInteractable, IItemUsable
 
 	// ── 외부 호출 ─────────────────────────────────────────────
 
-	public void UnlockForFreeAccess()
+	/// <summary>
+	/// 퍼즐 완료 후 문을 자유롭게 여닫을 수 있는 상태로 전환합니다.
+	/// 잠금 해제 + 열기 애니메이션 재생 + 이후 수동으로 열고 닫기 가능.
+	/// </summary>
+	public void UnlockFreeAccess()
 	{
-		if (!_keyUsed) return;
-		_lockedByPuzzle = false;
 		isLocked = false;
-		Debug.Log("[Door] 자유 출입 해제됨");
+		_keyUsed = true;
+		lockAfterOpen = false; // 자동으로 다시 잠기지 않도록
+
+		OpenDoor(); // 애니메이션 재생 + 열림 상태로
+
+		GameServices.Audio?.PlaySFX("door_unlock");
+		Debug.Log($"[Door] {gameObject.name} 자유 접근 해제 — 이제 자유롭게 여닫을 수 있습니다.");
 	}
 
 	// ── IInteractable ─────────────────────────────────────────

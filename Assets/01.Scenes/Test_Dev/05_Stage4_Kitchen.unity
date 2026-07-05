@@ -205,6 +205,10 @@ PrefabInstance:
       propertyPath: m_hasFontAssetChanged
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1309634966849989423, guid: ce40faca2a0308d41ad1b902a30e6968, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2023624779476817945, guid: ce40faca2a0308d41ad1b902a30e6968, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -1028,6 +1032,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77691d61a1e86f74c9ba5c69be956cde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Flashlight
+--- !u!1 &370127252
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 370127253}
+  m_Layer: 0
+  m_Name: TableViewPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &370127253
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370127252}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.2759699, y: -0, z: -0, w: 0.9611663}
+  m_LocalPosition: {x: 4.865, y: 2.53, z: -11.11}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 32.04, y: 0, z: 0}
 --- !u!1 &493972022
 GameObject:
   m_ObjectHideFlags: 0
@@ -1470,7 +1505,7 @@ Transform:
   m_GameObject: {fileID: 630782214}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -10.245649, y: -0.27145004, z: 6.7942705}
+  m_LocalPosition: {x: -10.245649, y: -0.843, z: 6.684}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1543,8 +1578,66 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4003923536366656342, guid: c9e23f8bb45c73549ac58d722ad0d3a1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 710180926}
+    - targetCorrespondingSourceObject: {fileID: 4003923536366656342, guid: c9e23f8bb45c73549ac58d722ad0d3a1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 710180927}
   m_SourcePrefab: {fileID: 100100000, guid: c9e23f8bb45c73549ac58d722ad0d3a1, type: 3}
+--- !u!1 &710180925 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4003923536366656342, guid: c9e23f8bb45c73549ac58d722ad0d3a1, type: 3}
+  m_PrefabInstance: {fileID: 710180924}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &710180926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 710180925}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: babb97c3cba71dc449e9d3c364ddeb78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Stage4_GhoulTable
+  foodPuzzle: {fileID: 1233042119}
+  ghoul: {fileID: 1644063915}
+  tableTop: {fileID: 2077971481}
+  tableViewPoint: {fileID: 370127253}
+  exitDoor: {fileID: 1443584115}
+  woodenDollItemId: wooden_doll_4
+  woodenDollName: "\uBAA9\uAC01\uC778\uD615"
+  woodenDollDesc: "\uC5B4\uB518\uAC00\uC5D0 \uC0AC\uC6A9\uD560 \uC218 \uC788\uC744
+    \uAC83 \uAC19\uB2E4."
+  placeToScreamDelay: 0.6
+  cameraTransitionDuration: 0.8
+  speaker: 
+  placeDialogue: "...\uC5EC\uAE30 \uC788\uC5B4."
+  dollDialogue: "\uBB54\uAC00\uB97C \uC5BB\uC5C8\uB2E4."
+--- !u!65 &710180927
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 710180925}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.009445777, y: 0.009445765, z: 0.004842948}
+  m_Center: {x: -6.9849193e-10, y: -0.000000024214383, z: 0.0024211584}
 --- !u!1 &711372052
 GameObject:
   m_ObjectHideFlags: 0
@@ -1576,52 +1669,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 494181041}
   m_LocalEulerAnglesHint: {x: 18.817, y: 0, z: 0}
---- !u!1 &823952508
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 823952510}
-  - component: {fileID: 823952509}
-  m_Layer: 0
-  m_Name: Stage4Connector
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &823952509
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 823952508}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad9ad395e7c46f044966d43908da99de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Stage4PuzzleToGhoulConnector
-  foodPuzzle: {fileID: 1233042119}
-  ghoul: {fileID: 1644063915}
---- !u!4 &823952510
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 823952508}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.27914, y: -0, z: 7.91457}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &955215742
 GameObject:
   m_ObjectHideFlags: 0
@@ -1638,7 +1685,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &955215743
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1652,6 +1699,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DebugBootstrap
   createGameManagerIfMissing: 1
+  logStatus: 1
 --- !u!4 &955215744
 Transform:
   m_ObjectHideFlags: 0
@@ -1966,6 +2014,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  saveId: puzzle_001
   ingredientDataList:
   - itemId: carrot
     displayName: "\uB2F9\uADFC"
@@ -2419,6 +2468,7 @@ MonoBehaviour:
   doorAnimator: {fileID: 1443584117}
   openOffset: {x: 0, y: 0, z: 0}
   openDuration: 0
+  saveId: door_001
 --- !u!65 &1443584116
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3276,7 +3326,10 @@ MonoBehaviour:
   detectionRange: 5
   jumpscareRange: 2
   tablePosition: {fileID: 630782215}
-  animator: {fileID: 0}
+  animator: {fileID: 1443584117}
+  shakeDuration: 1.2
+  shakeMagnitude: 0.08
+  shakeFrequency: 25
 --- !u!4 &1644063916
 Transform:
   m_ObjectHideFlags: 0
@@ -3660,6 +3713,37 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1136417224926517054, guid: ce40faca2a0308d41ad1b902a30e6968, type: 3}
   m_PrefabInstance: {fileID: 32422374}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2077971480
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2077971481}
+  m_Layer: 0
+  m_Name: TableTopPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2077971481
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2077971480}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.94, y: 0.702, z: -9.648}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2085643179
 GameObject:
   m_ObjectHideFlags: 0
@@ -3957,9 +4041,10 @@ SceneRoots:
   - {fileID: 1294410434}
   - {fileID: 1233042120}
   - {fileID: 710180924}
-  - {fileID: 823952510}
   - {fileID: 1070048986}
   - {fileID: 2135784374}
   - {fileID: 275824904}
   - {fileID: 80289966}
   - {fileID: 2131152113}
+  - {fileID: 370127253}
+  - {fileID: 2077971481}

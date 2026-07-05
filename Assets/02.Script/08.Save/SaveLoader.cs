@@ -25,9 +25,32 @@ public class SaveLoader : MonoBehaviour
 		RestorePlayerPosition(data);
 		RestoreInventory(data);
 		RestoreAlreadyCollectedClues(data);
-		RestoreFlashlight(data); // ★ 추가
+		RestoreFlashlight(data);
+		RestoreObjectStates(data); // ★ 추가
 
-		Debug.Log($"[SaveLoader] 복원 완료 — 위치: {data.playerPosition}, 단서 {data.collectedClues.Count}개, 손전등: {data.hasFlashlight}");
+		Debug.Log($"[SaveLoader] 복원 완료");
+	}
+
+	/// <summary>씬의 ISaveableObject들 상태 복원</summary>
+	private void RestoreObjectStates(GameData data)
+	{
+		if (data.savedObjectIds == null || data.savedObjectIds.Count == 0) return;
+
+		var saveables = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None)
+			.OfType<ISaveableObject>();
+
+		int restored = 0;
+		foreach (var s in saveables)
+		{
+			string state = data.GetObjectState(s.SaveId);
+			if (state != null)
+			{
+				s.LoadState(state);
+				restored++;
+			}
+		}
+
+		Debug.Log($"[SaveLoader] 오브젝트 상태 복원: {restored}개");
 	}
 
 	private void RestorePlayerPosition(GameData data)
@@ -109,4 +132,6 @@ public class SaveLoader : MonoBehaviour
 			pickup?.ApplyAlreadyCollected();
 		}
 	}
+
+
 }
