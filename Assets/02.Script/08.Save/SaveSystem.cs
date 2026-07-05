@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 
 public class SaveSystem : MonoBehaviour, ISaveSystem
 {
@@ -17,13 +18,22 @@ public class SaveSystem : MonoBehaviour, ISaveSystem
 	{
 		if (!IsValidSlot(slotIndex)) return;
 
+		// ★ 씬의 모든 ISaveableObject 상태 수집
+		var saveables = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(
+			UnityEngine.FindObjectsSortMode.None).OfType<ISaveableObject>();
+
+		foreach (var s in saveables)
+		{
+			if (!string.IsNullOrEmpty(s.SaveId))
+				data.SetObjectState(s.SaveId, s.SaveState());
+		}
+
 		string json = JsonUtility.ToJson(data);
 		PlayerPrefs.SetString(GetKey(slotIndex), json);
 		PlayerPrefs.Save();
-
 		DeleteChaseAutosave();
 
-		Debug.Log($"[SaveSystem] 슬롯 {slotIndex} 저장 완료 (씬: {data.sceneName})");
+		Debug.Log($"[SaveSystem] 슬롯 {slotIndex} 저장 완료 (씬: {data.sceneName}, 오브젝트 {data.savedObjectIds.Count}개)");
 	}
 
 	public GameData LoadGame(int slotIndex)

@@ -9,7 +9,7 @@ using System.Collections;
 /// - 퍼즐 진입 시 UILayerManager.Push → ESC로 나가기 가능
 /// - null 안전 체크, 중복 호출 방지 플래그 유지
 /// </summary>
-public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
+public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle, ISaveableObject
 {
 	[Header("Puzzle Settings")]
 	[SerializeField] protected string puzzleId;
@@ -22,6 +22,24 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle
 	[SerializeField]
 	protected AnimationCurve cameraTransitionCurve
 		= AnimationCurve.EaseInOut(0, 0, 1, 1);
+
+	[Header("저장 ID (씬 내 유일해야 함)")]
+	[SerializeField] private string saveId = "puzzle_001";
+
+	public string SaveId => saveId;
+
+	[System.Serializable]
+	private class PuzzleState { public bool isSolved; }
+
+	public virtual string SaveState()
+		=> JsonUtility.ToJson(new PuzzleState { isSolved = isSolved });
+
+	public virtual void LoadState(string json)
+	{
+		if (string.IsNullOrEmpty(json)) return;
+		var state = JsonUtility.FromJson<PuzzleState>(json);
+		if (state.isSolved) isSolved = true;
+	}
 
 	// ── 캐싱 ─────────────────────────────────────────────────
 	protected Camera _mainCamera;
