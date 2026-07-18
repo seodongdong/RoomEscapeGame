@@ -71,10 +71,9 @@ public class PuzzleSolveDoor : MonoBehaviour, IInteractable, ISaveableObject
 		_dollGiven = state.dollGiven;
 		_puzzleSolved = state.puzzleSolved;
 
-		if (state.isOpen && !_isOpen)
+		if (state.isOpen)
+			// ★ 애니메이션 없이 즉시 열린 상태로 (복원이므로 연출 불필요)
 			StartCoroutine(AnimateDoor(true));
-		else if (!state.isOpen && _isOpen)
-			StartCoroutine(AnimateDoor(false));
 	}
 
 	// ── 초기화 ────────────────────────────────────────────────

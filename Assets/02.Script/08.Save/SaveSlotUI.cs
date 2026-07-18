@@ -145,7 +145,7 @@ public class SaveSlotUI : MonoBehaviour
 	/// </summary>
 	private GameData BuildCurrentGameData()
 	{
-		var data = new GameData(); // ← data는 여기서 먼저 선언되어야 합니다
+		var data = new GameData();
 
 		data.sceneName = SceneManager.GetActiveScene().name;
 
@@ -155,7 +155,9 @@ public class SaveSlotUI : MonoBehaviour
 
 		if (GameManager.Instance != null)
 		{
-			data.currentStage = (stageInfo != null) ? stageInfo.StageNumber : GameManager.Instance.StageManager.CurrentStage;
+			data.currentStage = (stageInfo != null)
+				? stageInfo.StageNumber
+				: GameManager.Instance.StageManager.CurrentStage;
 			data.playTimeSeconds = GameManager.Instance.PlayTimeSeconds;
 		}
 
@@ -171,9 +173,24 @@ public class SaveSlotUI : MonoBehaviour
 				foreach (var item in inventory.GetAllItems())
 					data.collectedClues.Add(item.ItemId);
 			}
+
+			// ★ InventoryUI에서 표시 정보도 함께 저장
+			var inventoryUI = FindAnyObjectByType<InventoryUI_Complete>(FindObjectsInactive.Include);
+			if (inventoryUI != null)
+			{
+				foreach (var item in inventoryUI.GetAllItems())
+				{
+					data.AddInventoryItem(
+						item.itemId,
+						item.title,
+						item.description ?? "",
+						item.itemType == ItemType.Document ? "Document" : "UsableItem",
+						item.date ?? ""
+					);
+				}
+			}
 		}
 
-		// ★ 손전등 상태 기록 (data 선언 이후에 위치해야 함)
 		var flashlight = FindAnyObjectByType<Flashlight>();
 		if (flashlight != null)
 			data.hasFlashlight = flashlight.HasFlashlight;
@@ -181,3 +198,4 @@ public class SaveSlotUI : MonoBehaviour
 		return data;
 	}
 }
+	

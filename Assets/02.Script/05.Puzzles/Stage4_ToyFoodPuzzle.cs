@@ -74,6 +74,10 @@ public class Stage4_ToyFoodPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZonePu
 	[SerializeField] private float dishAttachDuration = 0.5f;
 	[SerializeField] private float holdBeforeExitDuration = 0.8f;
 
+	[Header("접시 테이블 위치 (저장 복원용)")]
+	[Tooltip("GhoulTable의 tableTop Transform. LoadState에서 접시 위치 복원에 사용.")]
+	[SerializeField] private Transform dishTableTop;
+
 	[Header("대사")]
 	[SerializeField] private string speaker = "소년";
 	[TextArea(2, 4)][SerializeField] private string solveDialogue = "맛있어 보인다... 가져다줘야겠다.";
@@ -88,10 +92,88 @@ public class Stage4_ToyFoodPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZonePu
 	private int _postProcessIndex = 0;
 	private bool _isPostProcessing = false;
 	private int _platedCount = 0;
+	private bool _dishPlacedOnTable = false; // ★ 추가: 아귀 테이블에 내려놓은 상태
 	public bool IsHoldingDish { get; private set; } = false;
 
-	// ★ 완성 접시 원래 회전값 보존용
+	// 완성 접시 원래 회전값 보존용
 	private Quaternion _dishOriginalRotation;
+
+	// ── ISaveableObject override ──────────────────────────────
+
+	[System.Serializable]
+	private class FoodPuzzleState
+	{
+		public bool isSolved;
+		public bool isHoldingDish;
+		public bool dishPlacedOnTable;
+		public int processedCount;
+		public int postProcessIndex;
+		public bool isPostProcessing;
+	}
+
+	public override string SaveState()
+	{
+		return JsonUtility.ToJson(new FoodPuzzleState
+		{
+			isSolved = isSolved,
+			isHoldingDish = IsHoldingDish,
+			dishPlacedOnTable = _dishPlacedOnTable,
+			processedCount = _processedCount,
+			postProcessIndex = _postProcessIndex,
+			isPostProcessing = _isPostProcessing
+		});
+	}
+
+	public override void LoadState(string json)
+	{
+		if (string.IsNullOrEmpty(json)) return;
+		var state = JsonUtility.FromJson<FoodPuzzleState>(json);
+
+		if (state.isSolved)
+		{
+			isSolved = true;
+			_processedCount = state.processedCount;
+			_postProcessIndex = state.postProcessIndex;
+			_isPostProcessing = state.isPostProcessing;
+		}
+
+		if (completedDishObject == null) return;
+
+		if (state.isHoldingDish)
+		{
+			// 접시를 들고 있던 상태 복원
+			completedDishObject.SetActive(true);
+			completedDishObject.transform.rotation = _dishOriginalRotation;
+
+			Camera cam = Camera.main;
+			if (cam != null)
+			{
+				completedDishObject.transform.SetParent(cam.transform);
+				completedDishObject.transform.localPosition = dishHoldLocalPosition;
+				completedDishObject.transform.rotation = _dishOriginalRotation;
+			}
+			IsHoldingDish = true;
+			Debug.Log("[FoodPuzzle] 접시 들기 상태 복원");
+		}
+		else if (state.dishPlacedOnTable)
+		{
+			// 테이블에 내려놓은 상태 복원
+			completedDishObject.SetActive(true);
+			completedDishObject.transform.SetParent(null);
+			completedDishObject.transform.rotation = _dishOriginalRotation;
+
+			if (dishTableTop != null)
+				completedDishObject.transform.position = dishTableTop.position + Vector3.up * 0.05f;
+
+			_dishPlacedOnTable = true;
+			IsHoldingDish = false;
+			Debug.Log("[FoodPuzzle] 접시 테이블 위 상태 복원");
+		}
+	}
+
+	// ── 외부 참조용 ───────────────────────────────────────────
+
+	public GameObject GetCompletedDishObject() => completedDishObject;
 
 	// ── 초기화 ────────────────────────────────────────────────
 
@@ -104,15 +186,9 @@ public class Stage4_ToyFoodPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZonePu
 
 		if (completedDishObject != null)
 		{
-			// ★ 원래 회전값을 미리 저장해두고 비활성화
 			_dishOriginalRotation = completedDishObject.transform.rotation;
 			completedDishObject.SetActive(false);
 		}
-
-		// ★ 수정: minigame.gameObject.SetActive(false)를 여기서 직접 호출하지 않음
-		// CookingMinigame.Awake()에서 자기 자신을 SetActive(false)하도록 위임
-		// (여기서 강제로 끄면 CookingMinigame.Awake() 실행 순서에 따라
-		//  초기화가 안 된 채로 꺼질 수 있음)
 	}
 
 	// ── 퍼즐 진입 ────────────────────────────────────────────
@@ -294,6 +370,7 @@ public class Stage4_ToyFoodPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZonePu
 		_platedCount = 0;
 		_postProcessIndex = 0;
 		_isPostProcessing = false;
+		_dishPlacedOnTable = false;
 
 		Debug.Log("[FoodPuzzle] 전체 초기화 완료");
 	}
@@ -347,13 +424,10 @@ public class Stage4_ToyFoodPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZonePu
 
 		// 카메라 복원 완료 후 접시 등장
 		completedDishObject.SetActive(true);
-
-		// ★ 원래 회전값 복원 (Awake에서 저장해둔 값)
 		completedDishObject.transform.rotation = _dishOriginalRotation;
 
 		Camera cam = Camera.main;
 		Vector3 startPos = completedDishObject.transform.position;
-		Quaternion startRot = completedDishObject.transform.rotation; // 원래 회전값 유지
 
 		float elapsed = 0f;
 		while (elapsed < dishAttachDuration)
@@ -361,7 +435,6 @@ public class Stage4_ToyFoodPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZonePu
 			elapsed += Time.deltaTime;
 			float t = Mathf.SmoothStep(0f, 1f, elapsed / dishAttachDuration);
 			Vector3 targetPos = cam.transform.TransformPoint(dishHoldLocalPosition);
-			// ★ 수정: 접시 회전을 카메라 방향으로 바꾸지 않고 원래 회전값 유지
 			completedDishObject.transform.position = Vector3.Lerp(startPos, targetPos, t);
 			yield return null;
 		}
@@ -369,9 +442,6 @@ public class Stage4_ToyFoodPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZonePu
 		// 카메라 자식으로 고정
 		completedDishObject.transform.SetParent(cam.transform);
 		completedDishObject.transform.localPosition = dishHoldLocalPosition;
-		// ★ 수정: localRotation을 identity로 강제하지 않고 원래 로컬 회전값 유지
-		// 카메라 자식이 되면 worldRotation 기준으로 자동 계산되므로
-		// 원래 worldRotation을 localRotation으로 변환해서 넣어줌
 		completedDishObject.transform.rotation = _dishOriginalRotation;
 		IsHoldingDish = true;
 
@@ -385,9 +455,9 @@ public class Stage4_ToyFoodPuzzle : CameraPuzzleBase, PuzzleDropZone.IDropZonePu
 		if (completedDishObject == null) return;
 		completedDishObject.transform.SetParent(null);
 		completedDishObject.transform.position = tableTop.position + Vector3.up * 0.05f;
-		// ★ 수정: 테이블에 놓을 때도 원래 회전값 유지
 		completedDishObject.transform.rotation = _dishOriginalRotation;
 		IsHoldingDish = false;
+		_dishPlacedOnTable = true; // ★ 테이블에 놓인 상태 기록
 		Debug.Log("[FoodPuzzle] 접시를 테이블에 내려놓음");
 	}
 }

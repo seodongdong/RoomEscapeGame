@@ -4,14 +4,6 @@ using TMPro;
 using System.Collections.Generic;
 using System.Linq;
 
-/// <summary>
-/// 인벤토리 UI
-/// 
-/// [수정]
-/// - Update()의 I키 제거 → Player.cs에서 처리 (중복 방지)
-/// - OpenInventory/CloseInventory에 UILayerManager 연동
-/// - IsOpen 프로퍼티 유지
-/// </summary>
 public class InventoryUI_Complete : MonoBehaviour
 {
 	[Header("UI References")]
@@ -50,8 +42,10 @@ public class InventoryUI_Complete : MonoBehaviour
 	private InventoryItemData _selectedItem;
 	private string _currentTab = "Documents";
 
-	// ── IsOpen 프로퍼티 (Player.cs에서 사용) ─────────────────
 	public bool IsOpen => inventoryPanel != null && inventoryPanel.activeSelf;
+
+	/// <summary>★ 추가: 전체 아이템 목록 반환 (SaveSlotUI에서 저장 시 사용)</summary>
+	public List<InventoryItemData> GetAllItems() => new List<InventoryItemData>(_allItems);
 
 	private void Awake()
 	{
@@ -73,27 +67,16 @@ public class InventoryUI_Complete : MonoBehaviour
 		_uiManager = GameServices.UI;
 	}
 
-	// ── ★ I키 Update 제거 — Player.cs에서 처리 ───────────────
-	// private void Update() { } // 불필요
-
 	// ── 열기/닫기 ─────────────────────────────────────────────
 
 	public void OpenInventory()
 	{
 		inventoryPanel?.SetActive(true);
-		// ★ 수정: _player.enabled = false 제거
-		// Player.cs의 Update()가 멈추면 ESC/I 입력 자체를 받지 못해
-		// 인벤토리를 다시 닫을 수 없게 되는 버그가 있었습니다.
-		// 이동/상호작용 차단은 Player.cs 내부에서 GameState.Puzzle 체크로
-		// 이미 처리되므로, 컴포넌트를 끄지 않고 상태만 전환하면 됩니다.
 		GameManager.Instance?.ChangeState(GameState.Puzzle);
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
 		_uiManager?.HideInteractionPrompt();
-
-		// ★ UILayerManager에 등록 → ESC로 닫기 가능
 		UILayerManager.Instance?.Push(this, CloseInventory);
-
 		RefreshInventory();
 		Debug.Log("[InventoryUI] 열림");
 	}
@@ -102,14 +85,10 @@ public class InventoryUI_Complete : MonoBehaviour
 	{
 		inventoryPanel?.SetActive(false);
 		if (detailPanel != null) detailPanel.SetActive(false);
-		// ★ 수정: _player.enabled = true 제거 (OpenInventory와 동일한 이유)
 		GameManager.Instance?.ChangeState(GameState.Playing);
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
-
-		// ★ UILayerManager에서 제거
 		UILayerManager.Instance?.Pop(this);
-
 		Debug.Log("[InventoryUI] 닫힘");
 	}
 
@@ -128,6 +107,9 @@ public class InventoryUI_Complete : MonoBehaviour
 
 	public void AddItem(InventoryItemData item)
 	{
+		// ★ 중복 등록 방지
+		if (_allItems.Any(i => i.itemId == item.itemId)) return;
+
 		_allItems.Add(item);
 		_allItems = _allItems.OrderBy(i => i.date).ToList();
 		Debug.Log($"[InventoryUI] 추가: {item.title} ({item.itemType})");
@@ -206,15 +188,12 @@ public class InventoryUI_Complete : MonoBehaviour
 		}
 		if (_diaryUI == null) { Debug.LogError("[InventoryUI] DiaryUI 없음"); return; }
 
-		// 인벤토리 패널 숨기기 (다이어리가 닫히면 인벤토리로 복귀)
 		inventoryPanel?.SetActive(false);
 		if (detailPanel != null) detailPanel.SetActive(false);
 
-		// UILayerManager에 다이어리 등록 (ESC로 닫으면 CloseInventory 대신 DiaryUI.CloseDiary)
 		UILayerManager.Instance?.Push(_diaryUI, () =>
 		{
 			_diaryUI.CloseDiary();
-			// 다이어리 닫히면 인벤토리로 복귀
 			inventoryPanel?.SetActive(true);
 			RefreshInventory();
 		});
@@ -251,10 +230,8 @@ public class InventoryUI_Complete : MonoBehaviour
 	}
 }
 
-/// <summary>아이템 타입</summary>
 public enum ItemType { Document, UsableItem }
 
-/// <summary>인벤토리 아이템 데이터</summary>
 [System.Serializable]
 public class InventoryItemData
 {
@@ -267,7 +244,6 @@ public class InventoryItemData
 	public GameObject itemPrefab;
 }
 
-/// <summary>아이템 사용 가능한 오브젝트 인터페이스</summary>
 public interface IItemUsable
 {
 	void UseItem(string itemId);
