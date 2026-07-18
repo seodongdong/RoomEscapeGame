@@ -1,14 +1,6 @@
 using UnityEngine;
 using System.Collections;
 
-/// <summary>
-/// 카메라 전환 기반 퍼즐 베이스 클래스
-///
-/// [수정]
-/// - puzzleUI 완전 제거 → 패널 없이 3D 월드에서 직접 퍼즐
-/// - 퍼즐 진입 시 UILayerManager.Push → ESC로 나가기 가능
-/// - null 안전 체크, 중복 호출 방지 플래그 유지
-/// </summary>
 public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle, ISaveableObject
 {
 	[Header("Puzzle Settings")]
@@ -16,12 +8,9 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle, ISaveableObject
 	[SerializeField] protected bool isSolved;
 
 	[Header("Camera Settings")]
-	[Tooltip("퍼즐 카메라 위치. 비워두면 현재 위치에서 시작.")]
 	[SerializeField] protected Transform puzzleCameraPosition;
 	[SerializeField] protected float cameraTransitionDuration = 1f;
-	[SerializeField]
-	protected AnimationCurve cameraTransitionCurve
-		= AnimationCurve.EaseInOut(0, 0, 1, 1);
+	[SerializeField] protected AnimationCurve cameraTransitionCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
 	[Header("저장 ID (씬 내 유일해야 함)")]
 	[SerializeField] private string saveId = "puzzle_001";
@@ -38,7 +27,27 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle, ISaveableObject
 	{
 		if (string.IsNullOrEmpty(json)) return;
 		var state = JsonUtility.FromJson<PuzzleState>(json);
-		if (state.isSolved) isSolved = true;
+
+		if (state.isSolved && !isSolved)
+		{
+			isSolved = true;
+			// ★ 연결된 문/오브젝트에 완료 상태 전파
+			// OnPuzzleSolved 이벤트는 재발동하지 않음 (중복 방지)
+			// 파생 클래스에서 OnLoadStateSolved()를 override해서 추가 처리
+			OnLoadStateSolved();
+		}
+	}
+
+	/// <summary>
+	/// 저장 데이터 복원 시 퍼즐이 완료 상태였을 때 호출됩니다.
+	/// 파생 클래스에서 override해서 추가 처리를 하세요.
+	/// </summary>
+	protected virtual void OnLoadStateSolved() { }
+
+	// ★ 에디터 전용: 컴포넌트 처음 부착 시 오브젝트 이름 기반으로 saveId 자동 설정
+	private void Reset()
+	{
+		saveId = $"puzzle_{gameObject.name}";
 	}
 
 	// ── 캐싱 ─────────────────────────────────────────────────
@@ -48,7 +57,6 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle, ISaveableObject
 	protected Quaternion _originalCameraRotation;
 	protected Player _player;
 
-	// ── 상태 플래그 ───────────────────────────────────────────
 	private bool _isTransitioning = false;
 	private bool _isExiting = false;
 
@@ -93,14 +101,7 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle, ISaveableObject
 		GameServices.UI?.HideInteractionPrompt();
 
 		if (_player != null)
-		{
-			// ★ 수정: _player.enabled = false 제거
-			// Player.cs의 Update()가 멈추면 퍼즐 완료 후에도
-			// 어떤 키 입력도 받지 못하는 버그가 있었습니다.
-			// 이동/상호작용 차단은 Player.cs 내부에서 GameState.Puzzle
-			// 체크로 이미 처리되므로, 컴포넌트를 끄지 않습니다.
 			SetPlayerMeshVisible(false);
-		}
 
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
@@ -134,7 +135,7 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle, ISaveableObject
 			{
 				endPos = startPos;
 				endRot = startRot;
-				Debug.LogWarning($"[Puzzle:{puzzleId}] puzzleCameraPosition 없음 — 현재 위치에서 시작");
+				Debug.LogWarning($"[Puzzle:{puzzleId}] puzzleCameraPosition 없음");
 			}
 		}
 		else
@@ -189,10 +190,7 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle, ISaveableObject
 		isSolved = true;
 		OnPuzzleSolved?.Invoke();
 		Debug.Log($"[Puzzle:{puzzleId}] 해결!");
-
-		// 해결됐으므로 UILayerManager 스택에서 제거
 		UILayerManager.Instance?.Pop(this);
-
 		ExitPuzzle();
 	}
 
@@ -201,11 +199,7 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle, ISaveableObject
 	{
 		if (_isExiting) return;
 		_isExiting = true;
-
-		// ESC로 나갈 때 UILayerManager 스택 정리
-		// (SolvePuzzle에서 이미 Pop한 경우 Pop 내부에서 중복 처리됨)
 		UILayerManager.Instance?.Pop(this);
-
 		StartCoroutine(ExitPuzzleCoroutine());
 	}
 
@@ -216,14 +210,10 @@ public abstract class CameraPuzzleBase : MonoBehaviour, IPuzzle, ISaveableObject
 		GameManager.Instance?.ChangeState(GameState.Playing);
 
 		if (_player != null)
-		{
-			// ★ 수정: _player.enabled = true 제거 (StartPuzzle과 동일한 이유)
 			SetPlayerMeshVisible(true);
-		}
 
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
-
 		_isExiting = false;
 	}
 

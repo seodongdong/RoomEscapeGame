@@ -85,16 +85,25 @@ public class SaveLoader : MonoBehaviour
 		{
 			if (player.Inventory.HasItem(clueId)) continue;
 
-			var clueItem = new ClueItem(clueId, clueId, "");
-			player.Inventory.AddItem(clueItem); // 판정용 (기존)
+			// ★ GameData에서 저장된 표시 정보를 가져옴
+			var savedItemData = data.GetInventoryItemData(clueId);
 
-			// ★ 추가: 인벤토리 창에 실제로 보이도록 UI용 데이터도 등록
+			string title = savedItemData?.title ?? clueId;
+			string description = savedItemData?.description ?? "";
+			string date = savedItemData?.date ?? "";
+			ItemType itemType = savedItemData?.itemType ?? ItemType.UsableItem;
+
+			// 판정용 인벤토리에 추가
+			player.Inventory.AddItem(new ClueItem(clueId, title, description));
+
+			// UI 인벤토리에도 정확한 이름/설명/타입으로 추가
 			inventoryUI?.AddItem(new InventoryItemData
 			{
 				itemId = clueId,
-				title = clueId, // 정확한 표시 이름은 각 단서의 ApplyAlreadyCollected에서 보완 가능
-				itemType = ItemType.UsableItem,
-				description = ""
+				title = title,
+				description = description,
+				itemType = itemType,
+				date = date
 			});
 
 			GameManager.Instance?.ClueTracker.RegisterClue(clueId);
