@@ -141,7 +141,10 @@ public class SaveSlotUI : MonoBehaviour
 	}
 
 	/// <summary>
-	/// ★ 수정: 현재 씬의 정확한 이름 + StageInfo의 표시 이름(있다면)을 함께 기록합니다.
+	/// [v3 변경사항]
+	/// ClueTracker의 단서 목록을 함께 저장합니다.
+	/// 배치용 단서(RegisterClueOnly)는 인벤토리에 들어가지 않아서,
+	/// 인벤토리만 훑으면 저장 시점에 통째로 누락됐습니다.
 	/// </summary>
 	private GameData BuildCurrentGameData()
 	{
@@ -158,7 +161,11 @@ public class SaveSlotUI : MonoBehaviour
 			data.currentStage = (stageInfo != null)
 				? stageInfo.StageNumber
 				: GameManager.Instance.StageManager.CurrentStage;
+
 			data.playTimeSeconds = GameManager.Instance.PlayTimeSeconds;
+
+			// ★ 추가: ClueTracker 전체 단서 목록
+			data.trackedClues = GameManager.Instance.ClueTracker.GetAllClues();
 		}
 
 		var player = GameServices.Player;
@@ -174,7 +181,6 @@ public class SaveSlotUI : MonoBehaviour
 					data.collectedClues.Add(item.ItemId);
 			}
 
-			// ★ InventoryUI에서 표시 정보도 함께 저장
 			var inventoryUI = FindAnyObjectByType<InventoryUI_Complete>(FindObjectsInactive.Include);
 			if (inventoryUI != null)
 			{

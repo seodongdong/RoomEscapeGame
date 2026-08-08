@@ -15,6 +15,11 @@ public class GameData
 	public float playTimeSeconds;
 	public bool hasFlashlight;
 
+	// ★ 추가: ClueTracker가 추적하는 전체 단서 목록.
+	// collectedClues는 "인벤토리에 있는 것"만 담기 때문에,
+	// 배치용 단서(인형의 집 조각 등)는 여기에만 기록됩니다.
+	public List<string> trackedClues;
+
 	// 오브젝트 상태 저장 (문/퍼즐 등)
 	public List<string> savedObjectIds;
 	public List<string> savedObjectStates;
@@ -37,6 +42,7 @@ public class GameData
 		sceneName = "";
 		savedDisplayName = "";
 		hasFlashlight = false;
+		trackedClues = new List<string>();   // ★ 추가
 		savedObjectIds = new List<string>();
 		savedObjectStates = new List<string>();
 		inventoryItemIds = new List<string>();
