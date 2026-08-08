@@ -61,6 +61,18 @@ public class Stage1TVGate : MonoBehaviour
 	}
 
 	/// <summary>
+	/// ★ 추가: 저장 데이터에서 TV 시청 여부를 복원합니다.
+	/// Awake가 무조건 false로 초기화하기 때문에, 복원 없이는
+	/// 불러오기 후 거실의 모든 상호작용이 다시 막힙니다.
+	/// TVPlayer.LoadState에서 호출됩니다.
+	/// </summary>
+	public static void RestoreTVWatched(bool watched)
+	{
+		IsTVWatched = watched;
+		Debug.Log($"[Stage1TVGate] 복원 — IsTVWatched = {watched}");
+	}
+
+	/// <summary>
 	/// InteractableBase.Interact()에서 자동으로 호출됩니다.
 	/// true 반환 → 차단 (TV 먼저 봐야 함)
 	/// false 반환 → 통과 (상호작용 허용)

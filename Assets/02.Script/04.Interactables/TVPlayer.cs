@@ -9,7 +9,7 @@ using System.Collections;
 /// - CloseUp: 카메라 줌인 + 4단계 반복 (Stage1용)
 /// - Static:  지지직 Material + 대사 출력 (일반용)
 /// </summary>
-public class TVPlayer : MonoBehaviour, IInteractable
+public class TVPlayer : MonoBehaviour, IInteractable, ISaveableObject
 {
 	public enum TVType { CloseUp, Static }
 
@@ -72,6 +72,70 @@ public class TVPlayer : MonoBehaviour, IInteractable
 	private Quaternion _originalCamRot;
 	private Transform _originalCamParent;
 	private Player _player;
+
+	// ═══════════════════════════════════════════
+	// ISaveableObject — 저장 / 복원
+	//
+	// [왜 필요한가]
+	// _viewCount가 저장되지 않으면 불러오기 후 TV를 처음부터 4번 다시
+	// 봐야 합니다. 더 심각한 건 Stage1TVGate.IsTVWatched가 Awake에서
+	// 무조건 false로 초기화된다는 점인데, 이 상태로는 거실의 모든
+	// F키 상호작용이 다시 막혀 진행이 아예 불가능해집니다.
+	//
+	// 크리처 활성 상태도 함께 저장합니다. "4회 시청했으니 켜기"처럼
+	// 값을 유추하면, 퍼즐을 이미 푼 세이브에서 크리처가 되살아납니다.
+	// 저장된 값을 그대로 반영하면 퍼즐 LoadState와 복원 순서가
+	// 어긋나도 결과가 같습니다.
+	// ═══════════════════════════════════════════
+
+	[Header("저장 ID (씬 내 유일해야 함)")]
+	[SerializeField] private string saveId = "tv_stage1";
+
+	public string SaveId => saveId;
+
+	[System.Serializable]
+	private class TVState
+	{
+		public int viewCount;
+		public bool tvWatched;
+		public bool creatureActive;
+	}
+
+	public string SaveState()
+	{
+		return JsonUtility.ToJson(new TVState
+		{
+			viewCount = _viewCount,
+			tvWatched = Stage1TVGate.IsTVWatched,
+			creatureActive = creature != null && creature.activeSelf
+		});
+	}
+
+	public void LoadState(string json)
+	{
+		if (string.IsNullOrEmpty(json)) return;
+
+		var state = JsonUtility.FromJson<TVState>(json);
+		_viewCount = state.viewCount;
+
+		// 게이트 복원 — 이게 없으면 거실이 통째로 잠깁니다
+		Stage1TVGate.RestoreTVWatched(state.tvWatched);
+
+		if (creature != null)
+			creature.SetActive(state.creatureActive);
+
+		// 4회 시청 완료 상태면 화면을 꺼진 머티리얼로
+		if (_viewCount >= 4 && tvScreenRenderer != null && offMaterial != null)
+			tvScreenRenderer.material = offMaterial;
+
+		Debug.Log($"[TVPlayer] 복원 — viewCount={_viewCount}, tvWatched={state.tvWatched}, creature={state.creatureActive}");
+	}
+
+	// 에디터 전용 — 컴포넌트 부착 시 오브젝트 이름으로 고유 saveId 생성
+	private void Reset()
+	{
+		saveId = $"tv_{gameObject.name}";
+	}
 
 	private void Awake()
 	{
