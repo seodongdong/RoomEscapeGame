@@ -2659,7 +2659,7 @@ MonoBehaviour:
   doorAnimator: {fileID: 1443584117}
   openOffset: {x: 0, y: 0, z: 0}
   openDuration: 0
-  saveId: door_stage4_exit
+  saveId: door_open
 --- !u!65 &1443584116
 BoxCollider:
   m_ObjectHideFlags: 0

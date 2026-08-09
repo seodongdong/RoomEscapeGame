@@ -259,7 +259,7 @@ MonoBehaviour:
   currentStep: Entering
   tvPlayer: {fileID: 711004518}
   dollHousePuzzle: {fileID: 1432059248}
-  exitDoor: {fileID: 1233838691}
+  exitDoor: {fileID: 0}
 --- !u!1 &261735343
 GameObject:
   m_ObjectHideFlags: 0
@@ -533,6 +533,60 @@ Transform:
   - {fileID: 971800501}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &543059112 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2895966811392777521, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+  m_PrefabInstance: {fileID: 1233838688}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &543059116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 543059112}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1bfe2ee9c9803c429983855d69e4d28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleSolveDoor
+  puzzleObject: {fileID: 1432059248}
+  doorTransform: {fileID: 1904984218}
+  doorAnimator: {fileID: 1233838695}
+  openOffset: {x: 0, y: 3, z: 0}
+  openDuration: 0.6
+  autoOpen: 0
+  speaker: 
+  lockedPrompt: "[F] \uBB38 (\uC7A0\uAE40)"
+  lockedDialogue: "\uC7A0\uACA8\uC788\uB2E4..."
+  openDialogue: "\uBB38\uC774 \uC5F4\uB838\uB2E4."
+  closeDialogue: 
+  woodenDollId: 
+  woodenDollName: "\uB098\uBB34\uC778\uD615"
+  woodenDollDialogue: "\uB098\uBB34\uB85C \uB9CC\uB4E0 \uC778\uD615\uC774\uB2E4."
+  woodenDollPrefab: {fileID: 519460931107682972, guid: c310f1ba5ec4568459a46d755f8ac936, type: 3}
+  saveId: stage1_puzzledoor
+--- !u!65 &543059117
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 543059112}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.2175677, y: 0.49347377, z: 0.0261046}
+  m_Center: {x: 0.10713164, y: 0.24673688, z: 0.009583563}
 --- !u!1 &617033741 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3443211653467129491, guid: 8722ae4b82d81aa4c9b9d037a4e674e0, type: 3}
@@ -560,7 +614,7 @@ MonoBehaviour:
   dragMode: 1
   liftHeight: 0.08
   snapForwardOffset: 0
-  snapDistance: 0.6
+  snapDistance: 0.3
   clampToBounds: 0
   boundsCenter: {x: 0, y: 0, z: 0}
   boundsSize: {x: 2, y: 2, z: 2}
@@ -1438,50 +1492,20 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1233838691}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      addedObject: {fileID: 1233838695}
+    - targetCorrespondingSourceObject: {fileID: 2895966811392777521, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1233838692}
+      addedObject: {fileID: 543059117}
+    - targetCorrespondingSourceObject: {fileID: 2895966811392777521, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 543059116}
   m_SourcePrefab: {fileID: 100100000, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
 --- !u!1 &1233838689 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
   m_PrefabInstance: {fileID: 1233838688}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &1233838690 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
-  m_PrefabInstance: {fileID: 1233838688}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1233838691
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1233838689}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1bfe2ee9c9803c429983855d69e4d28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PuzzleSolveDoor
-  puzzleObject: {fileID: 1432059248}
-  doorTransform: {fileID: 1233838690}
-  doorAnimator: {fileID: 1233838692}
-  openOffset: {x: 0, y: 3, z: 0}
-  openDuration: 0.6
-  autoOpen: 0
-  speaker: 
-  lockedPrompt: "[F] \uBB38 (\uC7A0\uAE40)"
-  lockedDialogue: "\uC7A0\uACA8\uC788\uB2E4..."
-  openDialogue: "\uBB38\uC774 \uC5F4\uB838\uB2E4."
-  closeDialogue: 
-  woodenDollId: 
-  woodenDollName: "\uB098\uBB34\uC778\uD615"
-  woodenDollDialogue: "\uB098\uBB34\uB85C \uB9CC\uB4E0 \uC778\uD615\uC774\uB2E4."
-  woodenDollPrefab: {fileID: 519460931107682972, guid: c310f1ba5ec4568459a46d755f8ac936, type: 3}
-  saveId: puzzledoor_001
---- !u!95 &1233838692
+--- !u!95 &1233838695
 Animator:
   serializedVersion: 7
   m_ObjectHideFlags: 0
@@ -2028,7 +2052,7 @@ MonoBehaviour:
   dragMode: 1
   liftHeight: 0.08
   snapForwardOffset: 0
-  snapDistance: 0.6
+  snapDistance: 0.3
   clampToBounds: 0
   boundsCenter: {x: 0, y: 0, z: 0}
   boundsSize: {x: 2, y: 2, z: 2}
@@ -2284,7 +2308,7 @@ MonoBehaviour:
   dragMode: 1
   liftHeight: 0.08
   snapForwardOffset: 0
-  snapDistance: 0.6
+  snapDistance: 0.3
   clampToBounds: 0
   boundsCenter: {x: 0, y: 0, z: 0}
   boundsSize: {x: 2, y: 2, z: 2}
@@ -2544,6 +2568,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StageInfo
   displayName: "\uAC70\uC2E4"
   stageNumber: 1
+--- !u!4 &1904984218 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -4444045606332790047, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+  m_PrefabInstance: {fileID: 1233838688}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1938379724
 GameObject:
   m_ObjectHideFlags: 0
