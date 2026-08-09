@@ -53,6 +53,10 @@ public class GameManager : MonoBehaviour, IGameStateManager
 	// 씬 전환 간 임시 보관용 (DontDestroyOnLoad 객체이므로 씬이 바뀌어도 유지됨)
 	private GameData _pendingLoadData;
 
+	// [추가] 엔딩 씬(07_Ending)이 하나뿐이라, 어떤 엔딩을 보여줄지
+	// EndingManager가 여기에 적어두고 07_Ending 진입 후 EndingSceneController가 꺼내 씁니다.
+	private EndingType? _pendingEndingType;
+
 	private void Awake()
 	{
 		if (_instance != null && _instance != this)
@@ -110,6 +114,29 @@ public class GameManager : MonoBehaviour, IGameStateManager
 	}
 
 	public bool HasPendingLoadData => _pendingLoadData != null;
+
+	/// <summary>엔딩 타입을 등록합니다. 07_Ending 씬 로드 직전에 호출하세요.</summary>
+	public void SetPendingEndingType(EndingType endingType)
+	{
+		_pendingEndingType = endingType;
+	}
+
+	/// <summary>
+	/// 07_Ending 씬에서 EndingSceneController가 호출합니다.
+	/// 한 번 꺼내면 비워서, 다음 진입 때 잘못된 값이 재사용되지 않도록 합니다.
+	/// </summary>
+	public EndingType ConsumePendingEndingType()
+	{
+		if (_pendingEndingType == null)
+		{
+			Debug.LogWarning("[GameManager] PendingEndingType이 없습니다. GameOver로 대체합니다.");
+			return EndingType.GameOver;
+		}
+
+		var type = _pendingEndingType.Value;
+		_pendingEndingType = null;
+		return type;
+	}
 
 	public IStageManager StageManager => _stageManager;
 	public IClueTracker ClueTracker => _clueTracker;

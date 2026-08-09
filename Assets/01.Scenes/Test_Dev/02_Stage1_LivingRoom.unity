@@ -258,8 +258,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Stage1Flow
   currentStep: Entering
   tvPlayer: {fileID: 711004518}
-  dollHousePuzzle: {fileID: 0}
-  exitDoor: {fileID: 0}
+  dollHousePuzzle: {fileID: 1432059248}
+  exitDoor: {fileID: 1233838691}
 --- !u!1 &261735343
 GameObject:
   m_ObjectHideFlags: 0
@@ -292,6 +292,76 @@ Transform:
   - {fileID: 1140521208}
   - {fileID: 1406735479}
   - {fileID: 233533237}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &272614680
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 272614683}
+  - component: {fileID: 272614682}
+  - component: {fileID: 272614681}
+  m_Layer: 0
+  m_Name: Stage1_ExitTrigger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &272614681
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 272614680}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 462e5148cb92a704d9a39ea71380984a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Stage1_ExitTrigger
+  puzzleObject: {fileID: 1432059248}
+  nextStageNumber: 2
+  speaker: 
+  exitDialogue: 
+--- !u!65 &272614682
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 272614680}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &272614683
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 272614680}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.45, y: 0.99, z: 17.45}
+  m_LocalScale: {x: 2.4276528, y: 2.4276528, z: 2.4276528}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &391269705
@@ -762,6 +832,7 @@ MonoBehaviour:
   tvAudioSource: {fileID: 0}
   staticClip: {fileID: 0}
   glitchClip: {fileID: 0}
+  saveId: tv_stage1
 --- !u!65 &711004519
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1297,6 +1368,141 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2970f3c36d3e3406ca4c46266dccadf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaveSystem
+--- !u!1001 &1233838688
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 12.505306
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 12.505306
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 12.505306
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.77851
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 13.53
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      propertyPath: m_Name
+      value: Door_open
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1233838691}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1233838692}
+  m_SourcePrefab: {fileID: 100100000, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+--- !u!1 &1233838689 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+  m_PrefabInstance: {fileID: 1233838688}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1233838690 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 46afe31e8db62e743a118ec531a30d98, type: 3}
+  m_PrefabInstance: {fileID: 1233838688}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1233838691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1233838689}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1bfe2ee9c9803c429983855d69e4d28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleSolveDoor
+  puzzleObject: {fileID: 1432059248}
+  doorTransform: {fileID: 1233838690}
+  doorAnimator: {fileID: 1233838692}
+  openOffset: {x: 0, y: 3, z: 0}
+  openDuration: 0.6
+  autoOpen: 0
+  speaker: 
+  lockedPrompt: "[F] \uBB38 (\uC7A0\uAE40)"
+  lockedDialogue: "\uC7A0\uACA8\uC788\uB2E4..."
+  openDialogue: "\uBB38\uC774 \uC5F4\uB838\uB2E4."
+  closeDialogue: 
+  woodenDollId: 
+  woodenDollName: "\uB098\uBB34\uC778\uD615"
+  woodenDollDialogue: "\uB098\uBB34\uB85C \uB9CC\uB4E0 \uC778\uD615\uC774\uB2E4."
+  woodenDollPrefab: {fileID: 519460931107682972, guid: c310f1ba5ec4568459a46d755f8ac936, type: 3}
+  saveId: puzzledoor_001
+--- !u!95 &1233838692
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1233838689}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 52214e45466692d438b7d373987b49fb, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1238983973
 GameObject:
   m_ObjectHideFlags: 0
@@ -2016,6 +2222,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1659235659}
+  - component: {fileID: 1659235660}
   m_Layer: 0
   m_Name: SceneRequirementChecker
   m_TagString: Untagged
@@ -2038,6 +2245,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1938379725}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1659235660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1659235658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21d4f2ca56814b32ab316d7743da61f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SceneRequirementChecker
 --- !u!1 &1683336860 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8624563739302506116, guid: 536b0cb075111c54fa000efbaab84cb0, type: 3}
@@ -2739,3 +2958,5 @@ SceneRoots:
   - {fileID: 421125164}
   - {fileID: 391269706}
   - {fileID: 1430194289}
+  - {fileID: 1233838688}
+  - {fileID: 272614683}

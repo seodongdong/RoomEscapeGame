@@ -94,11 +94,18 @@ public class Stage4_GhoulTable : MonoBehaviour, IInteractable, ISaveableObject
 		_sequencePlayed = true;
 		GameManager.Instance?.ChangeState(GameState.Puzzle);
 
+		// [수정] Camera.main이 null이면(MainCamera 태그 미설정 등) 아래에서 바로 NRE가 나
+		// 4스테이지가 이 시점에 멈췄습니다. null이면 카메라 연출만 건너뛰고 나머지는 진행합니다.
 		Camera cam = Camera.main;
-		Vector3 originalPos = cam.transform.position;
-		Quaternion originalRot = cam.transform.rotation;
+		if (cam == null)
+		{
+			Debug.LogWarning("[Stage4_GhoulTable] Camera.main을 찾을 수 없어 카메라 연출을 건너뜁니다.");
+		}
 
-		if (tableViewPoint != null)
+		Vector3 originalPos = cam != null ? cam.transform.position : Vector3.zero;
+		Quaternion originalRot = cam != null ? cam.transform.rotation : Quaternion.identity;
+
+		if (cam != null && tableViewPoint != null)
 			yield return StartCoroutine(
 				TransitionCamera(cam, tableViewPoint.position, tableViewPoint.rotation, cameraTransitionDuration));
 
@@ -121,7 +128,8 @@ public class Stage4_GhoulTable : MonoBehaviour, IInteractable, ISaveableObject
 
 		yield return new WaitForSeconds(0.3f);
 
-		yield return StartCoroutine(TransitionCamera(cam, originalPos, originalRot, cameraTransitionDuration));
+		if (cam != null)
+			yield return StartCoroutine(TransitionCamera(cam, originalPos, originalRot, cameraTransitionDuration));
 
 		var player = GameServices.Player;
 		if (player != null && !string.IsNullOrEmpty(woodenDollItemId))
