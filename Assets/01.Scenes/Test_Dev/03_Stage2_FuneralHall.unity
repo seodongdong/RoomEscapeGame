@@ -529,13 +529,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 609097705}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31a9b0759b8749d1ad5cf6c23c1d0943, type: 3}
+  m_Script: {fileID: 11500000, guid: 1da0a24023d746cbb148d7cdf00971bc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Stage1Flow
+  m_EditorClassIdentifier: Assembly-CSharp::Stage2Flow
   currentStep: Entering
-  tvPlayer: {fileID: 1467253386}
-  dollHousePuzzle: {fileID: 0}
-  exitDoor: {fileID: 0}
+  lightPuzzle: {fileID: 0}
+  shadowCreature: {fileID: 0}
 --- !u!1 &813090689
 GameObject:
   m_ObjectHideFlags: 0
@@ -817,6 +816,7 @@ MonoBehaviour:
   tvAudioSource: {fileID: 0}
   staticClip: {fileID: 0}
   glitchClip: {fileID: 0}
+  saveId: tv_stage1
 --- !u!65 &1467253387
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1239,6 +1239,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1894335008}
+  - component: {fileID: 1894335009}
   m_Layer: 0
   m_Name: SceneRequirementChecker
   m_TagString: Untagged
@@ -1261,6 +1262,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1990580614}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1894335009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1894335007}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21d4f2ca56814b32ab316d7743da61f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SceneRequirementChecker
 --- !u!1 &1990580613
 GameObject:
   m_ObjectHideFlags: 0

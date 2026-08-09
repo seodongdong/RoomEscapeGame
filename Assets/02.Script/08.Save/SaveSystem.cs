@@ -5,7 +5,7 @@ public class SaveSystem : MonoBehaviour, ISaveSystem
 {
 	private const string SAVE_KEY_PREFIX = "HorrorGame_Save_";
 	private const string CHASE_AUTOSAVE_KEY = "HorrorGame_ChaseAutosave";
-	public const int SLOT_COUNT = 4;
+	public const int SLOT_COUNT = 5; // [수정] 기획서 6.3 — 저장 슬롯 총 5개
 
 	private static string GetKey(int slotIndex) => $"{SAVE_KEY_PREFIX}{slotIndex}";
 

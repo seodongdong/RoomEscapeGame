@@ -50,23 +50,25 @@ public class EndingManager : IEndingManager
 		return EndingType.True;
 	}
 
+	// [수정] GameOverScene / NormalEndingScene / TrueEndingScene 세 씬이
+	// 프로젝트에 존재하지 않아(엔딩 씬은 07_Ending 하나뿐) 엔딩 진입이 항상 실패했습니다.
+	// → 07_Ending 하나로 통일하고, 어떤 엔딩인지는 GameManager에 임시로 적어둔 뒤
+	//    07_Ending 안의 EndingSceneController가 꺼내서 분기 처리합니다.
 	public void TriggerEnding(EndingType endingType)
 	{
 		Debug.Log($"[EndingManager] 엔딩 발동: {endingType}");
 
-		switch (endingType)
+		if (GameManager.Instance == null)
 		{
-			case EndingType.GameOver:
-				SceneManager.LoadScene("GameOverScene");
-				break;
-
-			case EndingType.Normal:
-				SceneManager.LoadScene("NormalEndingScene");
-				break;
-
-			case EndingType.True:
-				SceneManager.LoadScene("TrueEndingScene");
-				break;
+			Debug.LogError("[EndingManager] GameManager.Instance가 없어 엔딩 씬으로 전환할 수 없습니다.");
+			return;
 		}
+
+		GameManager.Instance.SetPendingEndingType(endingType);
+
+		if (SceneTransitionManager.Instance != null)
+			SceneTransitionManager.Instance.LoadScene("07_Ending");
+		else
+			SceneManager.LoadScene("07_Ending");
 	}
 }
