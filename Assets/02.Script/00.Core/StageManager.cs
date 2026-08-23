@@ -115,13 +115,15 @@ public class StageManager : IStageManager
 
 	private string GetSceneName(int stageNumber)
 	{
+		// [수정] 실제 씬 파일명(02_Stage1_LivingRoom 등)과 정확히 일치시켜,
+		// 매번 전환마다 폴백 검색을 타던 것을 없앤습니다.
 		switch (stageNumber)
 		{
-			case 1: return "Stage1_LivingRoom";
-			case 2: return "Stage2_FuneralHall";
-			case 3: return "Stage3_Maze";
-			case 4: return "Stage4_Kitchen";
-			case 5: return "Stage5_Basement";
+			case 1: return "02_Stage1_LivingRoom";
+			case 2: return "03_Stage2_FuneralHall";
+			case 3: return "04_Stage3_Maze";
+			case 4: return "05_Stage4_Kitchen";
+			case 5: return "06_Stage5_Basement";
 			default: return $"Stage{stageNumber}";
 		}
 	}
